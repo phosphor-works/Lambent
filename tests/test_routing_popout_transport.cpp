@@ -8,7 +8,7 @@
 // self-dismissals from either side arrive on the controller's one
 // callback and detach cleanly.
 
-#include "shell/RoutingPopoutTransport.h"
+#include "RoutingPopoutTransport.h"
 
 #include <PhosphorPopout/PopoutRequest.h>
 

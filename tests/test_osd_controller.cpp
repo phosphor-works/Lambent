@@ -8,8 +8,8 @@
 // here is the C++ contract: which kinds register, every guard on the
 // createOSD path, and the host fan-out an IPC trigger rides.
 
-#include "shell/OsdController.h"
-#include "shell/QmlComponentOSDFactory.h"
+#include "OsdController.h"
+#include "QmlComponentOSDFactory.h"
 
 #include <QQmlEngine>
 #include <QQuickItem>

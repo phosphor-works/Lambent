@@ -12,7 +12,7 @@
 // with different GC timing, mid-IPC-toggle. The controller must mark the
 // screen CppOwnership before returning it, and this pins that it does.
 
-#include "shell/ControlCenterController.h"
+#include "ControlCenterController.h"
 
 #include <QGuiApplication>
 #include <QQmlComponent>

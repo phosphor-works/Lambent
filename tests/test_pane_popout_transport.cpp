@@ -12,8 +12,8 @@
 // checked here is the identity the window carries and the transport's
 // bookkeeping around it.
 
-#include "shell/ControlCenterController.h"
-#include "shell/PanePopoutTransport.h"
+#include "ControlCenterController.h"
+#include "PanePopoutTransport.h"
 
 #include <PhosphorPopout/IPopoutTransport.h>
 #include <PhosphorPopout/PopoutRequest.h>

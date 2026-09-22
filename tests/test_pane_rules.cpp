@@ -7,7 +7,7 @@
 // carry the per-mode placement A2 §4.2 asks for where the vocabulary can
 // express it, and have a stable id so a second startup finds it present.
 
-#include "shell/PaneRules.h"
+#include "PaneRules.h"
 
 #include <PhosphorRules/ActionParams.h>
 #include <PhosphorRules/ActionTypes.h>

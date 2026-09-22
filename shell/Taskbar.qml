@@ -101,7 +101,7 @@ PanelWindow {
                     Accessible.role: Accessible.Button
                     Accessible.name: toplevel.title || toplevel.appId || "(unnamed window)"
                     Accessible.description: toplevel.activated ? "Active window" : "Inactive window"
-                    onClicked: function(mouse) {
+                    onClicked: function (mouse) {
                         if (mouse.button === Qt.MiddleButton) {
                             toplevel.close();
                         } else if (toplevel.activated) {
@@ -117,20 +117,14 @@ PanelWindow {
                     ColorAnimation {
                         duration: 120
                     }
-
                 }
 
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 120
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }

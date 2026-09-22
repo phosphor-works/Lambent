@@ -12,8 +12,8 @@
 // the createWidget path (a wrong guard silently drops a widget from the
 // bar, or leaks one).
 
-#include "shell/BarController.h"
-#include "shell/QmlComponentBarWidgetFactory.h"
+#include "BarController.h"
+#include "QmlComponentBarWidgetFactory.h"
 
 #include <QQmlEngine>
 #include <QQuickItem>

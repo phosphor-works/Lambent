@@ -5,7 +5,7 @@
 // stage list SurfaceDecoration draws, one stage per installed pack in a
 // surface's enabled chain, against the bundled packs in data/surface.
 
-#include "shell/ShellChrome.h"
+#include "ShellChrome.h"
 
 #include <PhosphorShaders/ShaderPresetStore.h>
 #include <PhosphorSurface/DecorationSupportedPaths.h>

@@ -5,7 +5,7 @@
 // on, the shape it hands ToastHost.show, and the guards around a missing
 // or dead host.
 
-#include "shell/ToastController.h"
+#include "ToastController.h"
 
 #include <QRegularExpression>
 #include <QTest>
