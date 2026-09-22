@@ -12,8 +12,8 @@
 // one by design, and that refusal, plus the screen-name handling that decides
 // whether anything paints at all, had no coverage anywhere in the repo.
 
-#include "shell/ControlCenterController.h"
-#include "shell/SocketPopoutTransport.h"
+#include "ControlCenterController.h"
+#include "SocketPopoutTransport.h"
 
 #include <PhosphorPopout/PopoutRequest.h>
 

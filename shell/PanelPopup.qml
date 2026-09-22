@@ -80,5 +80,4 @@ PopupWindow {
         anchors.fill: parent
         anchors.margins: popup.shadowMargin + popup.contentMargins
     }
-
 }

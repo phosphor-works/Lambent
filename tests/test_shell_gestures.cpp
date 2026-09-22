@@ -5,7 +5,7 @@
 // splits it into swiped / pinched for QML. A fake daemon on the test's
 // private session bus emits the signal by well-known name.
 
-#include "shell/ShellGestures.h"
+#include "ShellGestures.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>

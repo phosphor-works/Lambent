@@ -64,7 +64,6 @@ Item {
                         root.displayDate = d;
                     }
                 }
-
             }
 
             Text {
@@ -106,9 +105,7 @@ Item {
                         root.displayDate = d;
                     }
                 }
-
             }
-
         }
 
         // Day-of-week header row
@@ -129,9 +126,7 @@ Item {
                     font.pixelSize: 10
                     font.weight: Font.Medium
                 }
-
             }
-
         }
 
         // Month grid — 6 weeks × 7 days = 42 cells.
@@ -177,9 +172,7 @@ Item {
                             ColorAnimation {
                                 duration: 100
                             }
-
                         }
-
                     }
 
                     Text {
@@ -197,13 +190,9 @@ Item {
                         hoverEnabled: true
                         Accessible.name: cellDate.getDate() + " " + Qt.formatDate(cellDate, "MMMM yyyy")
                     }
-
                 }
-
             }
-
         }
-
     }
 
     Behavior on scale {
@@ -212,14 +201,11 @@ Item {
             easing.type: Easing.OutBack
             easing.overshoot: 1.4
         }
-
     }
 
     Behavior on opacity {
         NumberAnimation {
             duration: 250
         }
-
     }
-
 }

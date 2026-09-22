@@ -6,7 +6,7 @@
 // unpublish cleanly, and the portal's two motion keys decode to the
 // reduced-motion verdict the theme expects.
 
-#include "shell/ShellMotion.h"
+#include "ShellMotion.h"
 
 #include <PhosphorAnimation/PhosphorCurve.h>
 #include <PhosphorAnimation/Profile.h>

@@ -10,7 +10,7 @@
 // emptying the entries without invoking the callback, and the
 // failed-surface path routing through onSurfaceGone into the callback.
 
-#include "shell/LayerPopoutTransport.h"
+#include "LayerPopoutTransport.h"
 
 #include <PhosphorLayer/SurfaceFactory.h>
 #include <PhosphorPopout/PopoutRequest.h>

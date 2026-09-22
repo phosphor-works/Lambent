@@ -16,7 +16,7 @@
 // The type it builds is a trivial one registered into a test-local URI, so
 // this needs neither the Phosphor.ControlCenter module nor any service.
 
-#include "shell/QmlComponentTileFactory.h"
+#include "QmlComponentTileFactory.h"
 
 #include <QQmlComponent>
 #include <QQmlEngine>

@@ -73,7 +73,6 @@ FloatingWindow {
                     color: "#a6adc8"
                     font.pixelSize: 13
                 }
-
             }
 
             Rectangle {
@@ -113,11 +112,7 @@ FloatingWindow {
                     Accessible.name: "Close settings window"
                     onClicked: root.shellState.settingsOpen = false
                 }
-
             }
-
         }
-
     }
-
 }

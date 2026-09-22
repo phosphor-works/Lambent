@@ -17,8 +17,8 @@
 // separates "this type is not in the module" from "the delegate's own imports
 // are unavailable in a unit test".
 
-#include "shell/BarController.h"
-#include "shell/QmlComponentBarWidgetFactory.h"
+#include "BarController.h"
+#include "QmlComponentBarWidgetFactory.h"
 
 #include <QFile>
 #include <QQmlComponent>
