@@ -4,7 +4,7 @@
 # Exercise production detail panels with isolated device fixtures.
 # Start a nested shell first, then run this script; call preview.state to inspect.
 set -eu
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
 NEST="${PZ_NESTED_DIR:-${XDG_RUNTIME_DIR:-/tmp/pz-nested-$(id -u)}/pz-nested${PZ_NESTED_SESSION:+-$PZ_NESTED_SESSION}}"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
@@ -23,7 +23,7 @@ if [ "${1:-run}" != run ]; then
 fi
 export XDG_CONFIG_HOME="$NEST/quick-settings-preview/config"
 mkdir -p "$XDG_CONFIG_HOME/phosphor-shell"
-cp "$REPO/scripts/nested-shell/quick-settings-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
+cp "$REPO/phosphor-shell/scripts/nested-shell/quick-settings-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
 # Enable audio writes only against an explicitly supplied nested fixture.
 case "${PIPEWIRE_RUNTIME_DIR:-}" in
     "$NEST"/*)

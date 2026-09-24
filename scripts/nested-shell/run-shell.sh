@@ -58,7 +58,7 @@
 #                                       of seeding an editable copy.
 set -eu
 
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
 RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/pz-nested-$(id -u)}"
 NEST="${PZ_NESTED_DIR:-$RUNTIME_DIR/pz-nested${PZ_NESTED_SESSION:+-$PZ_NESTED_SESSION}}"
 BUILD="${PZ_NESTED_BUILD:-build}"
@@ -132,8 +132,8 @@ fi
 if [ -z "${PZ_SHELL_NO_SEED:-}" ]; then
     SHELL_CFG="$NEST/home/config/phosphor-shell"
     mkdir -p "$SHELL_CFG"
-    cp -r "$REPO/examples/phosphor-shell/." "$SHELL_CFG/"
+    cp -r "$REPO/phosphor-shell/shell/." "$SHELL_CFG/"
     echo "seeded editable shell: $SHELL_CFG/shell.qml"
 fi
 
-exec "$REPO/scripts/nested-shell/shell.sh"
+exec "$REPO/phosphor-shell/scripts/nested-shell/shell.sh"
