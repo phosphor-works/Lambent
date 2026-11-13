@@ -11,8 +11,9 @@
 #
 # `run` stays in the foreground. Stop that process to dismiss the preview.
 set -eu
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-NEST="${PZ_NESTED_DIR:-${XDG_RUNTIME_DIR:-/tmp/pz-nested-$(id -u)}/pz-nested${PZ_NESTED_SESSION:+-$PZ_NESTED_SESSION}}"
+REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+# The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
+. "$REPO/scripts/nested-kwin/nest-dir.sh"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
     exit 1
@@ -30,5 +31,5 @@ if [ "${1:-run}" != run ]; then
 fi
 export XDG_CONFIG_HOME="$NEST/lock-preview/config"
 mkdir -p "$XDG_CONFIG_HOME/phosphor-shell"
-cp "$REPO/scripts/nested-shell/lock-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
+cp "$REPO/phosphor-shell/scripts/nested-shell/lock-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
 exec "$REPO/$BUILD/bin/phosphor-shell"

@@ -4,18 +4,19 @@
 # Production shortcut reference with fixture bindings. It never registers or
 # invokes the displayed shortcuts. Run only inside an existing nested session.
 #
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh run
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.mode --arg name=scrolling
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.profile --arg name=custom
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.query --arg text=column
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.state
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh run
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.mode --arg name=scrolling
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.profile --arg name=custom
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.query --arg text=column
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.state
 # Stop the foreground preview with Ctrl+C before restarting it.
 #
 # Capture with nested-shell/capture.sh on the original nested session bus.
 # PZ_SHORTCUTS_SCREEN optionally selects an output by name instead of primary.
 set -eu
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-NEST="${PZ_NESTED_DIR:-${XDG_RUNTIME_DIR:-/tmp/pz-nested-$(id -u)}/pz-nested${PZ_NESTED_SESSION:+-$PZ_NESTED_SESSION}}"
+REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+# The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
+. "$REPO/scripts/nested-kwin/nest-dir.sh"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
     exit 1
@@ -65,7 +66,7 @@ export PIPEWIRE_RUNTIME_DIR="$PREVIEW/runtime"
 unset PIPEWIRE_REMOTE
 export PULSE_SERVER="unix:$PREVIEW/runtime/pulse-native"
 mkdir -p "$XDG_CONFIG_HOME/phosphor-shell" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME" "$PIPEWIRE_RUNTIME_DIR"
-cp "$REPO/scripts/nested-shell/shortcuts-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
+cp "$REPO/phosphor-shell/scripts/nested-shell/shortcuts-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
 cat > "$PREVIEW/bus.conf" <<EOF
 <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>

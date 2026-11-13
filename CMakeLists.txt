@@ -1,13 +1,14 @@
 # SPDX-FileCopyrightText: 2026 fuddlesworth
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# The Phosphor shell tier. Entered from the root CMakeLists only when
-# BUILD_PHOSPHOR_SHELL is ON. It carries the phosphorctl IPC CLI; the shell
-# binary and its bundled QML tree are being rebuilt on the shell libraries in
-# phosphor-shell-libs/.
+# The Phosphor shell: the phosphor-shell binary, the phosphorctl IPC CLI,
+# the bundled shell QML tree and the shell unit tests. Entered from the
+# root CMakeLists only when BUILD_PHOSPHOR_SHELL is ON.
 #
-# This tier links nothing from the plasmazones tier, which is what lets the
-# moon workspace enforce the tier order.
+# This tier links nothing from the plasmazones tier. ShellChrome hosts the
+# surface decoration through phosphor-surface-quick (SurfaceShaderItem and
+# the org.phosphor.surface module), which is what lets the moon workspace
+# enforce the tier order.
 
 find_package(KF6Config REQUIRED)
 
@@ -229,7 +230,7 @@ target_link_libraries(phosphor-shell
         # so the binary works without the optional DATADIR install.
         phosphor_shell_exampleplugin
         # The pane rule is built with the rules library's own types
-        # and seeded over org.plasmazones.Rules.
+        # and seeded over org.phosphor_works.Placement.Rules.
         PhosphorRules::PhosphorRules
         PhosphorProtocol::PhosphorProtocol
         Qt6::Core
@@ -253,22 +254,10 @@ endif()
 
 install(TARGETS phosphor-shell DESTINATION ${KDE_INSTALL_BINDIR})
 
-# Phosphor's own mark is installed from the same assets used by its QML module.
-set(_phosphor_mark_dir ${CMAKE_SOURCE_DIR}/phosphor-shell-libs/libs/phosphor-shell-widgets/assets)
-foreach(_icon_theme hicolor hicolor-light)
-    install(FILES ${_phosphor_mark_dir}/phosphor-mark.svg
-        DESTINATION ${KDE_INSTALL_ICONDIR}/${_icon_theme}/scalable/apps
-        RENAME phosphor-shell.svg
-    )
-    install(FILES ${_phosphor_mark_dir}/phosphor-mark-symbolic.svg
-        DESTINATION ${KDE_INSTALL_ICONDIR}/${_icon_theme}/scalable/apps
-        RENAME phosphor-shell-symbolic.svg
-    )
-endforeach()
-install(FILES ${_phosphor_mark_dir}/phosphor-mark-512.png
-    DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/512x512/apps
-    RENAME phosphor-shell.png
-)
+# The shell's icon, from the pinned branding release (cmake/PhosphorDependencies.cmake).
+phosphor_fetch_dependency(branding)
+include(${branding_SOURCE_DIR}/cmake/PhosphorBranding.cmake)
+phosphor_install_brand_icons(phosphor-shell phosphor-shell)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)

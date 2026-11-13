@@ -4,18 +4,19 @@
 # Native production PolkitSurface with a preview-only agent. No Polkit/PAM
 # registration, host account changes, or real authorization is possible.
 #
-# PZ_NESTED_SESSION=review scripts/nested-shell/authentication-preview.sh run
-# PZ_NESTED_SESSION=review scripts/nested-shell/authentication-preview.sh run --example accounts --state error
-# PZ_NESTED_SESSION=review scripts/nested-shell/authentication-preview.sh call preview.show --arg example=code --arg state=ready
-# PZ_NESTED_SESSION=review scripts/nested-shell/authentication-preview.sh call preview.phase --arg name=unavailable
-# PZ_NESTED_SESSION=review scripts/nested-shell/authentication-preview.sh call preview.state
-# PZ_NESTED_SESSION=review scripts/nested-shell/authentication-preview.sh call preview.quit
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/authentication-preview.sh run
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/authentication-preview.sh run --example accounts --state error
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/authentication-preview.sh call preview.show --arg example=code --arg state=ready
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/authentication-preview.sh call preview.phase --arg name=unavailable
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/authentication-preview.sh call preview.state
+# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/authentication-preview.sh call preview.quit
 #
 # Submit "demo" (or "123456" for the code example). Other input exercises the
 # retry state. Captures and input use the existing nested compositor tooling.
 set -eu
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-NEST="${PZ_NESTED_DIR:-${XDG_RUNTIME_DIR:-/tmp/pz-nested-$(id -u)}/pz-nested${PZ_NESTED_SESSION:+-$PZ_NESTED_SESSION}}"
+REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+# The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
+. "$REPO/scripts/nested-kwin/nest-dir.sh"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
     exit 1
