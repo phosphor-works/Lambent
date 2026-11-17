@@ -69,28 +69,6 @@ Item {
     }
     Component.onCompleted: ShellChrome.decorationComponent = chromeDecoration
 
-    // Touchpad gestures (A3, the per-surface Gesture rows). Only the
-    // compositor sees them; the KWin effect reports each completed one
-    // through the daemon and ShellGestures relays it here. Three fingers
-    // are the launcher's, four the dashboard's.
-    Connections {
-        target: ShellGestures
-
-        function onSwiped(direction: string, fingers: int): void {
-            if (fingers === 3 && direction === "up" && !Popouts.isOpen("launcher"))
-                root.toggleLauncher();
-            else if (fingers === 3 && direction === "down")
-                Popouts.close(Popouts.handleFor("launcher"));
-            else if (fingers === 4 && direction === "up" && !Popouts.isOpen("dashboard"))
-                root.toggleDashboard();
-        }
-
-        function onPinched(direction: string, fingers: int): void {
-            if (fingers === 4 && direction === "expanding")
-                Popouts.close(Popouts.handleFor("dashboard"));
-        }
-    }
-
     // The wallpaper, one surface per output, and the first of the
     // per-screen surfaces because it is the bottom layer: a Background
     // panel that draws what WallpaperService resolves for its output.
@@ -1008,15 +986,14 @@ Item {
         }
     }
 
-    // Stage owns one output while its modal popout is open. Release the
-    // native transform before the closing surface leaves the controller.
+    // Stage owns one output while its modal popout is open, and closes the
+    // popout once its own close animation has released it.
     Component {
         id: dashboardComponent
 
         StageOverview {
             implicitWidth: Screen.width
             implicitHeight: Screen.height
-            screenName: Screen.name
             workspaces: Workspaces
             surfaceEffects: ShellEffects
             mapFor: index => Screen.name ? PlacementMap.forScreenDesktop(Screen.name, index) : null
@@ -1041,8 +1018,8 @@ Item {
     }
 
     // The dashboard's wire surface: `phosphorctl call dashboard.toggle`
-    // is what a compositor keybind (or the four-finger swipe's handler)
-    // binds. Same show/toggle/hide split as the launcher.
+    // is what a compositor key or gesture bind runs. Same show/toggle/hide
+    // split as the launcher.
     IpcTarget {
         target: "dashboard"
 
