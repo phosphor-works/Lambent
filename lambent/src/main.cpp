@@ -68,7 +68,6 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QIcon>
@@ -265,11 +264,8 @@ int main(int argc, char* argv[])
     // (share/lambent/), then the copy linked into this binary as the
     // Lambent.Shell QML module (lambent/shell/CMakeLists.txt), so a build
     // with neither still starts.
-    PhosphorShell::ShellLoader loader(Lambent::APP_DIR);
-    QUrl shellUrl = loader.resolve();
-    if (shellUrl.isEmpty() && QFile::exists(QStringLiteral(":/qt/qml/Lambent/Shell/shell.qml"))) {
-        shellUrl = QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/shell.qml"));
-    }
+    PhosphorShell::ShellLoader loader(Lambent::APP_DIR, QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/shell.qml")));
+    const QUrl shellUrl = loader.resolve();
     if (shellUrl.isEmpty()) {
         const QString configDir = loader.shellConfigDir();
         // Build the full diagnostic in one QString. Chaining many

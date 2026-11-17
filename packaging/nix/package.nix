@@ -18,6 +18,7 @@
   kdePackages,
   wayland,
   wayland-scanner,
+  libxkbcommon,
   vulkan-headers,
   dbus,
   pipewire,
@@ -52,11 +53,11 @@ let
       };
     }
     {
-      name = "phosphor-shell-libs-18386019f57cd9d225c1bfe5d3bd4668cba07ddb.tar.gz";
+      name = "phosphor-shell-libs-ac2adf6d443af042690bc29882ac060d92120c83.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/18386019f57cd9d225c1bfe5d3bd4668cba07ddb.tar.gz";
-        # sha256 4f93d39a3d793787007c9cb21ca7b5803837d395eb64e194b84a3ad3db5aab5e
-        hash = "sha256-T5PTmj15N4cAfJyyHKe1gDg305XrZOGUuEo609taq14=";
+        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/ac2adf6d443af042690bc29882ac060d92120c83.tar.gz";
+        # sha256 6addb9a2c36d2a8b30583177c179a0aa7d9815337a6d174f89f4da3655dcd2f6
+        hash = "sha256-at25osNtKoswWDF3wXmgqn2YFTN6bRdPifTaNlXc0vY=";
       };
     }
     {
@@ -124,10 +125,11 @@ stdenv.mkDerivation {
     # Qt declares QVulkanInstance only with the Vulkan headers present, and
     # phosphor-surfaces uses it when Qt has Vulkan, as nixpkgs' Qt does.
     vulkan-headers
-    # The shell libraries draw their icons through Kirigami, and
-    # phosphor-shell-lock uses KGuiAddons.
+    # The shell libraries draw their icons through Kirigami.
     kdePackages.kirigami
-    kdePackages.kguiaddons
+    # phosphor-shell-lock reads the keyboard layout and Caps Lock from the
+    # seat's keymap.
+    libxkbcommon
     # Lambent's own: KConfig for the quick settings' night light, and
     # KWindowSystem for the notification centre's activation tokens.
     kdePackages.kconfig
@@ -202,6 +204,8 @@ stdenv.mkDerivation {
       lgpl21Plus
       mit
       bsd2
+      # The vendored wlr-gamma-control protocol of phosphor-service-nightlight.
+      hpndSellVariant
     ];
     platforms = [
       "x86_64-linux"
