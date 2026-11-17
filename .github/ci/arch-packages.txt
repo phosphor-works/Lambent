@@ -25,8 +25,7 @@ vulkan-headers
 kirigami
 kguiaddons
 # Lambent's own: KConfig for the quick settings' night light, and
-# KWindowSystem for the compositor blur behind the bar's band and the
-# notification centre's activation tokens.
+# KWindowSystem for the notification centre's activation tokens.
 kconfig
 kwindowsystem
 # The service libraries' system interfaces: PipeWire (phosphor-service-pipewire),

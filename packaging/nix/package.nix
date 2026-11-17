@@ -129,8 +129,7 @@ stdenv.mkDerivation {
     kdePackages.kirigami
     kdePackages.kguiaddons
     # Lambent's own: KConfig for the quick settings' night light, and
-    # KWindowSystem for the compositor blur behind the bar's band and the
-    # notification centre's activation tokens.
+    # KWindowSystem for the notification centre's activation tokens.
     kdePackages.kconfig
     kdePackages.kwindowsystem
     # The service libraries' system interfaces: PipeWire, polkit-qt6, PAM, and
