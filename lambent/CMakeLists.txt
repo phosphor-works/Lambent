@@ -21,7 +21,8 @@ add_subdirectory(cli/phosphorctl)       # phosphorctl call / list / schema / sub
 # Build the bundled shell as the Lambent.Shell QML module so qmlcachegen
 # and qmlsc run at build time. The resulting static module gets linked
 # into the lambent binary below so the executable has a working default
-# that doesn't depend on a filesystem install (main.cpp's qrc fallback).
+# that doesn't depend on a filesystem install (ShellLoader's qrc fallback,
+# which main.cpp names).
 add_subdirectory(shell)
 
 # Install the example shell QML/shaders so users can copy
@@ -29,7 +30,7 @@ add_subdirectory(shell)
 # The qrc is the build-time frozen copy used as final fallback. This
 # install is the user-editable copy. ShellLoader::resolve() probes
 # GenericConfigLocation (~/.config), then GenericDataLocation (this
-# install), and main.cpp falls back to the linked-in qrc:/ copy.
+# install), then the linked-in qrc:/ copy main.cpp hands it.
 install(DIRECTORY shell/
     DESTINATION ${KDE_INSTALL_DATADIR}/lambent
     FILES_MATCHING
@@ -219,7 +220,7 @@ target_link_libraries(lambent
         # tree into the binary as a qt-qml-module resource. Two effects:
         # (1) qmlcachegen / qmlsc run at build time (faster cold start,
         # typed bindings compile to C++); (2) when no user config exists
-        # under XDG paths, main.cpp falls back to qrc:/qt/qml/Lambent/Shell
+        # under XDG paths, ShellLoader falls back to qrc:/qt/qml/Lambent/Shell
         # so the binary works without the optional DATADIR install.
         lambent_shellplugin
         # The pane rule is built with the rules library's own types
