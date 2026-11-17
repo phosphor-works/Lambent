@@ -41,7 +41,8 @@ private Q_SLOTS:
 void TestPaneRules::ruleIdIsStableAndPerAppId()
 {
     QCOMPARE(PaneRules::ruleIdFor(kAppId), PaneRules::ruleIdFor(kAppId));
-    QVERIFY(PaneRules::ruleIdFor(kAppId) != PaneRules::ruleIdFor(QStringLiteral("org.phosphor_works.Lambent.Pane.calendar")));
+    QVERIFY(PaneRules::ruleIdFor(kAppId)
+            != PaneRules::ruleIdFor(QStringLiteral("org.phosphor_works.Lambent.Pane.calendar")));
     QVERIFY(!PaneRules::ruleIdFor(kAppId).isNull());
 }
 
