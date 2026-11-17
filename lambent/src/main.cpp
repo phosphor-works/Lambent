@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "BarController.h"
-#include "DesktopStyleController.h"
 #include "ControlCenterController.h"
 #include "QuickSettingsController.h"
 #include "AirplaneController.h"
@@ -19,7 +18,6 @@
 #include "RoutingPopoutTransport.h"
 #include "ShellChrome.h"
 #include "ShellEffects.h"
-#include "ShellGestures.h"
 #include "ShellMotion.h"
 #include "SocketPopoutTransport.h"
 #include "NotificationController.h"
@@ -351,7 +349,6 @@ int main(int argc, char* argv[])
     PhosphorShellApp::ColorModeController colorMode(PhosphorTheme::AppearanceStore::create(nullptr, nullptr));
     PhosphorShellApp::StatusIconsController statusIcons(PhosphorTheme::AppearanceStore::create(nullptr, nullptr),
                                                         &quickSettings, &airplane, &notificationController);
-    PhosphorShellApp::DesktopStyleController desktopStyle;
 
     // The dashboard's media cell reads one MprisHost for the process.
     // Owned here rather than declared in QML because the dashboard popout
@@ -450,10 +447,6 @@ int main(int argc, char* argv[])
     // because Behavior bindings keep registry handles.
     PhosphorShellApp::ShellMotion shellMotion;
     shellMotion.publish();
-
-    // The compositor's touchpad gestures, relayed by the daemon; shell.qml
-    // maps them to surfaces.
-    PhosphorShellApp::ShellGestures shellGestures;
 
     // Surface packs on the chrome: the decoration tree and the pack
     // registry behind every DecorationSlot. The chain host is
@@ -599,9 +592,6 @@ int main(int argc, char* argv[])
     engine.addEngineHook([&shellMotion](QQmlEngine* qmlEngine) {
         qmlEngine->rootContext()->setContextProperty(QStringLiteral("ShellMotion"), &shellMotion);
     });
-    engine.addEngineHook([&shellGestures](QQmlEngine* qmlEngine) {
-        qmlEngine->rootContext()->setContextProperty(QStringLiteral("ShellGestures"), &shellGestures);
-    });
     engine.addEngineHook([&shellChrome](QQmlEngine* qmlEngine) {
         // A fresh engine (startup, every hot reload): the decoration
         // Component the previous shell.qml handed over belongs to the old
@@ -715,7 +705,7 @@ int main(int argc, char* argv[])
         qCCritical(lcShell) << "shell engine failed:" << reason << "— the shell is now headless until the next reload";
     });
 
-    engine.addEngineHook([&engine, &desktopStyle, &shellChrome](QQmlEngine* qmlEngine) {
+    engine.addEngineHook([&engine, &shellChrome](QQmlEngine* qmlEngine) {
         auto* appearance = qmlEngine->singletonInstance<PhosphorTheme::AppearanceStore*>(
             QStringLiteral("Phosphor.Theme"), QStringLiteral("AppearanceStore"));
         if (appearance) {
@@ -732,11 +722,9 @@ int main(int argc, char* argv[])
                         wallpaper->setAppearance(appearance->values().value(QStringLiteral("wallpapers")).toMap());
                     });
             }
-            desktopStyle.apply(appearance->values());
             shellChrome.setAppearance(appearance->values());
             QObject::connect(appearance, &PhosphorTheme::AppearanceStore::changed, qmlEngine,
-                             [appearance, &desktopStyle, &shellChrome] {
-                                 desktopStyle.apply(appearance->values());
+                             [appearance, &shellChrome] {
                                  shellChrome.setAppearance(appearance->values());
                              });
             QObject::connect(appearance, &PhosphorTheme::AppearanceStore::geometryChanged, qmlEngine, [&engine] {

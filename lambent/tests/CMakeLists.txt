@@ -45,23 +45,6 @@ target_link_libraries(test_bar_controller
 target_include_directories(test_bar_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_bar_controller COMMAND test_bar_controller)
 
-# The desktop style owner. It reaches the daemon's settings only over D-Bus,
-# which the test fakes on the private bus, so it links no plasmazones target.
-add_executable(test_desktop_style_controller
-    test_desktop_style_controller.cpp
-    ${LAMBENT_SOURCE_DIR}/src/DesktopStyleController.h
-    ${LAMBENT_SOURCE_DIR}/src/desktopstylecontroller.cpp
-)
-target_link_libraries(test_desktop_style_controller
-    PRIVATE
-        Qt6::Test
-        Qt6::DBus
-        KF6::CoreAddons
-        PhosphorProtocol::PhosphorProtocol
-)
-target_include_directories(test_desktop_style_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
-add_test(NAME test_desktop_style_controller COMMAND test_desktop_style_controller)
-
 # The quick settings and airplane suites run their fixtures on a dbus-daemon
 # of their own, started from phosphor-libs' test bus config.
 find_program(LAMBENT_DBUS_DAEMON dbus-daemon REQUIRED)
@@ -176,23 +159,6 @@ target_link_libraries(test_shell_motion
 )
 target_include_directories(test_shell_motion PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_shell_motion COMMAND test_shell_motion)
-
-# The gesture relay: the daemon's gestureReported split into swiped /
-# pinched over a fake daemon on the private bus.
-add_executable(test_shell_gestures
-    test_shell_gestures.cpp
-    ${LAMBENT_SOURCE_DIR}/src/ShellGestures.h
-    ${LAMBENT_SOURCE_DIR}/src/shellgestures.cpp
-)
-target_link_libraries(test_shell_gestures
-    PRIVATE
-        Qt6::Test
-        Qt6::Core
-        Qt6::DBus
-        PhosphorProtocol::PhosphorProtocol
-)
-target_include_directories(test_shell_gestures PRIVATE ${LAMBENT_SOURCE_DIR}/src)
-add_test(NAME test_shell_gestures COMMAND test_shell_gestures)
 
 if(TARGET PhosphorShellPicker::PhosphorShellPickerQml)
     add_executable(test_shell_appearance_entry
