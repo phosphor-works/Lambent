@@ -30,7 +30,8 @@ through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CM
 
 The Phosphor libraries are not in this repository. phosphor-libs (placement, rendering, layer-shell, animation,
 config, ipc) and phosphor-shell-libs (theme, popout, the `Phosphor.*` surfaces, the `phosphor-service-*` libraries)
-are built from the commits `cmake/LambentDependencies.cmake` pins, added with CPM as subprojects.
+are built from the commits `cmake/LambentDependencies.cmake` pins, added with CPM as subprojects. The surface
+decoration packs come from the phosphor-surface-packs commit pinned there too.
 
 - A change to a library is a pull request in that library's repository. Build Lambent against a local checkout with
   `-DCPM_phosphor-libs_SOURCE=<dir>` or `-DCPM_phosphor-shell-libs_SOURCE=<dir>`.
@@ -38,6 +39,9 @@ are built from the commits `cmake/LambentDependencies.cmake` pins, added with CP
   `cmake/LambentDependencies.cmake` and `packaging/nix/package.nix`. The phosphor-libs pin here is the one
   phosphor-shell-libs builds against, so move both when the shell libraries need a newer phosphor-libs.
 - `${PHOSPHOR_LIBS_CMAKE_DIR}` holds the shared test helpers (`PhosphorTestIsolation`, `PhosphorTestPch`).
+- The libraries keep no app paths. `main.cpp` hands them Lambent's at startup, before QML loads: the shell name
+  (`Lambent::APP_DIR`, `lambent`, from the generated `version.h`) to ShellLoader and ShellEngine, the appearance file
+  and library folder, the surface pack subdir, and ShellChrome's preset root. A new library path setting goes there.
 
 ## License
 
@@ -65,16 +69,16 @@ ctest --test-dir build -R <name>         # one test
 ```
 
 - The suite includes phosphor-libs' and phosphor-shell-libs' tests, which build as subprojects with tests on.
-- `test_shell_chrome` resolves against PlasmaZones' decoration packs and is registered only with
-  `-DLAMBENT_SURFACE_PACKS_DIR=<PlasmaZones>/plasmazones/data/surface`. CI sets it.
+- `test_shell_chrome` resolves against the pinned phosphor-surface-packs tree (`PHOSPHOR_SURFACE_PACKS_DIR`).
 - `PHOSPHOR_PW_TESTS_ALLOW_WRITE=0` keeps the PipeWire smoke test from toggling the host's real sink.
 - `scripts/nested-shell/run-shell.sh [outputs] [width height] [scale]` runs the build-tree shell in a nested headless
   wlroots compositor (labwc or sway, or `LAMBENT_NESTED_COMPOSITOR`) with its own session bus, runtime dir and XDG
   homes, under `$XDG_RUNTIME_DIR/lambent-nested` (`LAMBENT_NESTED_SESSION=<name>` for another). `ctl.sh`,
   `capture.sh` (grim) and `shell.sh` drive it, after sourcing its `env.sh`. Never run the shell, `phosphorctl` or
   D-Bus calls against the user's own session.
-- The decoration packs the shell draws are PlasmaZones' (`share/plasmazones/surface`, the path phosphor-libs'
-  `surfacePackDataSubdir()` names).
+- The decoration packs the shell draws are phosphor-surface-packs', installed to `share/phosphor-works/surface`
+  (`PHOSPHOR_SURFACE_PACKS_DATA_SUBDIR`, set as phosphor-surface's pack subdir at startup).
+  `-DLAMBENT_INSTALL_SURFACE_PACKS=OFF` leaves the install to a distribution's own package of them.
 
 ## Where things are
 
