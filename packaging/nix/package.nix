@@ -44,11 +44,11 @@ let
   # fetchurl, not fetchFromGitHub: the pin hashes the archive file itself.
   depsArchives = linkFarm "lambent-deps-archives" [
     {
-      name = "phosphor-libs-c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz";
+      name = "phosphor-libs-d41667f4005dbc1bbf3d2ce21da1655838cb6474.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-libs/archive/c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz";
-        # sha256 f072437c31f9b96e5ed43c32e55bc0e6e8c7ac7323262dbeaf871008c670e8e6
-        hash = "sha256-8HJDfDH5uW5e1Dwy5VvA5ujHrHMjJi2+r4cQCMZw6OY=";
+        url = "https://github.com/phosphor-works/phosphor-libs/archive/d41667f4005dbc1bbf3d2ce21da1655838cb6474.tar.gz";
+        # sha256 5b74faa9bf154619af64936d554b56d7a09e82d27898b34fdabe8feb2f7d8c20
+        hash = "sha256-W3T6qb8VRhmvZJNtVUtW16CegtJ4mLNP2r6P6y99jCA=";
       };
     }
     {
