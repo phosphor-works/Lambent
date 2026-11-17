@@ -1,9 +1,13 @@
 # Lambent
 
 Lambent is a desktop shell for Wayland: Qt 6, C++20 and QML. The `lambent` binary hosts the shell QML tree, its
-controllers in `src/` own the registries, services and popout transports the QML reads, and `phosphorctl` drives a
-running shell over phosphor-ipc. Application ID `org.phosphor_works.Lambent` (the `.desktop` file, AppStream id and
-icon); user files in `~/.config/lambent/`, installed data in `share/lambent/`.
+controllers in `lambent/src/` own the registries, services and popout transports the QML reads, and `phosphorctl`
+drives a running shell over phosphor-ipc. Application ID `org.phosphor_works.Lambent` (the `.desktop` file, AppStream
+id and icon); user files in `~/.config/lambent/`, installed data in `share/lambent/`.
+
+The application is in `lambent/` (`src/`, `shell/`, `cli/`, `tests/`, `data/`, entered from the root CMakeLists.txt
+through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CMakePresets.json`, `flake.nix`),
+`packaging/`, `docs/` and `scripts/`. `AGENTS.md` is this file for Codex: change both together.
 
 ## Rules
 
@@ -13,6 +17,9 @@ icon); user files in `~/.config/lambent/`, installed data in `share/lambent/`.
 - Run the tests after a change, and confirm the build has no warnings before committing.
 - Unreleased: no migration code for renamed settings, paths or IPC names. Change them directly.
 - Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `build:`, `ci:`). Stage files by name.
+- A user-visible change gets a line under `## Unreleased` in `CHANGELOG.md`.
+- `lefthook install` sets up the pre-commit hooks: clang-format and qmlformat on the staged files, and the
+  conventional-commit check. CI's lint job runs the same formatters over the files a change touches.
 
 ## The libraries
 
@@ -23,8 +30,8 @@ are built from the commits `cmake/LambentDependencies.cmake` pins, added with CP
 - A change to a library is a pull request in that library's repository. Build Lambent against a local checkout with
   `-DCPM_phosphor-libs_SOURCE=<dir>` or `-DCPM_phosphor-shell-libs_SOURCE=<dir>`.
 - After the library change merges, move the pin: VERSION, URL, FILE and SHA-256 together, in
-  `cmake/LambentDependencies.cmake` and `nix/package.nix`. The phosphor-libs pin here is the one phosphor-shell-libs
-  builds against, so move both when the shell libraries need a newer phosphor-libs.
+  `cmake/LambentDependencies.cmake` and `packaging/nix/package.nix`. The phosphor-libs pin here is the one
+  phosphor-shell-libs builds against, so move both when the shell libraries need a newer phosphor-libs.
 - `${PHOSPHOR_LIBS_CMAKE_DIR}` holds the shared test helpers (`PhosphorTestIsolation`, `PhosphorTestPch`).
 
 ## License
@@ -66,12 +73,14 @@ ctest --test-dir build -R <name>         # one test
 
 | Area | Files |
 | --- | --- |
-| Process and engine setup | `src/main.cpp` |
-| Bar, popouts, panes | `src/barcontroller.cpp`, `src/layerpopouttransport.cpp`, `src/routingpopouttransport.cpp`, `src/socketpopouttransport.cpp`, `src/panepopouttransport.cpp`, `src/panerules.cpp` |
-| Chrome and motion | `src/shellchrome.cpp` (decoration packs), `src/shellmotion.cpp`, `src/shellgestures.cpp`, `src/shelleffects.cpp` |
-| Controllers | `src/*controller.cpp`: control center, quick settings, status icons, launcher, OSD, toasts, notifications, polkit, picker, desktop style, color mode, airplane |
-| Shell QML | `shell/` (the bundled tree, linked in as `Phosphor.Shell.Example` and installed to `share/lambent/`) |
-| CLI | `cli/phosphorctl/` |
-| Tests | `tests/` |
-| Desktop integration | `data/`: the `.desktop` file, AppStream metadata, the `lambent.service` user unit |
+| Process and engine setup | `lambent/src/main.cpp` |
+| Bar, popouts, panes | `lambent/src/barcontroller.cpp`, `layerpopouttransport.cpp`, `routingpopouttransport.cpp`, `socketpopouttransport.cpp`, `panepopouttransport.cpp`, `panerules.cpp` |
+| Chrome and motion | `lambent/src/shellchrome.cpp` (decoration packs), `shellmotion.cpp`, `shellgestures.cpp`, `shelleffects.cpp` |
+| Controllers | `lambent/src/*controller.cpp`: control center, quick settings, status icons, launcher, OSD, toasts, notifications, polkit, picker, desktop style, color mode, airplane |
+| Shell QML | `lambent/shell/` (the bundled tree, linked in as the `Lambent.Shell` module at `qrc:/qt/qml/Lambent/Shell/` and installed to `share/lambent/`) |
+| CLI | `lambent/cli/phosphorctl/` |
+| Tests | `lambent/tests/` |
+| Desktop integration | `lambent/data/`: the `.desktop` file, AppStream metadata, the `lambent.service` user unit |
+| Dependency pins | `cmake/LambentDependencies.cmake`, repeated in `packaging/nix/package.nix` |
+| Nested test session | `scripts/nested-shell/` |
 | Design | `docs/design/` |

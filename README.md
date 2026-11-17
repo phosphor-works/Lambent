@@ -43,6 +43,12 @@ systemctl --user enable --now lambent.service
 `scripts/nested-shell/run-shell.sh` runs the build-tree shell inside a nested KWin session, using a built PlasmaZones
 checkout beside this one.
 
+## Contributing
+
+The application is in `lambent/`: the C++ in `src/`, the bundled shell tree in `shell/`, `phosphorctl` in `cli/`, the
+tests in `tests/`. See `CONTRIBUTING.md` for the code style, the pre-commit hooks and how to send a change, and
+`CHANGELOG.md` for what changed.
+
 ## License
 
 GPL-3.0-or-later. See `LICENSE`.
