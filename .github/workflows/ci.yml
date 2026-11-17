@@ -4,14 +4,15 @@
 # Pull request and main CI, the same shape as PlasmaZones' and the libraries':
 #
 #   * Arch: configure, build and test from the dev preset, with a compiler
-#     cache. PlasmaZones' surface packs come from a sparse checkout of it, for
-#     test_shell_chrome.
+#     cache.
 #   * Lint: clang-format and qmlformat over the files a change touches.
 #   * Nix: `nix flake check` (the package with its whole test suite in the
 #     sandbox), the package itself and the dev shell, on x86_64 and aarch64.
 #
 # phosphor-libs and phosphor-shell-libs come from the commits
-# cmake/LambentDependencies.cmake pins, built with their tests on.
+# cmake/LambentDependencies.cmake pins, built with their tests on, and the
+# decoration packs test_shell_chrome resolves against from the
+# phosphor-surface-packs commit it pins.
 
 name: CI
 
@@ -87,18 +88,8 @@ jobs:
             ccache-arch-${{ github.ref_name }}-
             ccache-arch-main-
 
-      # The decoration packs ship with PlasmaZones, and test_shell_chrome
-      # resolves against them. Only that directory is checked out.
-      - name: Check out PlasmaZones' surface packs
-        uses: actions/checkout@v7
-        with:
-          repository: phosphor-works/PlasmaZones
-          path: plasmazones-src
-          sparse-checkout: plasmazones/data/surface
-          sparse-checkout-cone-mode: true
-
       - name: Configure
-        run: cmake --preset dev -DLAMBENT_SURFACE_PACKS_DIR="$GITHUB_WORKSPACE/plasmazones-src/plasmazones/data/surface"
+        run: cmake --preset dev
 
       - name: Build
         run: cmake --build --preset dev
