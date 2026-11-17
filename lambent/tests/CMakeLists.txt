@@ -196,7 +196,7 @@ if(TARGET PhosphorShellPicker::PhosphorShellPickerQml)
         PhosphorShellWidgetsQml PhosphorShellWidgetsQmlplugin
         PhosphorThemeQml PhosphorThemeQmlplugin
         PhosphorShellQml PhosphorShellQmlplugin
-        phosphor_shell_example phosphor_shell_exampleplugin
+        lambent_shell lambent_shellplugin
     )
     add_test(NAME test_shell_appearance_entry COMMAND test_shell_appearance_entry)
 endif()

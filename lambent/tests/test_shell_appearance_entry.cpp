@@ -256,7 +256,7 @@ private Q_SLOTS:
             QStringLiteral("ShellChrome"),
             QVariantMap{{QStringLiteral("decorationComponent"), QVariant::fromValue<QObject*>(nullptr)}});
         QQmlComponent component(&engine,
-                                QUrl(QStringLiteral("qrc:/qt/qml/Phosphor/Shell/Example/AppearanceSurfaces.qml")));
+                                QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/AppearanceSurfaces.qml")));
         std::unique_ptr<QObject> object(component.create());
         QVERIFY2(object, qPrintable(component.errorString()));
         const auto panels = object->findChildren<PhosphorShell::PanelWindow*>();
