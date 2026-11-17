@@ -120,10 +120,10 @@ stdenv.mkDerivation {
     # phosphor-shell-lock uses KGuiAddons.
     kdePackages.kirigami
     kdePackages.kguiaddons
-    # Lambent's own: KConfig and KCoreAddons for the desktop-style controller,
-    # KWindowSystem for the compositor blur behind the bar's band.
+    # Lambent's own: KConfig for the quick settings' night light, and
+    # KWindowSystem for the compositor blur behind the bar's band and the
+    # notification centre's activation tokens.
     kdePackages.kconfig
-    kdePackages.kcoreaddons
     kdePackages.kwindowsystem
     # The service libraries' system interfaces: PipeWire, polkit-qt6, PAM, and
     # ddcutil for phosphor-service-brightness's optional external-monitor
@@ -132,9 +132,6 @@ stdenv.mkDerivation {
     kdePackages.polkit-qt-1
     pam
     ddcutil
-    # phosphor-libs' optional lookups, so it builds the code they switch on.
-    kdePackages.kglobalaccel
-    kdePackages.plasma-activities
   ];
 
   # dbus-run-session gives each test a private session bus
