@@ -41,7 +41,7 @@ when the shell is absent. Shell actions whose bindings are managed externally
 are marked “Set in compositor” without inventing defaults.
 
 For isolated native visual checks, start a nested compositor and run
-`phosphor-shell/scripts/nested-shell/shortcuts-preview.sh run` with the same `PZ_NESTED_SESSION`.
+`scripts/nested-shell/shortcuts-preview.sh run` with the same `PZ_NESTED_SESSION`.
 Its `preview` IPC target controls mode, custom/unassigned bindings, service
 states, palette, viewport size and text scaling. Stop the foreground preview
 with Ctrl+C before restarting it. See the implementation record for validation.
@@ -183,7 +183,7 @@ and logind; notification content stays hidden. The browser study still uses
 `demo` and simulated power actions for design review.
 
 For native visual review, start the nested harness and run
-`phosphor-shell/scripts/nested-shell/lock-preview.sh run` with the same `PZ_NESTED_SESSION`.
+`scripts/nested-shell/lock-preview.sh run` with the same `PZ_NESTED_SESSION`.
 It renders the production QML with fixture authentication, media and power
 services in its own config directory. `lock-preview.sh call preview.state`
 reports the state without exposing the password. The virtual compositor

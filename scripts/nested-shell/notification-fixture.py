@@ -16,7 +16,7 @@ bus = dbus.SessionBus()
 def notification_server():
     return dbus.Interface(bus.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications'), 'org.freedesktop.Notifications')
 from pathlib import Path
-image = sys.argv[1] if len(sys.argv) > 1 else str(Path(__file__).resolve().parents[2] / 'shell/wallpapers/wallpaper.png')
+image = sys.argv[1] if len(sys.argv) > 1 else str(Path(__file__).resolve().parents[2] / 'lambent/shell/wallpapers/wallpaper.png')
 long_message = 'I went through the notification mockup this morning. The grouped cards are much easier to scan, especially when a chat gets busy while a build is running.\n\nA few details to try: keep the app icon visible beside the sender, let attached pictures keep their original proportions, and make the full message available without opening the app. A short preview should still leave room for Reply and Dismiss.\n\nI also attached the wallpaper study so we can check the same notification against dark glass, Paper, and Ember. The softer violet background should work with all three. Let me know what you think when you have a moment.'
 events = []
 observed_replies = []

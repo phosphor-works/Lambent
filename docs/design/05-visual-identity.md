@@ -75,7 +75,7 @@ Interface and number font families are independently configurable. Empty
 values use `FontFaces` (Manrope and JetBrains Mono where available, named
 fallbacks otherwise). No font binaries are bundled by this redesign.
 
-Settings live in `~/.config/phosphor-shell/appearance.json`, as a versioned
+Settings live in `~/.config/lambent/appearance.json`, as a versioned
 JSON object containing `settings`. Apply and import/export validate the
 whole document before replacing the current appearance. Apply writes atomically.
 Colors, fonts and widget moves update live. Bar geometry changes rebuild the
@@ -104,7 +104,7 @@ atomic replacements of `shell.qml`.
 
 ## Verification
 
-Use `phosphor-shell/scripts/nested-shell/` with its private IPC socket. Headless screenshots
+Use `scripts/nested-shell/` with its private IPC socket. Headless screenshots
 show shell surfaces; they bypass the compositor's window transforms. Verify
 Stage's native preview using the visible nested compositor window as well.
 The implementation record distinguishes these captures from unit tests and

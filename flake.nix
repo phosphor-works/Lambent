@@ -26,7 +26,7 @@
 
       package =
         pkgs: withTests:
-        pkgs.callPackage ./nix/package.nix {
+        pkgs.callPackage ./packaging/nix/package.nix {
           inherit version withTests;
           src = self;
         };

@@ -17,7 +17,7 @@
 set -eu
 
 # These scripts live two levels below the repository root, where the build
-# tree and the shell QML are. The nested KWin session comes from PlasmaZones'
+# tree and lambent/ are. The nested KWin session comes from PlasmaZones'
 # harness: its effect and daemon, from a built PlasmaZones checkout, draw and
 # place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -67,7 +67,7 @@ export PHOSPHOR_SOCKET="$NEST/phosphor.sock"
 # So say so. Non-destructive on purpose: re-seeding automatically would
 # throw away exactly the live edits the seed exists to allow.
 SEEDED_SHELL="$NEST/home/config/lambent/shell.qml"
-REPO_SHELL="$REPO/shell/shell.qml"
+REPO_SHELL="$REPO/lambent/shell/shell.qml"
 if [ -f "$SEEDED_SHELL" ] && [ "$REPO_SHELL" -nt "$SEEDED_SHELL" ]; then
     echo "note: $REPO_SHELL is newer than the seeded copy; this restart will run the OLD one." >&2
     echo "      cp '$REPO_SHELL' '$SEEDED_SHELL'   (or re-run run-shell.sh to reseed everything)" >&2

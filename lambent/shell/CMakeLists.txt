@@ -14,7 +14,7 @@
 #      resolve() picks up the qrc:/ url when filesystem search misses).
 #
 # The same files are still installed to ${DATADIR}/lambent/ by the
-# install(DIRECTORY) in the top-level CMakeLists.txt, so users can `cp -r` and edit.
+# install(DIRECTORY) in lambent/CMakeLists.txt, so users can `cp -r` and edit.
 # Both paths read identical source — the resource is the build-time
 # snapshot, the installed files are the user-editable copy.
 

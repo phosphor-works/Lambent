@@ -67,7 +67,7 @@ tests cover defaults, persistence, service loss, invalid requests, no-op
 signals and action dispatch. The hardware-free preview exercises all nine
 icons, every menu, overflow, the all-hidden fallback and the unavailable,
 pending and error scenarios through
-`phosphor-shell/scripts/nested-shell/quick-settings-preview.sh run-status`.
+`scripts/nested-shell/quick-settings-preview.sh run-status`.
 
 The full shell-enabled build passes with 606 executed tests and one opt-in GPU
 orientation test skipped. The shell-disabled build also passes. Native captures
@@ -93,7 +93,7 @@ captures cover all six panels, the status-icon settings and individual menus,
 light and dark materials, and a 360×480 panel at 115% text size with Ember.
 There are no QML binding errors in that run. Service actions use fixtures and wallpaper changes
 stay in the preview's private configuration. Start a nested session, then use
-`phosphor-shell/scripts/nested-shell/quick-settings-preview.sh run` with its
+`scripts/nested-shell/quick-settings-preview.sh run` with its
 `PZ_NESTED_SESSION`. For example, `call preview.batteryState --arg name=low`
 opens the low-battery case, and `call preview.state` reports the loaded panel.
 
@@ -131,7 +131,7 @@ screen targeting, QML interactions and shell composition. Native nested-KWin
 captures cover all three modes, custom chords, Phosphor/Paper/Ember and a
 640×480 viewport with 115% text. The real registered daemon action opens and
 closes the native reference, and stopping the shell restores the old overlay.
-The reusable `phosphor-shell/scripts/nested-shell/shortcuts-preview.sh` fixture uses private
+The reusable `scripts/nested-shell/shortcuts-preview.sh` fixture uses private
 session/system buses and config paths for repeatable rendering checks.
 
 ## Quick settings details (mockups-v3)
@@ -189,7 +189,7 @@ arrivals, action validation, expiry pause, rich rendering and preview privacy.
 Final integration adds Wayland activation tokens ahead of app actions, rounded
 attachment images, compositor blur on arrival surfaces, and `notify.toggle` /
 `notify.hide` shortcuts. The reusable nested fixture at
-`phosphor-shell/scripts/nested-shell/notification-fixture.py` supports rich messages, replacement,
+`scripts/nested-shell/notification-fixture.py` supports rich messages, replacement,
 expiry, bursts, actions and reply observation on the private session bus.
 
 Validation: the build succeeds and all 541 CTest targets pass (540 executed, the
@@ -264,7 +264,7 @@ where the identity does.
 
 - One phase per commit on the `shell-design` worktree, each green on the full
   `ctest` run under `dbus-run-session` and checked live in the nested
-  harness (`phosphor-shell/scripts/nested-shell/run-shell.sh` on a private socket) before
+  harness (`scripts/nested-shell/run-shell.sh` on a private socket) before
   it was committed.
 - Daemon surfaces first, shell consumers second, with a capability latch in
   the shell for every new daemon method so an older daemon degrades rather
@@ -340,7 +340,7 @@ rewritten for the shell that exists.
   masked input, retry, busy and release states. The short layout keeps the
   whole unlock card visible and scrolls optional content into view on focus.
 
-`phosphor-shell/scripts/nested-shell/lock-preview.sh run` uses production components with
+`scripts/nested-shell/lock-preview.sh run` uses production components with
 fixture auth/media/power services on an existing nested session. Its config
 and IPC socket are separate from the ordinary shell. Use the same script
 with `call preview.result --arg name=error`, `success` or `idle` to drive the

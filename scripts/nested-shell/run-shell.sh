@@ -71,7 +71,7 @@
 set -eu
 
 # These scripts live two levels below the repository root, where the build
-# tree and the shell QML are. The nested KWin session comes from PlasmaZones'
+# tree and lambent/ are. The nested KWin session comes from PlasmaZones'
 # harness: its effect and daemon, from a built PlasmaZones checkout, draw and
 # place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -160,7 +160,7 @@ fi
 if [ -z "${PZ_SHELL_NO_SEED:-}" ]; then
     SHELL_CFG="$NEST/home/config/lambent"
     mkdir -p "$SHELL_CFG"
-    cp -r "$REPO/shell/." "$SHELL_CFG/"
+    cp -r "$REPO/lambent/shell/." "$SHELL_CFG/"
     echo "seeded editable shell: $SHELL_CFG/shell.qml"
 fi
 
