@@ -27,7 +27,7 @@ Q_LOGGING_CATEGORY(lcPaneTransport, "phosphorshell.popout.pane")
 // Handle prefix, disjoint from the layer ("popout-") and socket ("socket-")
 // transports': RoutingPopoutTransport keys close-routing on the handle.
 constexpr QLatin1String kPaneHandlePrefix("pane-");
-constexpr QLatin1String kPaneAppIdPrefix("org.phosphor.shell.pane.");
+constexpr QLatin1String kPaneAppIdPrefix("org.phosphor_works.Lambent.Pane.");
 // A pane that is not placed by an engine is not a pane. PlacementMapScreen
 // reports -1 for "no daemon / screen not listed"; 0..2 are the modes.
 constexpr int kNoMode = -1;

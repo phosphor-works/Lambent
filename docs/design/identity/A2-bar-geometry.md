@@ -379,7 +379,7 @@ A popout is **either a pane or a transient, and which one is decided by weight**
 where it was summoned from. §4.7 defines both classes; this section is about the pane.
 
 A **pane** is a real toplevel that the engine places. The shell opens a surface with
-`appId = org.phosphor.shell.pane.<name>` (control-center, notifications, media,
+`appId = org.phosphor_works.Lambent.Pane.<name>` (control-center, notifications, media,
 map-expanded) and lets the daemon place it the way the screen's mode places windows. The
 bundled rule set carries one window rule per pane. A pane is therefore not a `PopupWindow`
 anchored to a chip; it is a window with a rule, and the only thing tying it to the bar is a

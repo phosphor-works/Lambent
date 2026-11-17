@@ -5,7 +5,7 @@
 # Screenshot one nested output as a PNG — the harness's eyes for
 # headless / AI-driven runs.
 #
-#   phosphor-shell/scripts/nested-shell/capture.sh [OutputName] <out.png>
+#   scripts/nested-shell/capture.sh [OutputName] <out.png>
 #
 # OutputName defaults to Virtual-0 (kwin's first --virtual output; in
 # PZ_NESTED_VISIBLE mode list the real names with
@@ -20,11 +20,14 @@
 # the pixels; committed geometry still comes from dump-windows.sh.
 set -eu
 
-# This tier's scripts live three levels below the repository root, and the
-# nested-kwin harness, the build tree and the shell QML all hang off that root.
-REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+# These scripts live two levels below the repository root, where the build
+# tree and the shell QML are. The nested KWin session comes from PlasmaZones'
+# harness: its effect and daemon, from a built PlasmaZones checkout, draw and
+# place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
 # The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$REPO/scripts/nested-kwin/nest-dir.sh"
+. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
 
 case $# in
     1) OUTPUT="Virtual-0"; OUT="$1" ;;
@@ -33,10 +36,10 @@ case $# in
 esac
 
 if [ ! -f "$NEST/env.sh" ]; then
-    echo "no nested session in $NEST (run phosphor-shell/scripts/nested-shell/run-shell.sh first)" >&2
+    echo "no nested session in $NEST (run scripts/nested-shell/run-shell.sh first)" >&2
     exit 1
 fi
 # shellcheck disable=SC1091
 . "$NEST/env.sh"
 
-exec python3 "$REPO/scripts/nested-kwin/capture-output.py" "$OUTPUT" "$OUT"
+exec python3 "$PLASMAZONES/scripts/nested-kwin/capture-output.py" "$OUTPUT" "$OUT"

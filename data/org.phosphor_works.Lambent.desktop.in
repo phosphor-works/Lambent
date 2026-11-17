@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Lambent
+GenericName=Desktop Shell
+Comment=A desktop shell with a bar that shows the live window layout
+Exec=@KDE_INSTALL_FULL_BINDIR@/lambent
+Icon=org.phosphor_works.Lambent
+NoDisplay=true
+X-KDE-StartupNotify=false
+Categories=Qt;System;
+Keywords=shell;bar;panel;launcher;notifications;wayland;

@@ -7,9 +7,10 @@
 # preview.statusState accepts everyday, meeting, travel, desktop, all, empty,
 # unavailable, pending and error. Settings persist inside the preview sandbox.
 set -eu
-REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
 # The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$REPO/scripts/nested-kwin/nest-dir.sh"
+. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
     exit 1
@@ -20,7 +21,7 @@ case "${WAYLAND_DISPLAY:-}" in
     pznested*) ;;
     *) echo "Quick-settings preview requires the nested compositor." >&2; exit 1 ;;
 esac
-BUILD="${PZ_NESTED_BUILD:-build}"
+BUILD="${LAMBENT_BUILD:-build}"
 export PHOSPHOR_SOCKET="$NEST/quick-settings-preview.sock"
 case "${1:-run}" in
     run) STATUS_PAGE= ;;
@@ -34,21 +35,21 @@ case "${1:-run}" in
     *) exec "$REPO/$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@" ;;
 esac
 export XDG_CONFIG_HOME="$NEST/quick-settings-preview/config"
-mkdir -p "$XDG_CONFIG_HOME/phosphor-shell"
-cp "$REPO/phosphor-shell/scripts/nested-shell/quick-settings-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
-cp "$REPO/phosphor-shell/scripts/nested-shell/StatusIconsPreviewController.qml" "$XDG_CONFIG_HOME/phosphor-shell/StatusIconsPreviewController.qml"
-cp "$REPO/phosphor-shell/shell/wallpapers/spectrum.png" "$XDG_CONFIG_HOME/phosphor-shell/fixture-spectrum.png"
-cp "$REPO/phosphor-shell/shell/wallpapers/ember.png" "$XDG_CONFIG_HOME/phosphor-shell/fixture-ember.png"
+mkdir -p "$XDG_CONFIG_HOME/lambent"
+cp "$REPO/scripts/nested-shell/quick-settings-preview.qml" "$XDG_CONFIG_HOME/lambent/shell.qml"
+cp "$REPO/scripts/nested-shell/StatusIconsPreviewController.qml" "$XDG_CONFIG_HOME/lambent/StatusIconsPreviewController.qml"
+cp "$REPO/shell/wallpapers/spectrum.png" "$XDG_CONFIG_HOME/lambent/fixture-spectrum.png"
+cp "$REPO/shell/wallpapers/ember.png" "$XDG_CONFIG_HOME/lambent/fixture-ember.png"
 if [ -n "$STATUS_PAGE" ]; then
     sed -i -e 's/property string view: "wifi"/property string view: "status-icons"/' \
         -e 's/property bool statusVisible: false/property bool statusVisible: true/' \
         -e "s/property string statusPage: \"settings\"/property string statusPage: \"$STATUS_PAGE\"/" \
-        "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
+        "$XDG_CONFIG_HOME/lambent/shell.qml"
 fi
 # Enable audio writes only against an explicitly supplied nested fixture.
 case "${PIPEWIRE_RUNTIME_DIR:-}" in
     "$NEST"/*)
-        sed -i 's/property bool audioEnabled: false/property bool audioEnabled: true/' "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
+        sed -i 's/property bool audioEnabled: false/property bool audioEnabled: true/' "$XDG_CONFIG_HOME/lambent/shell.qml"
         ;;
 esac
-exec "$REPO/$BUILD/bin/phosphor-shell"
+exec "$REPO/$BUILD/bin/lambent"

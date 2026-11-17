@@ -285,7 +285,7 @@ Item {
         notificationCount: NotificationRegistry.unreadCount
     }
 
-    // The session menu, per docs/phosphor-shell-design/mockups-v2/power-menu.svg:
+    // The session menu, per docs/design/mockups-v2/power-menu.svg:
     // a screen-centred Modal popout over a dimmed scrim, which is what
     // PhosphorPopout.ExclusiveMode.Modal means to the controller. It closes
     // every cooperative popout and suppresses new ones while it is up.

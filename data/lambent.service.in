@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# The shell runs as a user service bound to the graphical session, the way
+# PlasmaZones' daemon does. Enable it with
+#   systemctl --user enable lambent.service
+# in a session whose compositor Lambent should draw the shell for.
+[Unit]
+Description=Lambent desktop shell
+Documentation=https://github.com/phosphor-works/Lambent
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=@KDE_INSTALL_FULL_BINDIR@/lambent
+Restart=on-failure
+RestartSec=5
+Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target

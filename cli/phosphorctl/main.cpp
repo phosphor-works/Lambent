@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2026 fuddlesworth
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// phosphorctl, typed JSON-over-Unix-socket CLI for phosphor-shell.
+// phosphorctl, typed JSON-over-Unix-socket CLI for Lambent.
 // Subcommand dispatcher: top-level QCommandLineParser identifies
 // `call`, `list`, `schema`, `subscribe` and hands off to the
 // matching handler in subcommand_*.cpp. Each handler builds its own
 // nested QCommandLineParser for the subcommand-specific flags.
 //
-// Phase 1.4 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
+// Phase 1.4 deliverable per docs/design/04-implementation-plan.md.
 
 #include "client.h"
 #include "subcommands.h"

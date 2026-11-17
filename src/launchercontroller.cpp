@@ -126,7 +126,7 @@ LauncherController::LauncherController(QObject* parent)
         m_model->addProvider(provider);
     }
     QSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-                           + QStringLiteral("/phosphor-shell/launcher.ini"),
+                           + QStringLiteral("/lambent/launcher.ini"),
                        QSettings::IniFormat);
     m_pinnedIds = settings
                       .value(QStringLiteral("Launcher/pinnedApplications"),
@@ -202,7 +202,7 @@ void LauncherController::togglePinned(const QString& id)
         m_pinnedIds.append(id);
     }
     QSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-                           + QStringLiteral("/phosphor-shell/launcher.ini"),
+                           + QStringLiteral("/lambent/launcher.ini"),
                        QSettings::IniFormat);
     settings.setValue(QStringLiteral("Launcher/pinnedApplications"), m_pinnedIds);
     Q_EMIT pinnedApplicationsChanged();

@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 fuddlesworth
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# One-command phosphor-shell harness: a nested kwin_wayland session with
+# One-command Lambent harness: a nested kwin_wayland session with
 # the BUILD-TREE shell running inside it, drivable over the shell's own
 # IPC socket and screenshot-able for eyes-free (AI) test loops. No
 # install or logout. Configuration and shell IPC are isolated. Hardware
@@ -10,7 +10,7 @@
 # fixtures when testing actions such as suspend, reboot or shutdown.
 #
 # Usage:
-#   phosphor-shell/scripts/nested-shell/run-shell.sh [output-count] [width height] [scale]
+#   scripts/nested-shell/run-shell.sh [output-count] [width height] [scale]
 #
 # The arguments go to scripts/nested-kwin/run-nested.sh, which passes scale
 # only to a visible window (PZ_NESTED_VISIBLE). A headless output stays at
@@ -27,17 +27,17 @@
 #      (compositor log: $PZ_NESTED_DIR/compositor.log) and waits for the
 #      session's env.sh;
 #   2. seeds the example shell tree into the nested config home
-#      ($NEST/home/config/phosphor-shell/), so shell.qml edits there
+#      ($NEST/home/config/lambent/), so shell.qml edits there
 #      hot-reload without rebuilds — seeding must happen AFTER the
 #      launcher, whose home wipe would otherwise eat the seed;
-#   3. starts the build-tree phosphor-shell inside the session via
+#   3. starts the build-tree lambent inside the session via
 #      shell.sh (shell log: $NEST/shell.log, IPC socket:
 #      $NEST/phosphor.sock).
 #
 # Follow-ups (each sources env.sh itself):
-#   phosphor-shell/scripts/nested-shell/ctl.sh call power.toggle     # drive the shell
-#   phosphor-shell/scripts/nested-shell/capture.sh Virtual-1 out.png # look at it
-#   phosphor-shell/scripts/nested-shell/shell.sh                     # restart after a rebuild
+#   scripts/nested-shell/ctl.sh call power.toggle     # drive the shell
+#   scripts/nested-shell/capture.sh Virtual-1 out.png # look at it
+#   scripts/nested-shell/shell.sh                     # restart after a rebuild
 #
 # Screenshot note: the shell is an ordinary layer-shell CLIENT, composited on
 # the normal path, so its bars, popouts and toasts appear in captures, and
@@ -58,22 +58,31 @@
 #   PZ_NESTED_DIR / PZ_NESTED_SOCKET  — per-worktree isolation, as for
 #                                       nested-kwin (defaults pz-nested/
 #                                       pznested).
-#   PZ_NESTED_BUILD                   — configure dir other than build/.
+#   LAMBENT_BUILD                     — Lambent's build dir other than build/.
+#   LAMBENT_PLASMAZONES               — the PlasmaZones checkout whose
+#                                       nested-kwin harness, effect and daemon
+#                                       run the session (default ../PlasmaZones,
+#                                       built in its build/).
+#   PZ_NESTED_BUILD                   — that checkout's build dir other than
+#                                       build/, as for nested-kwin.
 #   PZ_NESTED_VISIBLE                 — windowed nested compositor.
 #   PZ_SHELL_NO_SEED                  — keep the qrc-baked example instead
 #                                       of seeding an editable copy.
 set -eu
 
-# This tier's scripts live three levels below the repository root, and the
-# nested-kwin harness, the build tree and the shell QML all hang off that root.
-REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+# These scripts live two levels below the repository root, where the build
+# tree and the shell QML are. The nested KWin session comes from PlasmaZones'
+# harness: its effect and daemon, from a built PlasmaZones checkout, draw and
+# place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
 # The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$REPO/scripts/nested-kwin/nest-dir.sh"
-BUILD="${PZ_NESTED_BUILD:-build}"
+. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
+BUILD="${LAMBENT_BUILD:-build}"
 
-if [ ! -x "$REPO/$BUILD/bin/phosphor-shell" ]; then
-    echo "no $BUILD/bin/phosphor-shell — configure with -DBUILD_PHOSPHOR_SHELL=ON and build first" >&2
+if [ ! -x "$REPO/$BUILD/bin/lambent" ]; then
+    echo "no $BUILD/bin/lambent ; build Lambent first (cmake --workflow --preset dev)" >&2
     exit 1
 fi
 
@@ -96,7 +105,7 @@ PRE_ENV_ID=$(stat -c '%i %Y' "$NEST/env.sh" 2>/dev/null || echo none)
 # session's log before the launcher's guard refuses. Its stderr is a regular
 # file, so the launcher does not copy the output a second time.
 LAUNCH_LOG=$(mktemp "$RUNTIME_DIR/pz-nested-launch.XXXXXX")
-"$REPO/scripts/nested-kwin/run-nested.sh" "$@" > "$LAUNCH_LOG" 2>&1 &
+"$PLASMAZONES/scripts/nested-kwin/run-nested.sh" "$@" > "$LAUNCH_LOG" 2>&1 &
 LAUNCHER_PID=$!
 
 # env.sh is written just before kwin starts, so a FRESH env.sh is the
@@ -149,9 +158,9 @@ fi
 # falls back to its qrc-baked copy, which works but cannot be edited, so
 # the hot-reload loop — the point of the harness — has nothing to watch.
 if [ -z "${PZ_SHELL_NO_SEED:-}" ]; then
-    SHELL_CFG="$NEST/home/config/phosphor-shell"
+    SHELL_CFG="$NEST/home/config/lambent"
     mkdir -p "$SHELL_CFG"
-    cp -r "$REPO/phosphor-shell/shell/." "$SHELL_CFG/"
+    cp -r "$REPO/shell/." "$SHELL_CFG/"
     echo "seeded editable shell: $SHELL_CFG/shell.qml"
 fi
 

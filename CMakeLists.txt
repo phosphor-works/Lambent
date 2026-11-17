@@ -1,41 +1,139 @@
 # SPDX-FileCopyrightText: 2026 fuddlesworth
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# The Phosphor shell: the phosphor-shell binary, the phosphorctl IPC CLI,
-# the bundled shell QML tree and the shell unit tests. Entered from the
-# root CMakeLists only when BUILD_PHOSPHOR_SHELL is ON.
+# Lambent: a QML desktop shell for Wayland. The lambent binary, the phosphorctl
+# IPC CLI, the bundled shell QML tree and the shell's tests.
 #
-# This tier links nothing from the plasmazones tier. ShellChrome hosts the
-# surface decoration through phosphor-surface-quick (SurfaceShaderItem and
-# the org.phosphor.surface module), which is what lets the moon workspace
-# enforce the tier order.
+# Built on phosphor-libs and phosphor-shell-libs, from the commits
+# cmake/LambentDependencies.cmake pins, added with CPM as subprojects.
+# -DCPM_phosphor-libs_SOURCE=<dir> and -DCPM_phosphor-shell-libs_SOURCE=<dir>
+# build local checkouts of them instead.
 
-find_package(KF6Config REQUIRED)
+cmake_minimum_required(VERSION 3.16)
+
+project(Lambent VERSION 0.1.0 LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC_PARALLEL_ENABLED ON)
+
+option(CMAKE_UNITY_BUILD "Enable unity builds for faster compilation" ON)
+set(CMAKE_UNITY_BUILD_BATCH_SIZE 16 CACHE STRING "Number of sources per unity batch")
+option(ENABLE_PCH "Share one precompiled header across the test targets" ON)
+
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
+set(QT_MIN_VERSION "6.10.0")
+set(KF_MIN_VERSION "6.26.0")
+
+find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+
+# Must come before KDECMakeSettings, which includes CTest and locks
+# BUILD_TESTING into the cache as ON.
+option(BUILD_TESTING "Build the test suite" OFF)
+
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings NO_POLICY_SCOPE)
+include(FeatureSummary)
+
+# Makes the Qt6 string-literal rule a compile error rather than a convention:
+# no implicit const char* to QString.
+add_compile_definitions(QT_NO_CAST_FROM_ASCII)
+
+include(KDEClangFormat)
+file(GLOB_RECURSE LAMBENT_CLANG_FORMAT_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/cli/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cli/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h
+)
+kde_clang_format(${LAMBENT_CLANG_FORMAT_FILES})
+
+# The shell draws its icons through Kirigami and has no Qt-only fallback.
+# KConfig and KCoreAddons for the desktop-style controller (kwinrc, and the
+# installed window decoration plugin's metadata).
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami Config CoreAddons)
+
+# The Qt lookups every library and the shell share, at this scope before the
+# libraries are added: an IMPORTED target belongs to the directory that found
+# it, so targets found inside a library subproject (Qt's private modules, XKB
+# through GuiPrivate) would be invisible here, and Qt's QML plugin dependency
+# walk warns for each one.
+find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS
+    Concurrent
+    Core
+    DBus
+    Gui
+    Qml
+    Quick
+    QuickControls2
+    ShaderTools
+    Svg
+    WaylandClient
+    Widgets
+)
+if(QT_KNOWN_POLICY_QTP0001)
+    qt_policy(SET QTP0001 NEW)
+endif()
+if(QT_KNOWN_POLICY_QTP0004)
+    qt_policy(SET QTP0004 NEW)
+endif()
+foreach(_lambent_private GuiPrivate ShaderToolsPrivate QuickPrivate WaylandClientPrivate)
+    if(NOT TARGET Qt6::${_lambent_private})
+        find_package(Qt6${_lambent_private} CONFIG REQUIRED)
+    endif()
+endforeach()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# The Phosphor libraries
+# ═══════════════════════════════════════════════════════════════════════════════
+
+include(cmake/LambentDependencies.cmake)
+lambent_add_phosphor_libraries()
+
+# Lambent's version and application ID, for main.cpp.
+configure_file(src/version.h.in "${PROJECT_BINARY_DIR}/generated/version.h" @ONLY)
+include_directories("${PROJECT_BINARY_DIR}/generated")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# The shell
+# ═══════════════════════════════════════════════════════════════════════════════
 
 add_subdirectory(cli/phosphorctl)       # phosphorctl call / list / schema / subscribe
 
 # Build the bundled example shell as a Qt QML module so qmlcachegen
 # and qmlsc run at build time. The resulting static module gets linked
-# into the phosphor-shell binary below so the
+# into the lambent binary below so the
 # executable has a working default that doesn't depend on filesystem
 # install (qrc fallback in ShellLoader::resolve()).
 add_subdirectory(shell)
 
-# Install the example phosphor-shell QML/shaders so users can copy
+# Install the example shell QML/shaders so users can copy
 # them into their config dir and edit. Same source as the qrc above.
 # The qrc is the build-time frozen copy used as final fallback. This
 # install is the user-editable copy. ShellLoader::resolve() probes
 # GenericConfigLocation (~/.config), then GenericDataLocation (this
 # install), then qrc:/ (linked-in fallback) in that order.
 install(DIRECTORY shell/
-    DESTINATION ${KDE_INSTALL_DATADIR}/phosphor-shell
+    DESTINATION ${KDE_INSTALL_DATADIR}/lambent
     FILES_MATCHING
         PATTERN "*.qml"
         PATTERN "*.frag"
         PATTERN "*.glsl"
 )
 
-add_executable(phosphor-shell
+add_executable(lambent
     src/main.cpp
     # The bar's IBarWidgetFactory registry owner + the generic
     # QML-component factory. First production owner of a UI-seam
@@ -119,7 +217,7 @@ add_executable(phosphor-shell
     src/pickercontroller.cpp
 )
 
-target_link_libraries(phosphor-shell
+target_link_libraries(lambent
     PRIVATE
         Qt6::QuickControls2
         KF6::ConfigCore
@@ -246,23 +344,46 @@ target_link_libraries(phosphor-shell
 # so, rather than the whole shell tier failing to configure.
 find_package(KF6WindowSystem QUIET)
 if(KF6WindowSystem_FOUND)
-    target_link_libraries(phosphor-shell PRIVATE KF6::WindowSystem)
-    target_compile_definitions(phosphor-shell PRIVATE PHOSPHOR_SHELL_HAVE_KWINDOWSYSTEM)
+    target_link_libraries(lambent PRIVATE KF6::WindowSystem)
+    target_compile_definitions(lambent PRIVATE PHOSPHOR_SHELL_HAVE_KWINDOWSYSTEM)
 else()
     message(STATUS "KF6WindowSystem not found: the Phosphor bar band gets no compositor blur")
 endif()
 
-install(TARGETS phosphor-shell DESTINATION ${KDE_INSTALL_BINDIR})
+install(TARGETS lambent DESTINATION ${KDE_INSTALL_BINDIR})
 
-# The shell's icon, from the pinned branding release (cmake/PlasmaZonesDependencies.cmake).
-plasmazones_fetch_dependency(branding)
+# Desktop integration, under the application ID org.phosphor_works.Lambent:
+# the .desktop file and AppStream metadata, and the systemd user unit a session
+# starts the shell through.
+configure_file(data/org.phosphor_works.Lambent.desktop.in
+               "${PROJECT_BINARY_DIR}/org.phosphor_works.Lambent.desktop" @ONLY)
+install(FILES "${PROJECT_BINARY_DIR}/org.phosphor_works.Lambent.desktop" DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES data/org.phosphor_works.Lambent.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
+if(NOT DEFINED KDE_INSTALL_SYSTEMDUSERUNITDIR)
+    set(KDE_INSTALL_SYSTEMDUSERUNITDIR "${KDE_INSTALL_LIBDIR}/systemd/user")
+endif()
+configure_file(data/lambent.service.in "${PROJECT_BINARY_DIR}/lambent.service" @ONLY)
+install(FILES "${PROJECT_BINARY_DIR}/lambent.service" DESTINATION ${KDE_INSTALL_SYSTEMDUSERUNITDIR})
+
+# The icon, from the pinned branding release (cmake/LambentDependencies.cmake),
+# installed under the application ID.
+lambent_fetch_dependency(branding)
 include(${branding_SOURCE_DIR}/cmake/PhosphorBranding.cmake)
-phosphor_install_brand_icons(phosphor-shell phosphor-shell)
+phosphor_install_brand_icons(org.phosphor_works.Lambent lambent)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-# Aggregate target for the moon workspace: `cmake --build build --target phosphor-shell-tier`.
-include(PhosphorTier)
-phosphor_tier_target(phosphor-shell-tier)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Finish
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if(BUILD_TESTING AND ENABLE_PCH)
+    include(PhosphorTestPch)
+    phosphor_share_test_pch()
+endif()
+
+feature_summary(WHAT REQUIRED_PACKAGES_FOUND REQUIRED_PACKAGES_NOT_FOUND
+                     OPTIONAL_PACKAGES_FOUND OPTIONAL_PACKAGES_NOT_FOUND
+                FATAL_ON_MISSING_REQUIRED_PACKAGES)

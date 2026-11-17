@@ -45,7 +45,7 @@ bool sameValue(const QVariant& a, const QVariant& b)
 }
 DesktopStyleController::DesktopStyleController(QObject* parent)
     : DesktopStyleController(configPath(QStringLiteral("kwinrc")),
-                             configPath(QStringLiteral("phosphor-shell/desktop-style-session.json")),
+                             configPath(QStringLiteral("lambent/desktop-style-session.json")),
                              QString(Service::Name),
                              KPluginMetaData::findPluginById(QStringLiteral("org.kde.kdecoration3"), Library).isValid(),
                              QDBusConnection::sessionBus(), parent)

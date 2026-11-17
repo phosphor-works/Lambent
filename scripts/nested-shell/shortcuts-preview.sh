@@ -4,19 +4,20 @@
 # Production shortcut reference with fixture bindings. It never registers or
 # invokes the displayed shortcuts. Run only inside an existing nested session.
 #
-# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh run
-# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.mode --arg name=scrolling
-# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.profile --arg name=custom
-# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.query --arg text=column
-# PZ_NESTED_SESSION=review phosphor-shell/scripts/nested-shell/shortcuts-preview.sh call preview.state
+# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh run
+# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.mode --arg name=scrolling
+# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.profile --arg name=custom
+# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.query --arg text=column
+# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.state
 # Stop the foreground preview with Ctrl+C before restarting it.
 #
 # Capture with nested-shell/capture.sh on the original nested session bus.
 # PZ_SHORTCUTS_SCREEN optionally selects an output by name instead of primary.
 set -eu
-REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
 # The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$REPO/scripts/nested-kwin/nest-dir.sh"
+. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
     exit 1
@@ -31,7 +32,7 @@ if [ ! -S "${XDG_RUNTIME_DIR:?}/$WAYLAND_DISPLAY" ]; then
     echo "The nested compositor socket is not available." >&2
     exit 1
 fi
-BUILD="${PZ_NESTED_BUILD:-build}"
+BUILD="${LAMBENT_BUILD:-build}"
 case "$BUILD" in
     /*) ;;
     *) BUILD="$REPO/$BUILD" ;;
@@ -44,8 +45,8 @@ if [ "$#" -gt 1 ]; then
     echo "usage: shortcuts-preview.sh [run | phosphorctl arguments]" >&2
     exit 1
 fi
-if [ ! -x "$BUILD/bin/phosphor-shell" ]; then
-    echo "Build phosphor-shell with the shell libraries enabled first." >&2
+if [ ! -x "$BUILD/bin/lambent" ]; then
+    echo "Build Lambent first (cmake --workflow --preset dev)." >&2
     exit 1
 fi
 if [ -S "$PHOSPHOR_SOCKET" ] && "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" call preview.state >/dev/null 2>&1; then
@@ -65,8 +66,8 @@ export XDG_STATE_HOME="$PREVIEW/state"
 export PIPEWIRE_RUNTIME_DIR="$PREVIEW/runtime"
 unset PIPEWIRE_REMOTE
 export PULSE_SERVER="unix:$PREVIEW/runtime/pulse-native"
-mkdir -p "$XDG_CONFIG_HOME/phosphor-shell" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME" "$PIPEWIRE_RUNTIME_DIR"
-cp "$REPO/phosphor-shell/scripts/nested-shell/shortcuts-preview.qml" "$XDG_CONFIG_HOME/phosphor-shell/shell.qml"
+mkdir -p "$XDG_CONFIG_HOME/lambent" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME" "$PIPEWIRE_RUNTIME_DIR"
+cp "$REPO/scripts/nested-shell/shortcuts-preview.qml" "$XDG_CONFIG_HOME/lambent/shell.qml"
 cat > "$PREVIEW/bus.conf" <<EOF
 <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
@@ -85,4 +86,4 @@ exec dbus-run-session --config-file="$PREVIEW/bus.conf" -- bash -c '
     unset DBUS_STARTER_ADDRESS DBUS_STARTER_BUS_TYPE
     export DBUS_SYSTEM_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS"
     exec "$@"
-' shortcuts-preview "$BUILD/bin/phosphor-shell"
+' shortcuts-preview "$BUILD/bin/lambent"

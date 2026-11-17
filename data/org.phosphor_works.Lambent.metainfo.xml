@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 fuddlesworth
+  SPDX-License-Identifier: CC0-1.0
+-->
+<component type="desktop-application">
+  <id>org.phosphor_works.Lambent</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Lambent</name>
+  <summary>A desktop shell with a bar that shows the live window layout</summary>
+
+  <description>
+    <p>
+      Lambent is a desktop shell for Wayland, written in QML. Its bar draws
+      the windows of each screen as they are placed, and its popouts open
+      where the window placement engine puts them, the way windows do.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>A bar with a live map of the window layout, workspaces, a clock and a system tray</li>
+      <li>A control center with quick settings for audio, network, Bluetooth and brightness</li>
+      <li>An application launcher, notifications with a history, and on-screen displays</li>
+      <li>A lock screen and a PolicyKit authentication prompt</li>
+      <li>A shell tree in QML that you can copy into your configuration and edit</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">org.phosphor_works.Lambent.desktop</launchable>
+
+  <categories>
+    <category>System</category>
+  </categories>
+
+  <keywords>
+    <keyword>shell</keyword>
+    <keyword>bar</keyword>
+    <keyword>panel</keyword>
+    <keyword>launcher</keyword>
+    <keyword>wayland</keyword>
+  </keywords>
+
+  <url type="homepage">https://github.com/phosphor-works/Lambent</url>
+  <url type="bugtracker">https://github.com/phosphor-works/Lambent/issues</url>
+  <url type="vcs-browser">https://github.com/phosphor-works/Lambent</url>
+
+  <developer id="io.github.fuddlesworth">
+    <name>fuddlesworth</name>
+  </developer>
+
+  <content_rating type="oars-1.1" />
+
+  <provides>
+    <binary>lambent</binary>
+    <binary>phosphorctl</binary>
+  </provides>
+</component>

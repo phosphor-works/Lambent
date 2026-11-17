@@ -1,0 +1,77 @@
+# Lambent
+
+Lambent is a desktop shell for Wayland: Qt 6, C++20 and QML. The `lambent` binary hosts the shell QML tree, its
+controllers in `src/` own the registries, services and popout transports the QML reads, and `phosphorctl` drives a
+running shell over phosphor-ipc. Application ID `org.phosphor_works.Lambent` (the `.desktop` file, AppStream id and
+icon); user files in `~/.config/lambent/`, installed data in `share/lambent/`.
+
+## Rules
+
+- Do what has been asked, nothing more. Solve the root cause; no workarounds, TODOs or "for now" hacks.
+- Never run `cmake --install` into the system or `sudo`. The user installs.
+- Read a file before editing it. Never save working files in the repository root.
+- Run the tests after a change, and confirm the build has no warnings before committing.
+- Unreleased: no migration code for renamed settings, paths or IPC names. Change them directly.
+- Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `build:`, `ci:`). Stage files by name.
+
+## The libraries
+
+The Phosphor libraries are not in this repository. phosphor-libs (placement, rendering, layer-shell, animation,
+config, ipc) and phosphor-shell-libs (theme, popout, the `Phosphor.*` surfaces, the `phosphor-service-*` libraries)
+are built from the commits `cmake/LambentDependencies.cmake` pins, added with CPM as subprojects.
+
+- A change to a library is a pull request in that library's repository. Build Lambent against a local checkout with
+  `-DCPM_phosphor-libs_SOURCE=<dir>` or `-DCPM_phosphor-shell-libs_SOURCE=<dir>`.
+- After the library change merges, move the pin: VERSION, URL, FILE and SHA-256 together, in
+  `cmake/LambentDependencies.cmake` and `nix/package.nix`. The phosphor-libs pin here is the one phosphor-shell-libs
+  builds against, so move both when the shell libraries need a newer phosphor-libs.
+- `${PHOSPHOR_LIBS_CMAKE_DIR}` holds the shared test helpers (`PhosphorTestIsolation`, `PhosphorTestPch`).
+
+## License
+
+- Every file that can hold a comment starts with `SPDX-FileCopyrightText: 2026 fuddlesworth` and
+  `SPDX-License-Identifier: GPL-3.0-or-later`. AppStream metadata is `CC0-1.0`. JSON carries no header.
+
+## C++ and QML
+
+- C++20, `#pragma once`, `explicit` single-argument constructors, `override` on virtuals. Members `m_camelCase`.
+- `Q_EMIT`, `Q_SIGNALS:`, `Q_SLOTS:`. Emit a signal only when the value changed. Parent ownership for QObjects,
+  `std::unique_ptr` or `QPointer` otherwise.
+- `QT_NO_CAST_FROM_ASCII` is on: `QStringLiteral` for constants and paths, `QLatin1String` for comparisons and JSON
+  keys. A raw literal is a compile error.
+- The shell has no translation catalog; its strings are plain literals.
+- QML: Qt Quick 6, typed properties over `var`, `required property` for mandatory ones, bindings over JS assignments.
+  Every QML file of a module is listed in its `qt_add_qml_module`.
+- User-facing text (the `.desktop` file, AppStream metadata, UI strings) is plain prose: no em dash between clauses,
+  no semicolon joining sentences, no spaced hyphen as a dash.
+
+## Build and test
+
+```sh
+cmake --workflow --preset dev            # configure into build/, build, test
+ctest --test-dir build -R <name>         # one test
+```
+
+- The suite includes phosphor-libs' and phosphor-shell-libs' tests, which build as subprojects with tests on.
+- `test_shell_chrome` resolves against PlasmaZones' decoration packs and is registered only with
+  `-DLAMBENT_SURFACE_PACKS_DIR=<PlasmaZones>/plasmazones/data/surface`. CI sets it.
+- `PHOSPHOR_PW_TESTS_ALLOW_WRITE=0` keeps the PipeWire smoke test from toggling the host's real sink.
+- `scripts/nested-shell/run-shell.sh` runs the build-tree shell in a nested KWin session from a built PlasmaZones
+  checkout (`LAMBENT_PLASMAZONES`, default `../PlasmaZones`). `ctl.sh`, `capture.sh` and `shell.sh` drive it. Never
+  run the shell, `phosphorctl` or D-Bus calls against the user's own session.
+- The decoration packs the shell draws are PlasmaZones' (`share/plasmazones/surface`, the path phosphor-libs'
+  `surfacePackDataSubdir()` names).
+
+## Where things are
+
+| Area | Files |
+| --- | --- |
+| Process and engine setup | `src/main.cpp` |
+| Bar, popouts, panes | `src/barcontroller.cpp`, `src/layerpopouttransport.cpp`, `src/routingpopouttransport.cpp`, `src/socketpopouttransport.cpp`, `src/panepopouttransport.cpp`, `src/panerules.cpp` |
+| Chrome and motion | `src/shellchrome.cpp` (decoration packs), `src/shellmotion.cpp`, `src/shellgestures.cpp`, `src/shelleffects.cpp` |
+| Controllers | `src/*controller.cpp`: control center, quick settings, status icons, launcher, OSD, toasts, notifications, polkit, picker, desktop style, color mode, airplane |
+| Shell QML | `shell/` (the bundled tree, linked in as `Phosphor.Shell.Example` and installed to `share/lambent/`) |
+| CLI | `cli/phosphorctl/` |
+| Tests | `tests/` |
+| Desktop integration | `data/`: the `.desktop` file, AppStream metadata, the `lambent.service` user unit |
+| Design | `docs/design/` |
