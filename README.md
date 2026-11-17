@@ -19,8 +19,8 @@ Without one the bar shows no window map and popouts open at their anchors.
 
 Needs CMake 3.25, Qt 6.10 with its private headers, extra-cmake-modules, Wayland and the Vulkan headers, KF6 Kirigami,
 GuiAddons, Config and WindowSystem, libpipewire, polkit-qt6 and PAM. The first configure downloads the
-pinned phosphor-libs, phosphor-shell-libs and branding archives (`cmake/LambentDependencies.cmake`) into
-`.cache/cpm`.
+pinned phosphor-libs, phosphor-shell-libs, phosphor-surface-packs and branding archives
+(`cmake/LambentDependencies.cmake`) into `.cache/cpm`.
 
 ```sh
 cmake --workflow --preset dev
@@ -28,9 +28,12 @@ cmake --workflow --preset dev
 
 That configures into `build/`, builds Lambent and the libraries, and runs the tests. To build against local checkouts
 of the libraries, add `-DCPM_phosphor-libs_SOURCE=/path/to/phosphor-libs` and
-`-DCPM_phosphor-shell-libs_SOURCE=/path/to/phosphor-shell-libs` to the configure. `test_shell_chrome` resolves against
-PlasmaZones' decoration packs: add `-DLAMBENT_SURFACE_PACKS_DIR=/path/to/PlasmaZones/plasmazones/data/surface` to run
-it.
+`-DCPM_phosphor-shell-libs_SOURCE=/path/to/phosphor-shell-libs` to the configure.
+
+The surface decoration packs the bar and popouts draw come from
+[phosphor-surface-packs](https://github.com/phosphor-works/phosphor-surface-packs) and install to
+`share/phosphor-works/surface`, where every app of the suite finds them. A distribution that packages them once for all
+apps configures with `-DLAMBENT_INSTALL_SURFACE_PACKS=OFF`.
 
 ## Run
 

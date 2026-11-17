@@ -3,7 +3,7 @@
 //
 // ShellChrome turns the decoration tree the daemon publishes into the
 // stage list SurfaceDecoration draws, one stage per installed pack in a
-// surface's enabled chain, against the decoration packs PlasmaZones ships (LAMBENT_SURFACE_PACKS_DIR).
+// surface's enabled chain, against the pinned phosphor-surface-packs tree (LAMBENT_SURFACE_PACKS_DIR).
 
 #include "ShellChrome.h"
 
@@ -46,8 +46,8 @@ QString treeJson(const QString& path, const QStringList& chain, const QVariantMa
 /// one), which is exactly where ShellChrome's store scans.
 bool writeSurfacePreset(const QString& presetId, const QString& packId, const QVariantMap& params)
 {
-    const QString dir = PhosphorShaders::userPresetDirectory(PhosphorShaders::standardUserPresetRoot(),
-                                                             PhosphorShaders::ShaderFamily::Surface);
+    const QString dir =
+        PhosphorShaders::userPresetDirectory(ShellChrome::userPresetRoot(), PhosphorShaders::ShaderFamily::Surface);
     if (!QDir().mkpath(dir)) {
         return false;
     }
@@ -145,8 +145,8 @@ private Q_SLOTS:
     // instead.
     void cleanup()
     {
-        const QString dir = PhosphorShaders::userPresetDirectory(PhosphorShaders::standardUserPresetRoot(),
-                                                                 PhosphorShaders::ShaderFamily::Surface);
+        const QString dir =
+            PhosphorShaders::userPresetDirectory(ShellChrome::userPresetRoot(), PhosphorShaders::ShaderFamily::Surface);
         for (const QString& id : {QStringLiteral("shell-wide"), QStringLiteral("shell-live")}) {
             QFile::remove(QDir(dir).filePath(id + QStringLiteral(".json")));
         }

@@ -18,4 +18,9 @@ inline const QString VERSION_STRING = QStringLiteral("@PROJECT_VERSION@");
 /// The application ID: the .desktop file, the AppStream id and the icon name.
 inline const QString APP_ID = QStringLiteral("org.phosphor_works.Lambent");
 
+/// The directory Lambent's files live in under each XDG config and data
+/// directory: ~/.config/lambent/, ~/.local/share/lambent/, share/lambent/.
+/// The libraries take their paths under it from Lambent.
+inline const QString APP_DIR = QStringLiteral("lambent");
+
 } // namespace Lambent

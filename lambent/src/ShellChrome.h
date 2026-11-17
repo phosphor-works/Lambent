@@ -109,8 +109,13 @@ public:
     bool setTreeJson(const QString& json);
     [[nodiscard]] const PhosphorSurfaceShaders::DecorationProfileTree& tree() const;
 
-    /// The pack directories the daemon scans, in the daemon's order.
+    /// The installed surface pack directories, lowest priority first and the
+    /// user's last: the subdir set with PhosphorSurfaceShaders::
+    /// setSurfacePackDataSubdir() under every XDG data directory.
     [[nodiscard]] static QStringList defaultPackSearchPaths();
+    /// Where the user's saved shader presets live: Lambent's own
+    /// `shader-presets` directory under the user data dir.
+    [[nodiscard]] static QString userPresetRoot();
 
 Q_SIGNALS:
     void revisionChanged();

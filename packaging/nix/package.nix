@@ -34,21 +34,21 @@
 }:
 
 let
-  # The phosphor-libs and phosphor-shell-libs commits and the branding release
-  # cmake/LambentDependencies.cmake pins, and the Luau and valijson archives the
-  # phosphor-libs commit pins in its cmake/PhosphorDependencies.cmake. The
-  # sandbox has no network, so they are
+  # The phosphor-libs, phosphor-shell-libs and phosphor-surface-packs commits
+  # and the branding release cmake/LambentDependencies.cmake pins, and the Luau
+  # and valijson archives the phosphor-libs commit pins in its
+  # cmake/PhosphorDependencies.cmake. The sandbox has no network, so they are
   # fetched here as fixed-output derivations and handed to CMake as one
   # directory (PHOSPHOR_DEPS_ARCHIVES), each under the FILE name its pin gives
   # it. CMake checks each against the pin's hash again before unpacking it.
   # fetchurl, not fetchFromGitHub: the pin hashes the archive file itself.
   depsArchives = linkFarm "lambent-deps-archives" [
     {
-      name = "phosphor-libs-c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz";
+      name = "phosphor-libs-d41667f4005dbc1bbf3d2ce21da1655838cb6474.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-libs/archive/c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz";
-        # sha256 f072437c31f9b96e5ed43c32e55bc0e6e8c7ac7323262dbeaf871008c670e8e6
-        hash = "sha256-8HJDfDH5uW5e1Dwy5VvA5ujHrHMjJi2+r4cQCMZw6OY=";
+        url = "https://github.com/phosphor-works/phosphor-libs/archive/d41667f4005dbc1bbf3d2ce21da1655838cb6474.tar.gz";
+        # sha256 5b74faa9bf154619af64936d554b56d7a09e82d27898b34fdabe8feb2f7d8c20
+        hash = "sha256-W3T6qb8VRhmvZJNtVUtW16CegtJ4mLNP2r6P6y99jCA=";
       };
     }
     {
@@ -57,6 +57,14 @@ let
         url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/18386019f57cd9d225c1bfe5d3bd4668cba07ddb.tar.gz";
         # sha256 4f93d39a3d793787007c9cb21ca7b5803837d395eb64e194b84a3ad3db5aab5e
         hash = "sha256-T5PTmj15N4cAfJyyHKe1gDg305XrZOGUuEo609taq14=";
+      };
+    }
+    {
+      name = "phosphor-surface-packs-e89d9f7bb6320eab8b6a0b3325858d2ca5356ce3.tar.gz";
+      path = fetchurl {
+        url = "https://github.com/phosphor-works/phosphor-surface-packs/archive/e89d9f7bb6320eab8b6a0b3325858d2ca5356ce3.tar.gz";
+        # sha256 fbbf0b9849d83396029bc4e310c3dcac49c08758e73d560538888e685f0a5e30
+        hash = "sha256-+78LmEnYM5YCm8TjEMPcrEnAh1jnPVYFOIiOaF8KXjA=";
       };
     }
     {
