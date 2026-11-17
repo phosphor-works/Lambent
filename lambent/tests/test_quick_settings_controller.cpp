@@ -12,6 +12,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
+#include <QDir>
 #include <QProcess>
 #include <QSaveFile>
 #include <QScopeGuard>
@@ -234,8 +235,11 @@ private Q_SLOTS:
     void initTestCase()
     {
         qDBusRegisterMetaType<QList<QVariantMap>>();
-        m_daemon.start(QStringLiteral("dbus-daemon"),
-                       {QStringLiteral("--session"), QStringLiteral("--nofork"), QStringLiteral("--print-address=1")});
+        // A private bus from the test bus config, not --session: that reads the
+        // system's session.conf, which a build sandbox (Nix) does not have.
+        m_daemon.start(QStringLiteral(LAMBENT_DBUS_DAEMON),
+                       {QStringLiteral("--config-file=" LAMBENT_TEST_BUS_CONFIG), QStringLiteral("--nofork"),
+                        QStringLiteral("--print-address=1")});
         QVERIFY(m_daemon.waitForReadyRead());
         m_address = QString::fromUtf8(m_daemon.readLine()).trimmed();
     }

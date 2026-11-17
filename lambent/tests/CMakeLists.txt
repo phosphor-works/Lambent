@@ -62,6 +62,14 @@ target_link_libraries(test_desktop_style_controller
 target_include_directories(test_desktop_style_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_desktop_style_controller COMMAND test_desktop_style_controller)
 
+# The quick settings and airplane suites run their fixtures on a dbus-daemon
+# of their own, started from phosphor-libs' test bus config.
+find_program(LAMBENT_DBUS_DAEMON dbus-daemon REQUIRED)
+set(LAMBENT_TEST_BUS_CONFIG "${PHOSPHOR_LIBS_CMAKE_DIR}/test-session-bus.conf")
+if(NOT EXISTS "${LAMBENT_TEST_BUS_CONFIG}")
+    message(FATAL_ERROR "phosphor-libs has no ${LAMBENT_TEST_BUS_CONFIG}")
+endif()
+
 add_executable(test_quick_settings_controller
     test_quick_settings_controller.cpp
     ${LAMBENT_SOURCE_DIR}/src/QuickSettingsController.h
@@ -69,6 +77,8 @@ add_executable(test_quick_settings_controller
 )
 target_link_libraries(test_quick_settings_controller PRIVATE Qt6::Test Qt6::Core Qt6::DBus KF6::ConfigCore)
 target_include_directories(test_quick_settings_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
+target_compile_definitions(test_quick_settings_controller PRIVATE
+    LAMBENT_DBUS_DAEMON="${LAMBENT_DBUS_DAEMON}" LAMBENT_TEST_BUS_CONFIG="${LAMBENT_TEST_BUS_CONFIG}")
 add_test(NAME test_quick_settings_controller COMMAND test_quick_settings_controller)
 
 add_executable(test_airplane_controller
@@ -79,6 +89,8 @@ add_executable(test_airplane_controller
 target_link_libraries(test_airplane_controller PRIVATE Qt6::Test Qt6::DBus
     PhosphorServiceNetwork::PhosphorServiceNetwork
     PhosphorServiceBluetooth::PhosphorServiceBluetooth)
+target_compile_definitions(test_airplane_controller PRIVATE
+    LAMBENT_DBUS_DAEMON="${LAMBENT_DBUS_DAEMON}" LAMBENT_TEST_BUS_CONFIG="${LAMBENT_TEST_BUS_CONFIG}")
 add_test(NAME test_airplane_controller COMMAND test_airplane_controller)
 
 add_executable(test_color_mode_controller
