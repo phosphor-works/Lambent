@@ -24,7 +24,9 @@
 #include "ToastController.h"
 
 #include <PhosphorShellLauncher/LauncherModel.h>
+#include <PhosphorShellPicker/AppearanceLibrary.h>
 #include <PhosphorShellPicker/RetintController.h>
+#include <PhosphorSurface/SurfacePackLocation.h>
 #include <PhosphorTheme/AppearanceStore.h>
 #include <PhosphorShell/ShellGlobal.h>
 #include <PhosphorTheme/PaletteStore.h>
@@ -65,6 +67,7 @@
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -74,6 +77,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickStyle>
+#include <QStandardPaths>
 #include <QUrl>
 
 #include <memory>
@@ -134,6 +138,18 @@ int main(int argc, char* argv[])
     if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
         QQuickStyle::setStyle(QStringLiteral("Basic"));
     }
+
+    // The libraries keep no paths of their own: Lambent's files live under
+    // its own directory in the XDG config and data dirs, and the decoration
+    // packs where phosphor-surface-packs installs them for every app. Set
+    // before anything creates the stores or QML resolves a pack.
+    PhosphorSurfaceShaders::setSurfacePackDataSubdir(QStringLiteral(LAMBENT_SURFACE_PACKS_DATA_SUBDIR));
+    PhosphorTheme::AppearanceStore::setSingletonPath(
+        QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
+            .filePath(Lambent::APP_DIR + QStringLiteral("/appearance.json")));
+    PhosphorShellPicker::AppearanceLibrary::setSingletonDirectory(
+        QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+            .filePath(Lambent::APP_DIR + QStringLiteral("/appearance")));
 
     // Guarantee named freedesktop icons resolve (bar widgets use
     // Kirigami.Icon → QIcon::fromTheme). On a desktop session the platform
@@ -249,7 +265,7 @@ int main(int argc, char* argv[])
     // (share/lambent/), then the copy linked into this binary as the
     // Lambent.Shell QML module (lambent/shell/CMakeLists.txt), so a build
     // with neither still starts.
-    PhosphorShell::ShellLoader loader(QStringLiteral("lambent"));
+    PhosphorShell::ShellLoader loader(Lambent::APP_DIR);
     QUrl shellUrl = loader.resolve();
     if (shellUrl.isEmpty() && QFile::exists(QStringLiteral(":/qt/qml/Lambent/Shell/shell.qml"))) {
         shellUrl = QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/shell.qml"));
@@ -465,6 +481,7 @@ int main(int argc, char* argv[])
         PhosphorShell::ShellEngine::Deps{
             .surfaceFactory = &factory,
             .screenProvider = screenProvider.get(),
+            .shellName = Lambent::APP_DIR,
         },
         &app);
 
