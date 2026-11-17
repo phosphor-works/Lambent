@@ -45,8 +45,7 @@ bool sameValue(const QVariant& a, const QVariant& b)
 }
 DesktopStyleController::DesktopStyleController(QObject* parent)
     : DesktopStyleController(configPath(QStringLiteral("kwinrc")),
-                             configPath(QStringLiteral("lambent/desktop-style-session.json")),
-                             QString(Service::Name),
+                             configPath(QStringLiteral("lambent/desktop-style-session.json")), QString(Service::Name),
                              KPluginMetaData::findPluginById(QStringLiteral("org.kde.kdecoration3"), Library).isValid(),
                              QDBusConnection::sessionBus(), parent)
 {
