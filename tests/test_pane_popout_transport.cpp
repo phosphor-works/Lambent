@@ -182,7 +182,7 @@ QQuickItem* TestPanePopoutTransport::hostOf(PhosphorShell::FloatingWindow* windo
 
 void TestPanePopoutTransport::appIdIsThePanePrefixPlusThePopoutId()
 {
-    QCOMPARE(PanePopoutTransport::appIdFor(kPopout), QStringLiteral("org.phosphor.shell.pane.control-center"));
+    QCOMPARE(PanePopoutTransport::appIdFor(kPopout), QStringLiteral("org.phosphor_works.Lambent.Pane.control-center"));
 }
 
 void TestPanePopoutTransport::opensOneToplevelWithThePaneIdentity()
@@ -193,7 +193,7 @@ void TestPanePopoutTransport::opensOneToplevelWithThePaneIdentity()
 
     PhosphorShell::FloatingWindow* window = m_transport->windowFor(handle);
     QVERIFY(window);
-    QCOMPARE(window->appId(), QStringLiteral("org.phosphor.shell.pane.control-center"));
+    QCOMPARE(window->appId(), QStringLiteral("org.phosphor_works.Lambent.Pane.control-center"));
     QVERIFY(window->isWindowVisible());
     QVERIFY(window->quickWindow());
     QCOMPARE(window->windowWidth(), 380);

@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# The Arch packages CI installs to configure, build and test Lambent, and the
+# phosphor-libs and phosphor-shell-libs trees it builds. One package per line.
+# A comment after `#` is ignored.
+base-devel
+git
+ccache
+cmake
+ninja
+extra-cmake-modules
+qt6-base
+qt6-declarative
+qt6-shadertools
+qt6-svg
+qt6-wayland
+wayland
+wayland-protocols
+# Qt declares QVulkanInstance only when the Vulkan headers are present, and
+# phosphor-libs' phosphor-surfaces uses it wherever Qt was built with Vulkan.
+vulkan-headers
+# KF6: the libraries draw their icons through Kirigami, and phosphor-shell-lock
+# uses KGuiAddons. KGlobalAccel and PlasmaActivities are
+# optional lookups in phosphor-libs, installed so CI builds what they switch on.
+kirigami
+kguiaddons
+# Lambent's own: KConfig and KCoreAddons for the desktop-style controller, and
+# KWindowSystem for the compositor blur behind the bar's band.
+kconfig
+kcoreaddons
+kwindowsystem
+kglobalaccel
+plasma-activities
+# The service libraries' system interfaces: PipeWire (phosphor-service-pipewire),
+# polkit-qt6 (phosphor-service-polkit), PAM (phosphor-service-lock) and ddcutil
+# (phosphor-service-brightness's optional external-monitor backend).
+libpipewire
+polkit-qt6
+pam
+ddcutil
+# The offscreen and Wayland tests' runtime.
+mesa
+# A real font family, so the theme's font tests resolve an installed face
+# rather than skipping on fontconfig's aliases.
+ttf-dejavu
+# The tray tests' fixture (libs/phosphor-shell-bar/tests/tray-fixture.py), a
+# set of real StatusNotifierItem apps on the test's private bus.
+python-dbus
+python-gobject

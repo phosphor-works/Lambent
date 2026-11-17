@@ -22,7 +22,7 @@ using namespace PhosphorRules;
 using namespace PhosphorShellApp;
 
 namespace {
-const QString kAppId = QStringLiteral("org.phosphor.shell.pane.control-center");
+const QString kAppId = QStringLiteral("org.phosphor_works.Lambent.Pane.control-center");
 }
 
 class TestPaneRules : public QObject
@@ -41,7 +41,7 @@ private Q_SLOTS:
 void TestPaneRules::ruleIdIsStableAndPerAppId()
 {
     QCOMPARE(PaneRules::ruleIdFor(kAppId), PaneRules::ruleIdFor(kAppId));
-    QVERIFY(PaneRules::ruleIdFor(kAppId) != PaneRules::ruleIdFor(QStringLiteral("org.phosphor.shell.pane.calendar")));
+    QVERIFY(PaneRules::ruleIdFor(kAppId) != PaneRules::ruleIdFor(QStringLiteral("org.phosphor_works.Lambent.Pane.calendar")));
     QVERIFY(!PaneRules::ruleIdFor(kAppId).isNull());
 }
 
@@ -69,7 +69,7 @@ void TestPaneRules::controlCenterRuleMatchesOnlyThePane()
 
     // A sibling pane does not inherit the control center's placement.
     WindowQuery sibling;
-    sibling.appId = QStringLiteral("org.phosphor.shell.pane.control-center-2");
+    sibling.appId = QStringLiteral("org.phosphor_works.Lambent.Pane.control-center-2");
     QVERIFY(!rule.match.evaluate(sibling));
 }
 

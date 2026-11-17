@@ -407,7 +407,7 @@ QString LayerPopoutTransport::openSurface(const PhosphorPopout::PopoutRequest& r
     } else {
         role.keyboard = PhosphorLayer::KeyboardInteractivity::OnDemand;
     }
-    role.scopePrefix = QStringLiteral("phosphor-shell-popout");
+    role.scopePrefix = QStringLiteral("lambent-popout");
 
     PhosphorLayer::SurfaceConfig cfg;
     cfg.role = role;
@@ -415,7 +415,7 @@ QString LayerPopoutTransport::openSurface(const PhosphorPopout::PopoutRequest& r
     cfg.initialSize = screen->size();
     // Per-popout debug name so phosphorlayer's state-transition logs can tell
     // concurrent surfaces apart.
-    cfg.debugName = QStringLiteral("phosphor-shell-popout:%1").arg(request.popoutId);
+    cfg.debugName = QStringLiteral("lambent-popout:%1").arg(request.popoutId);
     cfg.contentItem = std::unique_ptr<QQuickItem>(hostItem);
 
     // Explicit parent: create(cfg, nullptr) would parent the Surface to the

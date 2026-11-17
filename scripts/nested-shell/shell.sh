@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 fuddlesworth
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# (Re)start the build-tree phosphor-shell inside the nested session.
+# (Re)start the build-tree lambent inside the nested session.
 # QML edits in the seeded config hot-reload on their own; this exists for
 # the C++ side — rebuild, run shell.sh, and the new binary is live in
 # seconds. Evicts a previous harness shell by recorded pid first, so
@@ -16,19 +16,22 @@
 #   pid:    $PZ_NESTED_DIR/shell.pid
 set -eu
 
-# This tier's scripts live three levels below the repository root, and the
-# nested-kwin harness, the build tree and the shell QML all hang off that root.
-REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
+# These scripts live two levels below the repository root, where the build
+# tree and the shell QML are. The nested KWin session comes from PlasmaZones'
+# harness: its effect and daemon, from a built PlasmaZones checkout, draw and
+# place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
 # The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$REPO/scripts/nested-kwin/nest-dir.sh"
+. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
 
 if [ ! -f "$NEST/env.sh" ]; then
-    echo "no nested session in $NEST (run phosphor-shell/scripts/nested-shell/run-shell.sh first)" >&2
+    echo "no nested session in $NEST (run scripts/nested-shell/run-shell.sh first)" >&2
     exit 1
 fi
 # shellcheck disable=SC1091
 . "$NEST/env.sh"
-BUILD="${PZ_NESTED_BUILD:-build}"
+BUILD="${LAMBENT_BUILD:-build}"
 
 # Evict by RECORDED pid, never by name: a pkill pattern would also hit a
 # shell running against the host session in another terminal.
@@ -63,14 +66,14 @@ export PHOSPHOR_SOCKET="$NEST/phosphor.sock"
 #
 # So say so. Non-destructive on purpose: re-seeding automatically would
 # throw away exactly the live edits the seed exists to allow.
-SEEDED_SHELL="$NEST/home/config/phosphor-shell/shell.qml"
-REPO_SHELL="$REPO/phosphor-shell/shell/shell.qml"
+SEEDED_SHELL="$NEST/home/config/lambent/shell.qml"
+REPO_SHELL="$REPO/shell/shell.qml"
 if [ -f "$SEEDED_SHELL" ] && [ "$REPO_SHELL" -nt "$SEEDED_SHELL" ]; then
     echo "note: $REPO_SHELL is newer than the seeded copy; this restart will run the OLD one." >&2
     echo "      cp '$REPO_SHELL' '$SEEDED_SHELL'   (or re-run run-shell.sh to reseed everything)" >&2
 fi
 
-nohup "$REPO/$BUILD/bin/phosphor-shell" > "$NEST/shell.log" 2>&1 &
+nohup "$REPO/$BUILD/bin/lambent" > "$NEST/shell.log" 2>&1 &
 echo $! > "$NEST/shell.pid"
 
 # Up means the IPC socket is bound: the shell binds it early in main, so
@@ -79,7 +82,7 @@ echo $! > "$NEST/shell.pid"
 for _ in $(seq 1 50); do
     [ -S "$PHOSPHOR_SOCKET" ] && break
     if ! kill -0 "$(cat "$NEST/shell.pid")" 2>/dev/null; then
-        echo "phosphor-shell exited at startup; its log:" >&2
+        echo "lambent exited at startup; its log:" >&2
         cat "$NEST/shell.log" >&2
         exit 1
     fi
@@ -89,4 +92,4 @@ if [ ! -S "$PHOSPHOR_SOCKET" ]; then
     echo "shell is running but never bound $PHOSPHOR_SOCKET; see $NEST/shell.log" >&2
     exit 1
 fi
-echo "phosphor-shell up (pid $(cat "$NEST/shell.pid"), log $NEST/shell.log, socket $PHOSPHOR_SOCKET)"
+echo "lambent up (pid $(cat "$NEST/shell.pid"), log $NEST/shell.log, socket $PHOSPHOR_SOCKET)"

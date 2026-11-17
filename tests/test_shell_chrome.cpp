@@ -3,7 +3,7 @@
 //
 // ShellChrome turns the decoration tree the daemon publishes into the
 // stage list SurfaceDecoration draws, one stage per installed pack in a
-// surface's enabled chain, against the bundled packs in plasmazones/data/surface.
+// surface's enabled chain, against the decoration packs PlasmaZones ships (LAMBENT_SURFACE_PACKS_DIR).
 
 #include "ShellChrome.h"
 
@@ -109,7 +109,7 @@ class TestShellChrome : public QObject
 private Q_SLOTS:
     void appearanceNeverBypassesTheAuthoritativeTree()
     {
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         auto settings = PhosphorTheme::AppearanceStore::defaults();
         const auto path = decorationShellPhosphorBarPath();
         QVERIFY(
@@ -131,7 +131,7 @@ private Q_SLOTS:
     }
     void initTestCase()
     {
-        QVERIFY2(QDir(QStringLiteral(PZ_BUNDLED_SURFACE_DIR)).exists(), "bundled surface packs not found");
+        QVERIFY2(QDir(QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)).exists(), "bundled surface packs not found");
     }
 
     // writeSurfacePreset() drops JSON into the target's XDG_DATA_HOME, which
@@ -154,14 +154,14 @@ private Q_SLOTS:
 
     void emptyTreeDecoratesNothing()
     {
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVERIFY(chrome.chainFor(decorationShellPhosphorBarPath()).isEmpty());
         QCOMPARE(chrome.outerPaddingFor(decorationShellPhosphorBarPath()), 0.0);
     }
 
     void chainResolvesToOneStagePerInstalledPack()
     {
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QSignalSpy revised(&chrome, &ShellChrome::revisionChanged);
         QVERIFY(chrome.setTreeJson(treeJson(decorationShellPhosphorBarPath(),
                                             {QStringLiteral("border-phosphor"), QStringLiteral("no-such-pack")})));
@@ -186,7 +186,7 @@ private Q_SLOTS:
     /// have come from the chain.
     void theChainsBottomCornerAnswerReachesEveryStage()
     {
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         const QStringList chain{QStringLiteral("blur"), QStringLiteral("border")};
 
         // blur squares its bottom; border stores nothing and declares the opposite.
@@ -236,7 +236,7 @@ private Q_SLOTS:
 
     void outerPaddingFollowsTheChainsLargestRequest()
     {
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVariantMap params;
         QVariantMap glow;
         glow.insert(QStringLiteral("glowSize"), 40);
@@ -252,7 +252,7 @@ private Q_SLOTS:
         // The single-pack case above cannot tell a max-of-chain fold from a
         // last-one-wins, or from a first-one-wins. Two packs that both ask for
         // room, largest second and then largest first.
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVariantMap params;
         QVariantMap glow;
         glow.insert(QStringLiteral("glowSize"), 12);
@@ -280,7 +280,7 @@ private Q_SLOTS:
     {
         // An unknown pack in the chain contributes nothing rather than
         // aborting the fold, so the real pack beside it still gets its room.
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVariantMap params;
         QVariantMap glow;
         glow.insert(QStringLiteral("glowSize"), 18);
@@ -321,7 +321,7 @@ private Q_SLOTS:
         QVERIFY(writeSurfacePreset(QStringLiteral("shell-wide"), QStringLiteral("glow"),
                                    {{QStringLiteral("glowSize"), 48}}));
 
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVERIFY(chrome.setTreeJson(treeJson(decorationShellPhosphorOsdPath(), {QStringLiteral("glow")}, {},
                                             {{QStringLiteral("glow"), QStringLiteral("shell-wide")}})));
         // The PRESET's value, not the pack's default of 24.
@@ -350,7 +350,7 @@ private Q_SLOTS:
         QVERIFY(writeSurfacePreset(QStringLiteral("shell-live"), QStringLiteral("glow"),
                                    {{QStringLiteral("glowSize"), 40}}));
 
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVERIFY(chrome.setTreeJson(treeJson(decorationShellPhosphorOsdPath(), {QStringLiteral("glow")}, {},
                                             {{QStringLiteral("glow"), QStringLiteral("shell-live")}})));
         QCOMPARE(chrome.outerPaddingFor(decorationShellPhosphorOsdPath()), 40.0);
@@ -374,7 +374,7 @@ private Q_SLOTS:
         //
         // That ordering is the point: the ceiling is a last resort for a parameter the
         // pack declares no max for, which clampToBounds deliberately leaves alone.
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVariantMap params;
         QVariantMap glow;
         glow.insert(QStringLiteral("glowSize"), 100000);
@@ -400,7 +400,7 @@ private Q_SLOTS:
 
     void malformedJsonKeepsTheTree()
     {
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QVERIFY(chrome.setTreeJson(treeJson(decorationShellPhosphorBarPath(), {QStringLiteral("border-phosphor")})));
         QVERIFY(!chrome.setTreeJson(QStringLiteral("[not an object")));
         QCOMPARE(chrome.chainFor(decorationShellPhosphorBarPath()).size(), 1);
@@ -466,7 +466,7 @@ private Q_SLOTS:
 
     void decorationComponentIsPlainStorage()
     {
-        ShellChrome chrome({QStringLiteral(PZ_BUNDLED_SURFACE_DIR)}, nullptr);
+        ShellChrome chrome({QStringLiteral(LAMBENT_SURFACE_PACKS_DIR)}, nullptr);
         QSignalSpy spy(&chrome, &ShellChrome::decorationComponentChanged);
         QObject component;
         chrome.setDecorationComponent(&component);

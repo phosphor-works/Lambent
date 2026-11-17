@@ -96,11 +96,11 @@ int main(int argc, char* argv[])
     // description is a plain literal like every other shell-side string.
     {
         QCoreApplication probe(argc, argv);
-        QCoreApplication::setApplicationName(QStringLiteral("phosphor-shell"));
-        QCoreApplication::setApplicationVersion(PlasmaZones::VERSION_STRING);
+        QCoreApplication::setApplicationName(QStringLiteral("lambent"));
+        QCoreApplication::setApplicationVersion(Lambent::VERSION_STRING);
 
         QCommandLineParser parser;
-        parser.setApplicationDescription(QStringLiteral("The Phosphor desktop shell"));
+        parser.setApplicationDescription(QStringLiteral("Lambent, a desktop shell"));
         parser.addHelpOption();
         parser.addVersionOption();
         parser.parse(probe.arguments());
@@ -123,8 +123,10 @@ int main(int argc, char* argv[])
     PhosphorWayland::registerLayerShellPlugin();
 
     QGuiApplication app(argc, argv);
-    app.setApplicationName(QStringLiteral("phosphor-shell"));
-    app.setApplicationVersion(PlasmaZones::VERSION_STRING);
+    app.setApplicationName(QStringLiteral("lambent"));
+    app.setApplicationVersion(Lambent::VERSION_STRING);
+    // The application ID: its .desktop file, AppStream id and icon.
+    app.setDesktopFileName(Lambent::APP_ID);
     app.setQuitOnLastWindowClosed(false);
 
     // Phosphor paints its own controls. Use a consistent base for Qt's
@@ -267,12 +269,12 @@ int main(int argc, char* argv[])
         const QString message = QStringLiteral(
                                     "No shell.qml found.\n"
                                     "  Searched:    %1\n"
-                                    "               and ${XDG_CONFIG_DIRS}/phosphor-shell/\n"
-                                    "               and ${XDG_DATA_HOME}/phosphor-shell/\n"
-                                    "               and ${XDG_DATA_DIRS}/phosphor-shell/\n\n"
+                                    "               and ${XDG_CONFIG_DIRS}/lambent/\n"
+                                    "               and ${XDG_DATA_HOME}/lambent/\n"
+                                    "               and ${XDG_DATA_DIRS}/lambent/\n\n"
                                     "  To get started, copy the bundled example:\n"
                                     "    mkdir -p %1\n"
-                                    "    cp -r ${CMAKE_INSTALL_PREFIX}/share/phosphor-shell/* %1\n"
+                                    "    cp -r ${CMAKE_INSTALL_PREFIX}/share/lambent/* %1\n"
                                     "  (replace ${CMAKE_INSTALL_PREFIX} with the prefix used at install; "
                                     "/usr or /usr/local for distro packages.)")
                                     .arg(configDir);

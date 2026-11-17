@@ -82,7 +82,7 @@ FloatingWindow {
             }
 
             Text {
-                text: "Edit ~/.config/phosphor-shell/shell.qml to customize.\nChanges apply instantly via hot-reload."
+                text: "Edit ~/.config/lambent/shell.qml to customize.\nChanges apply instantly via hot-reload."
                 color: "#6c7086"
                 font.pixelSize: 12
                 wrapMode: Text.WordWrap

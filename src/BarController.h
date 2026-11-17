@@ -34,7 +34,7 @@ namespace PhosphorShellApp {
 // effects, curves, tiling algorithms, layout sources — already compose
 // Registry<T>. The bar QML stays registry-agnostic and talks to this
 // through duck-typed methods, wired in as the `BarRegistry` context
-// property by phosphor-shell/src/main.cpp.
+// property by src/main.cpp.
 //
 // The engine is resolved per call from the widget's parent
 // (qmlEngine(parent)) rather than cached, so the controller survives the

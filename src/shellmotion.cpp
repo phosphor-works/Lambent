@@ -20,7 +20,7 @@ namespace PhosphorShellApp {
 
 namespace {
 
-constexpr QLatin1String kSeedOwner("phosphor-shell-seeds");
+constexpr QLatin1String kSeedOwner("lambent-seeds");
 constexpr QLatin1String kPortalService("org.freedesktop.portal.Desktop");
 constexpr QLatin1String kPortalPath("/org/freedesktop/portal/desktop");
 constexpr QLatin1String kPortalSettings("org.freedesktop.portal.Settings");

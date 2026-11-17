@@ -12,7 +12,7 @@ import Phosphor.Service.Session
 // place that instantiates both and wires them together, so the shell owns the
 // integration and neither service depends on the other.
 //
-// The handshake (see docs/phosphor-shell-design/04-implementation-plan.md
+// The handshake (see docs/design/04-implementation-plan.md
 // section 2.10): session holds a logind delay inhibitor on "sleep", so when the
 // system is about to sleep logind waits on us. We lock, and once the lock
 // surface is up we release the inhibitor and suspend proceeds with the session

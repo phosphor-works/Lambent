@@ -100,7 +100,7 @@ void TestPanelOpenCost::initTestCase()
     localizedContext->setTranslationContext(QStringLiteral("phosphorshell"));
     m_engine->rootContext()->setContextObject(localizedContext);
     // The static QML modules are laid out under the build tree's qml/ root.
-    m_engine->addImportPath(QStringLiteral(PZ_QML_IMPORT_DIR));
+    m_engine->addImportPath(QStringLiteral(LAMBENT_QML_IMPORT_DIR));
 
     if (qEnvironmentVariableIsSet("PZ_WARM_CHROME")) {
         // Instantiate the shared chrome once, so the per-panel numbers

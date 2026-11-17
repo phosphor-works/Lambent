@@ -28,7 +28,7 @@ namespace PhosphorShellApp {
 class ControlCenterController;
 
 // IPopoutTransport for an ENGINE-PLACED PANE (A2 §4): the popout is a real
-// xdg toplevel with app id `org.phosphor.shell.pane.<popoutId>`, and the
+// xdg toplevel with app id `org.phosphor_works.Lambent.Pane.<popoutId>`, and the
 // placement engine puts it where the screen's mode puts windows. The shell
 // ships one window rule per pane (PaneRules) that names the placement:
 // snapping snaps it to a zone, tiling inserts it as a tile, scrolling opens
@@ -75,7 +75,7 @@ public:
     Q_DISABLE_COPY_MOVE(PanePopoutTransport)
 
     /// The app id a pane popout announces to the compositor and, through
-    /// it, to the daemon's window rules. `org.phosphor.shell.pane.<id>`.
+    /// it, to the daemon's window rules. `org.phosphor_works.Lambent.Pane.<id>`.
     [[nodiscard]] static QString appIdFor(const QString& popoutId);
 
     /// Adopt the engine every subsequent pane is built from. Called for

@@ -8,13 +8,13 @@
 #      into the binary, not paid by every user on every launch.
 #   2. qmlsc type-checks bindings; typed bindings compile to C++ skipping
 #      the JS engine on the hot binding path.
-#   3. The resource is linked into the phosphor-shell binary, so a fresh
-#      install with no XDG config and no /usr/share/phosphor-shell/ install
+#   3. The resource is linked into the lambent binary, so a fresh
+#      install with no XDG config and no /usr/share/lambent/ install
 #      still has a working default shell to fall back on (ShellLoader's
 #      resolve() picks up the qrc:/ url when filesystem search misses).
 #
-# The same files are still installed to ${DATADIR}/phosphor-shell/ via
-# phosphor-shell/CMakeLists.txt:32's install(DIRECTORY) so users can `cp -r` and edit.
+# The same files are still installed to ${DATADIR}/lambent/ by the
+# install(DIRECTORY) in the top-level CMakeLists.txt, so users can `cp -r` and edit.
 # Both paths read identical source — the resource is the build-time
 # snapshot, the installed files are the user-editable copy.
 
@@ -38,8 +38,8 @@ set(CMAKE_AUTOMOC ON)
 # example carries no Q_OBJECT declarations, so AUTOMOC produces nothing
 # and the include dir is either empty or — after `--clean-first` —
 # missing entirely. cc1plus then fires the warning before AUTOMOC has a
-# chance to recreate the path. See plasmazones/src/shared/CMakeLists.txt for the
-# same workaround applied to the shared QML module.
+# chance to recreate the path. PlasmaZones applies the same workaround
+# to its shared QML module.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "-Wno-missing-include-dirs")
 
 qt_add_qml_module(phosphor_shell_example
