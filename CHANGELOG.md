@@ -29,6 +29,9 @@ All notable changes to Lambent are documented in this file. The format is based 
 - Lambent passes the libraries its own paths: `~/.config/lambent/` for the shell tree, appearance and wallpapers,
   `~/.local/share/lambent/` for the appearance library and saved shader presets.
 
+- Blur behind the bar, popouts and other glass surfaces uses the standard ext-background-effect-v1 protocol, so
+  any compositor that offers it blurs them, not only KWin.
+
 ### Removed
 
 - The "Match desktop windows" style, which wrote KWin's window decoration and PlasmaZones' gaps.
