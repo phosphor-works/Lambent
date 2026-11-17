@@ -50,7 +50,7 @@ lambent/src/                 The shell process (GPL)
   OsdController / ToastController / PolkitController / PickerController
   LayerPopoutTransport / PanePopoutTransport / SocketPopoutTransport / RoutingPopoutTransport
   PaneRules                  Seeds the pane's window rule into the daemon
-  ShellEffects               Compositor blur behind a region (kde-blur)
+  ShellEffects               Compositor blur behind a region (ext-background-effect-v1)
   ShellMotion                Profile registry (shell.settle) + reduced motion from the portal
   ShellChrome                Decoration tree + pack registry → stage lists for DecorationSlot
 

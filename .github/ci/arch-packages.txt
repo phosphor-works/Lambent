@@ -20,13 +20,14 @@ wayland-protocols
 # Qt declares QVulkanInstance only when the Vulkan headers are present, and
 # phosphor-libs' phosphor-surfaces uses it wherever Qt was built with Vulkan.
 vulkan-headers
-# KF6: the libraries draw their icons through Kirigami, and phosphor-shell-lock
-# uses KGuiAddons.
+# KF6: the libraries draw their icons through Kirigami.
 kirigami
-kguiaddons
+# phosphor-shell-lock reads the keyboard layout and Caps Lock from the seat's
+# keymap; xkeyboard-config gives its test keymaps to compile.
+libxkbcommon
+xkeyboard-config
 # Lambent's own: KConfig for the quick settings' night light, and
-# KWindowSystem for the compositor blur behind the bar's band and the
-# notification centre's activation tokens.
+# KWindowSystem for the notification centre's activation tokens.
 kconfig
 kwindowsystem
 # The service libraries' system interfaces: PipeWire (phosphor-service-pipewire),

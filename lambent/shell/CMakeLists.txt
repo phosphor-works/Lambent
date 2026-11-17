@@ -10,9 +10,9 @@
 #      the JS engine on the hot binding path.
 #   3. The resource is linked into the lambent binary, so a fresh
 #      install with no XDG config and no /usr/share/lambent/ install
-#      still has a working default shell to fall back on (main.cpp loads
-#      qrc:/qt/qml/Lambent/Shell/shell.qml when ShellLoader finds no
-#      shell.qml on disk).
+#      still has a working default shell to fall back on (main.cpp hands
+#      ShellLoader qrc:/qt/qml/Lambent/Shell/shell.qml, which it loads
+#      when it finds no shell.qml on disk).
 #
 # The same files are still installed to ${DATADIR}/lambent/ by the
 # install(DIRECTORY) in lambent/CMakeLists.txt, so users can `cp -r` and edit.
