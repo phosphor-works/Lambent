@@ -106,7 +106,7 @@ private Q_SLOTS:
     void lockedPreviewReportsFailureThenRecovers()
     {
         const auto path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-            + QStringLiteral("/phosphor-shell/appearance.json.preview.lock");
+            + QStringLiteral("/lambent/appearance.json.preview.lock");
         QVERIFY(QDir().mkpath(QFileInfo(path).absolutePath()));
         QLockFile competitor(path);
         QVERIFY(competitor.tryLock());
@@ -255,8 +255,7 @@ private Q_SLOTS:
         engine.rootContext()->setContextProperty(
             QStringLiteral("ShellChrome"),
             QVariantMap{{QStringLiteral("decorationComponent"), QVariant::fromValue<QObject*>(nullptr)}});
-        QQmlComponent component(&engine,
-                                QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/AppearanceSurfaces.qml")));
+        QQmlComponent component(&engine, QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/AppearanceSurfaces.qml")));
         std::unique_ptr<QObject> object(component.create());
         QVERIFY2(object, qPrintable(component.errorString()));
         const auto panels = object->findChildren<PhosphorShell::PanelWindow*>();
