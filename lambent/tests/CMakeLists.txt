@@ -11,7 +11,7 @@ find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Test)
 # Only the shell's own src. If a test ever needs another tree's fixture, add
 # the path on that one target with target_include_directories and say why.
 include_directories(
-    ${PROJECT_SOURCE_DIR}/src
+    ${LAMBENT_SOURCE_DIR}/src
 )
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -26,10 +26,10 @@ include_directories(
 # moc: the Q_OBJECT vtable and factoryIdsChanged live there, not in the .cpp.
 add_executable(test_bar_controller
     test_bar_controller.cpp
-    ${PROJECT_SOURCE_DIR}/src/BarController.h
-    ${PROJECT_SOURCE_DIR}/src/barcontroller.cpp
-    ${PROJECT_SOURCE_DIR}/src/QmlComponentBarWidgetFactory.h
-    ${PROJECT_SOURCE_DIR}/src/qmlcomponentbarwidgetfactory.cpp
+    ${LAMBENT_SOURCE_DIR}/src/BarController.h
+    ${LAMBENT_SOURCE_DIR}/src/barcontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/QmlComponentBarWidgetFactory.h
+    ${LAMBENT_SOURCE_DIR}/src/qmlcomponentbarwidgetfactory.cpp
 )
 target_link_libraries(test_bar_controller
     PRIVATE
@@ -42,15 +42,15 @@ target_link_libraries(test_bar_controller
 )
 # src-rooted includes, matching the other tests that compile src/ sources,
 # so the test survives a move of either tree.
-target_include_directories(test_bar_controller PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_bar_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_bar_controller COMMAND test_bar_controller)
 
 # The desktop style owner. It reaches the daemon's settings only over D-Bus,
 # which the test fakes on the private bus, so it links no plasmazones target.
 add_executable(test_desktop_style_controller
     test_desktop_style_controller.cpp
-    ${PROJECT_SOURCE_DIR}/src/DesktopStyleController.h
-    ${PROJECT_SOURCE_DIR}/src/desktopstylecontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/DesktopStyleController.h
+    ${LAMBENT_SOURCE_DIR}/src/desktopstylecontroller.cpp
 )
 target_link_libraries(test_desktop_style_controller
     PRIVATE
@@ -59,43 +59,55 @@ target_link_libraries(test_desktop_style_controller
         KF6::CoreAddons
         PhosphorProtocol::PhosphorProtocol
 )
-target_include_directories(test_desktop_style_controller PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_desktop_style_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_desktop_style_controller COMMAND test_desktop_style_controller)
+
+# The quick settings and airplane suites run their fixtures on a dbus-daemon
+# of their own, started from phosphor-libs' test bus config.
+find_program(LAMBENT_DBUS_DAEMON dbus-daemon REQUIRED)
+set(LAMBENT_TEST_BUS_CONFIG "${PHOSPHOR_LIBS_CMAKE_DIR}/test-session-bus.conf")
+if(NOT EXISTS "${LAMBENT_TEST_BUS_CONFIG}")
+    message(FATAL_ERROR "phosphor-libs has no ${LAMBENT_TEST_BUS_CONFIG}")
+endif()
 
 add_executable(test_quick_settings_controller
     test_quick_settings_controller.cpp
-    ${PROJECT_SOURCE_DIR}/src/QuickSettingsController.h
-    ${PROJECT_SOURCE_DIR}/src/quicksettingscontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/QuickSettingsController.h
+    ${LAMBENT_SOURCE_DIR}/src/quicksettingscontroller.cpp
 )
 target_link_libraries(test_quick_settings_controller PRIVATE Qt6::Test Qt6::Core Qt6::DBus KF6::ConfigCore)
-target_include_directories(test_quick_settings_controller PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_quick_settings_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
+target_compile_definitions(test_quick_settings_controller PRIVATE
+    LAMBENT_DBUS_DAEMON="${LAMBENT_DBUS_DAEMON}" LAMBENT_TEST_BUS_CONFIG="${LAMBENT_TEST_BUS_CONFIG}")
 add_test(NAME test_quick_settings_controller COMMAND test_quick_settings_controller)
 
 add_executable(test_airplane_controller
     test_airplane_controller.cpp
-    ../src/AirplaneController.h
-    ../src/airplanecontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/AirplaneController.h
+    ${LAMBENT_SOURCE_DIR}/src/airplanecontroller.cpp
 )
 target_link_libraries(test_airplane_controller PRIVATE Qt6::Test Qt6::DBus
     PhosphorServiceNetwork::PhosphorServiceNetwork
     PhosphorServiceBluetooth::PhosphorServiceBluetooth)
+target_compile_definitions(test_airplane_controller PRIVATE
+    LAMBENT_DBUS_DAEMON="${LAMBENT_DBUS_DAEMON}" LAMBENT_TEST_BUS_CONFIG="${LAMBENT_TEST_BUS_CONFIG}")
 add_test(NAME test_airplane_controller COMMAND test_airplane_controller)
 
 add_executable(test_color_mode_controller
     test_color_mode_controller.cpp
-    ../src/ColorModeController.h
-    ../src/colormodecontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/ColorModeController.h
+    ${LAMBENT_SOURCE_DIR}/src/colormodecontroller.cpp
 )
 target_link_libraries(test_color_mode_controller PRIVATE Qt6::Test Qt6::DBus PhosphorTheme::PhosphorTheme)
 add_test(NAME test_color_mode_controller COMMAND test_color_mode_controller)
 
 add_executable(test_status_icons_controller
     test_status_icons_controller.cpp
-    ../src/StatusIconsController.h
-    ../src/StatusIconsSource.h
-    ../src/statusiconscontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/StatusIconsController.h
+    ${LAMBENT_SOURCE_DIR}/src/StatusIconsSource.h
+    ${LAMBENT_SOURCE_DIR}/src/statusiconscontroller.cpp
 )
-target_include_directories(test_status_icons_controller PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_status_icons_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 target_link_libraries(test_status_icons_controller PRIVATE Qt6::Test PhosphorTheme::PhosphorTheme)
 add_test(NAME test_status_icons_controller COMMAND test_status_icons_controller)
 
@@ -105,8 +117,8 @@ add_test(NAME test_status_icons_controller COMMAND test_status_icons_controller)
 if(TARGET PhosphorServiceNotifications::PhosphorServiceNotifications)
     add_executable(test_notification_controller
         test_notification_controller.cpp
-        ${PROJECT_SOURCE_DIR}/src/NotificationController.h
-        ${PROJECT_SOURCE_DIR}/src/notificationcontroller.cpp
+        ${LAMBENT_SOURCE_DIR}/src/NotificationController.h
+        ${LAMBENT_SOURCE_DIR}/src/notificationcontroller.cpp
     )
     target_link_libraries(test_notification_controller
         PRIVATE
@@ -120,17 +132,17 @@ if(TARGET PhosphorServiceNotifications::PhosphorServiceNotifications)
         target_link_libraries(test_notification_controller PRIVATE KF6::WindowSystem)
         target_compile_definitions(test_notification_controller PRIVATE PHOSPHOR_SHELL_HAVE_KWINDOWSYSTEM)
     endif()
-    target_include_directories(test_notification_controller PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_notification_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     add_test(NAME test_notification_controller COMMAND test_notification_controller)
 endif()
 
 # The OSD registry owner, same shape and same reasoning as test_bar_controller.
 add_executable(test_osd_controller
     test_osd_controller.cpp
-    ${PROJECT_SOURCE_DIR}/src/OsdController.h
-    ${PROJECT_SOURCE_DIR}/src/osdcontroller.cpp
-    ${PROJECT_SOURCE_DIR}/src/QmlComponentOSDFactory.h
-    ${PROJECT_SOURCE_DIR}/src/qmlcomponentosdfactory.cpp
+    ${LAMBENT_SOURCE_DIR}/src/OsdController.h
+    ${LAMBENT_SOURCE_DIR}/src/osdcontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/QmlComponentOSDFactory.h
+    ${LAMBENT_SOURCE_DIR}/src/qmlcomponentosdfactory.cpp
 )
 target_link_libraries(test_osd_controller
     PRIVATE
@@ -141,15 +153,15 @@ target_link_libraries(test_osd_controller
         Qt6::Quick
         PhosphorRegistry::PhosphorRegistry
 )
-target_include_directories(test_osd_controller PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_osd_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_osd_controller COMMAND test_osd_controller)
 
 # The shell's motion root: settle profile, QML default publication, and
 # the portal's reduced-motion decoding.
 add_executable(test_shell_motion
     test_shell_motion.cpp
-    ${PROJECT_SOURCE_DIR}/src/ShellMotion.h
-    ${PROJECT_SOURCE_DIR}/src/shellmotion.cpp
+    ${LAMBENT_SOURCE_DIR}/src/ShellMotion.h
+    ${LAMBENT_SOURCE_DIR}/src/shellmotion.cpp
 )
 target_link_libraries(test_shell_motion
     PRIVATE
@@ -162,15 +174,15 @@ target_link_libraries(test_shell_motion
         PhosphorAnimation::PhosphorAnimation
         PhosphorAnimation::PhosphorAnimationQml
 )
-target_include_directories(test_shell_motion PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_shell_motion PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_shell_motion COMMAND test_shell_motion)
 
 # The gesture relay: the daemon's gestureReported split into swiped /
 # pinched over a fake daemon on the private bus.
 add_executable(test_shell_gestures
     test_shell_gestures.cpp
-    ${PROJECT_SOURCE_DIR}/src/ShellGestures.h
-    ${PROJECT_SOURCE_DIR}/src/shellgestures.cpp
+    ${LAMBENT_SOURCE_DIR}/src/ShellGestures.h
+    ${LAMBENT_SOURCE_DIR}/src/shellgestures.cpp
 )
 target_link_libraries(test_shell_gestures
     PRIVATE
@@ -179,16 +191,16 @@ target_link_libraries(test_shell_gestures
         Qt6::DBus
         PhosphorProtocol::PhosphorProtocol
 )
-target_include_directories(test_shell_gestures PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_shell_gestures PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_shell_gestures COMMAND test_shell_gestures)
 
 if(TARGET PhosphorShellPicker::PhosphorShellPickerQml)
     add_executable(test_shell_appearance_entry
         test_shell_appearance_entry.cpp
-        ${PROJECT_SOURCE_DIR}/src/PickerController.h
-        ${PROJECT_SOURCE_DIR}/src/pickercontroller.cpp
+        ${LAMBENT_SOURCE_DIR}/src/PickerController.h
+        ${LAMBENT_SOURCE_DIR}/src/pickercontroller.cpp
     )
-    target_include_directories(test_shell_appearance_entry PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_shell_appearance_entry PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_shell_appearance_entry PRIVATE
         Qt6::Test Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick
         PhosphorLayer::PhosphorLayer PhosphorShell::PhosphorShell
@@ -196,7 +208,7 @@ if(TARGET PhosphorShellPicker::PhosphorShellPickerQml)
         PhosphorShellWidgetsQml PhosphorShellWidgetsQmlplugin
         PhosphorThemeQml PhosphorThemeQmlplugin
         PhosphorShellQml PhosphorShellQmlplugin
-        phosphor_shell_example phosphor_shell_exampleplugin
+        lambent_shell lambent_shellplugin
     )
     add_test(NAME test_shell_appearance_entry COMMAND test_shell_appearance_entry)
 endif()
@@ -218,8 +230,8 @@ elseif(NOT IS_DIRECTORY "${LAMBENT_SURFACE_PACKS_DIR}")
 else()
     add_executable(test_shell_chrome
         test_shell_chrome.cpp
-        ${PROJECT_SOURCE_DIR}/src/ShellChrome.h
-        ${PROJECT_SOURCE_DIR}/src/shellchrome.cpp
+        ${LAMBENT_SOURCE_DIR}/src/ShellChrome.h
+        ${LAMBENT_SOURCE_DIR}/src/shellchrome.cpp
     )
     target_link_libraries(test_shell_chrome
         PRIVATE
@@ -236,7 +248,7 @@ else()
             PhosphorTheme::PhosphorTheme
     )
     target_compile_definitions(test_shell_chrome PRIVATE LAMBENT_SURFACE_PACKS_DIR="${LAMBENT_SURFACE_PACKS_DIR}")
-    target_include_directories(test_shell_chrome PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_shell_chrome PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     add_test(NAME test_shell_chrome COMMAND test_shell_chrome)
 endif()
 
@@ -280,15 +292,15 @@ endif()
 # The toast broker behind the `notify` IpcTarget.
 add_executable(test_toast_controller
     test_toast_controller.cpp
-    ${PROJECT_SOURCE_DIR}/src/ToastController.h
-    ${PROJECT_SOURCE_DIR}/src/toastcontroller.cpp
+    ${LAMBENT_SOURCE_DIR}/src/ToastController.h
+    ${LAMBENT_SOURCE_DIR}/src/toastcontroller.cpp
 )
 target_link_libraries(test_toast_controller
     PRIVATE
         Qt6::Test
         Qt6::Core
 )
-target_include_directories(test_toast_controller PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(test_toast_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 add_test(NAME test_toast_controller COMMAND test_toast_controller)
 
 # Ties BarController's registered type names to the QML the Phosphor.Bar
@@ -297,12 +309,12 @@ add_test(NAME test_toast_controller COMMAND test_toast_controller)
 if(TARGET PhosphorShellBar::PhosphorShellBarQml)
     add_executable(test_bar_widget_types
         test_bar_widget_types.cpp
-        ${PROJECT_SOURCE_DIR}/src/BarController.h
-        ${PROJECT_SOURCE_DIR}/src/barcontroller.cpp
-        ${PROJECT_SOURCE_DIR}/src/QmlComponentBarWidgetFactory.h
-        ${PROJECT_SOURCE_DIR}/src/qmlcomponentbarwidgetfactory.cpp
+        ${LAMBENT_SOURCE_DIR}/src/BarController.h
+        ${LAMBENT_SOURCE_DIR}/src/barcontroller.cpp
+        ${LAMBENT_SOURCE_DIR}/src/QmlComponentBarWidgetFactory.h
+        ${LAMBENT_SOURCE_DIR}/src/qmlcomponentbarwidgetfactory.cpp
     )
-    target_include_directories(test_bar_widget_types PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_bar_widget_types PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_bar_widget_types
         PRIVATE
             Qt6::Test
@@ -326,12 +338,12 @@ endif()
 if(TARGET PhosphorShellBar::PhosphorShellBarQml AND TARGET PhosphorServiceNetwork::PhosphorServiceNetwork)
     add_executable(test_shell_qml_compiles
         test_shell_qml_compiles.cpp
-        ${PROJECT_SOURCE_DIR}/src/ControlCenterController.h
-        ${PROJECT_SOURCE_DIR}/src/controlcentercontroller.cpp
-        ${PROJECT_SOURCE_DIR}/src/QmlComponentTileFactory.h
-        ${PROJECT_SOURCE_DIR}/src/qmlcomponenttilefactory.cpp
+        ${LAMBENT_SOURCE_DIR}/src/ControlCenterController.h
+        ${LAMBENT_SOURCE_DIR}/src/controlcentercontroller.cpp
+        ${LAMBENT_SOURCE_DIR}/src/QmlComponentTileFactory.h
+        ${LAMBENT_SOURCE_DIR}/src/qmlcomponenttilefactory.cpp
     )
-    target_include_directories(test_shell_qml_compiles PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_shell_qml_compiles PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_shell_qml_compiles
         PRIVATE
             PhosphorControl::PhosphorControl
@@ -397,12 +409,12 @@ endif()
 if(TARGET PhosphorPopout::PhosphorPopoutQml AND TARGET PhosphorLayer::PhosphorLayer)
     add_executable(test_layer_popout_transport
         test_layer_popout_transport.cpp
-        ${PROJECT_SOURCE_DIR}/src/LayerPopoutTransport.h
-        ${PROJECT_SOURCE_DIR}/src/layerpopouttransport.cpp
+        ${LAMBENT_SOURCE_DIR}/src/LayerPopoutTransport.h
+        ${LAMBENT_SOURCE_DIR}/src/layerpopouttransport.cpp
     )
     target_include_directories(test_layer_popout_transport
         PRIVATE
-            ${PROJECT_SOURCE_DIR}/src
+            ${LAMBENT_SOURCE_DIR}/src
             # The reusable phosphor-layer test mocks (mocks/mocktransport.h,
             # mocks/mockscreenprovider.h).
             ${phosphor-libs_SOURCE_DIR}/libs/phosphor-layer/tests
@@ -449,10 +461,10 @@ endif()
 if(TARGET PhosphorPopout::PhosphorPopout)
     add_executable(test_routing_popout_transport
         test_routing_popout_transport.cpp
-        ${PROJECT_SOURCE_DIR}/src/RoutingPopoutTransport.h
-        ${PROJECT_SOURCE_DIR}/src/routingpopouttransport.cpp
+        ${LAMBENT_SOURCE_DIR}/src/RoutingPopoutTransport.h
+        ${LAMBENT_SOURCE_DIR}/src/routingpopouttransport.cpp
     )
-    target_include_directories(test_routing_popout_transport PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_routing_popout_transport PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_routing_popout_transport
         PRIVATE
             Qt6::Test
@@ -471,19 +483,19 @@ endif()
 # AUTOMOC scans their Q_OBJECT classes.
 if(TARGET PhosphorRegistry::PhosphorRegistry)
     add_library(phosphorshell_test_tile_factory OBJECT
-        ${PROJECT_SOURCE_DIR}/src/QmlComponentTileFactory.h
-        ${PROJECT_SOURCE_DIR}/src/qmlcomponenttilefactory.cpp
+        ${LAMBENT_SOURCE_DIR}/src/QmlComponentTileFactory.h
+        ${LAMBENT_SOURCE_DIR}/src/qmlcomponenttilefactory.cpp
     )
-    target_include_directories(phosphorshell_test_tile_factory PUBLIC ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(phosphorshell_test_tile_factory PUBLIC ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(phosphorshell_test_tile_factory
         PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick PhosphorRegistry::PhosphorRegistry)
 endif()
 if(TARGET PhosphorRegistry::PhosphorRegistry AND TARGET PhosphorServiceIdle::PhosphorServiceIdle)
     add_library(phosphorshell_test_control_center OBJECT
-        ${PROJECT_SOURCE_DIR}/src/ControlCenterController.h
-        ${PROJECT_SOURCE_DIR}/src/controlcentercontroller.cpp
+        ${LAMBENT_SOURCE_DIR}/src/ControlCenterController.h
+        ${LAMBENT_SOURCE_DIR}/src/controlcentercontroller.cpp
     )
-    target_include_directories(phosphorshell_test_control_center PUBLIC ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(phosphorshell_test_control_center PUBLIC ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(phosphorshell_test_control_center
         PUBLIC
             Qt6::Core
@@ -505,13 +517,13 @@ if(TARGET PhosphorShell::PhosphorShell AND TARGET PhosphorPopout::PhosphorPopout
    AND TARGET PhosphorShellWidgets::PhosphorShellWidgetsQml AND TARGET PhosphorServiceIdle::PhosphorServiceIdle)
     add_executable(test_pane_popout_transport
         test_pane_popout_transport.cpp
-        ${PROJECT_SOURCE_DIR}/src/PanePopoutTransport.h
-        ${PROJECT_SOURCE_DIR}/src/panepopouttransport.cpp
+        ${LAMBENT_SOURCE_DIR}/src/PanePopoutTransport.h
+        ${LAMBENT_SOURCE_DIR}/src/panepopouttransport.cpp
         # The transport rewrites the pane rule's zone before an open.
-        ${PROJECT_SOURCE_DIR}/src/PaneRules.h
-        ${PROJECT_SOURCE_DIR}/src/panerules.cpp
+        ${LAMBENT_SOURCE_DIR}/src/PaneRules.h
+        ${LAMBENT_SOURCE_DIR}/src/panerules.cpp
     )
-    target_include_directories(test_pane_popout_transport PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_pane_popout_transport PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_pane_popout_transport
         PRIVATE
             Qt6::Test
@@ -543,10 +555,10 @@ endif()
 if(TARGET PhosphorRules::PhosphorRules AND TARGET PhosphorProtocol::PhosphorProtocol)
     add_executable(test_pane_rules
         test_pane_rules.cpp
-        ${PROJECT_SOURCE_DIR}/src/PaneRules.h
-        ${PROJECT_SOURCE_DIR}/src/panerules.cpp
+        ${LAMBENT_SOURCE_DIR}/src/PaneRules.h
+        ${LAMBENT_SOURCE_DIR}/src/panerules.cpp
     )
-    target_include_directories(test_pane_rules PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_pane_rules PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_pane_rules
         PRIVATE
             Qt6::Test
@@ -608,10 +620,10 @@ if(TARGET PhosphorPopout::PhosphorPopout AND TARGET PhosphorRegistry::PhosphorRe
    AND TARGET PhosphorServiceIdle::PhosphorServiceIdle)
     add_executable(test_socket_popout_transport
         test_socket_popout_transport.cpp
-        ${PROJECT_SOURCE_DIR}/src/SocketPopoutTransport.h
-        ${PROJECT_SOURCE_DIR}/src/socketpopouttransport.cpp
+        ${LAMBENT_SOURCE_DIR}/src/SocketPopoutTransport.h
+        ${LAMBENT_SOURCE_DIR}/src/socketpopouttransport.cpp
     )
-    target_include_directories(test_socket_popout_transport PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(test_socket_popout_transport PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_socket_popout_transport
         PRIVATE
             Qt6::Test

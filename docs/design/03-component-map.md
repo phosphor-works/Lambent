@@ -42,7 +42,7 @@ phosphor-libs/libs/ and phosphor-shell-libs/libs/  (the two library tiers; the
   phosphor-service-*/        sni, upower, mpris, pipewire, network, bluetooth, brightness,
                              notifications, polkit, idle, clipboard, lock, session, icontheme
 
-phosphor-shell/src/          The shell process (GPL)
+lambent/src/                 The shell process (GPL)
   main.cpp                   Composition: registries, transports, context properties
   BarController              IBarWidgetFactory registry owner
   ControlCenterController    Tile registry + pane open state per screen
@@ -55,7 +55,7 @@ phosphor-shell/src/          The shell process (GPL)
   ShellGestures              CompositorBridge.gestureReported relay
   ShellChrome                Decoration tree + pack registry → stage lists for DecorationSlot
 
-phosphor-shell/shell/shell.qml   The composition root: every surface mounted per screen
+lambent/shell/shell.qml      The composition root: every surface mounted per screen
 ```
 
 ## Data flow

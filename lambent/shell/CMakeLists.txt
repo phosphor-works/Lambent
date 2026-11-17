@@ -10,11 +10,12 @@
 #      the JS engine on the hot binding path.
 #   3. The resource is linked into the lambent binary, so a fresh
 #      install with no XDG config and no /usr/share/lambent/ install
-#      still has a working default shell to fall back on (ShellLoader's
-#      resolve() picks up the qrc:/ url when filesystem search misses).
+#      still has a working default shell to fall back on (main.cpp loads
+#      qrc:/qt/qml/Lambent/Shell/shell.qml when ShellLoader finds no
+#      shell.qml on disk).
 #
 # The same files are still installed to ${DATADIR}/lambent/ by the
-# install(DIRECTORY) in the top-level CMakeLists.txt, so users can `cp -r` and edit.
+# install(DIRECTORY) in lambent/CMakeLists.txt, so users can `cp -r` and edit.
 # Both paths read identical source — the resource is the build-time
 # snapshot, the installed files are the user-editable copy.
 
@@ -42,18 +43,18 @@ set(CMAKE_AUTOMOC ON)
 # to its shared QML module.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "-Wno-missing-include-dirs")
 
-qt_add_qml_module(phosphor_shell_example
-    URI Phosphor.Shell.Example
+qt_add_qml_module(lambent_shell
+    URI Lambent.Shell
     VERSION 1.0
     STATIC
     RESOURCE_PREFIX /qt/qml
     # The module's build-tree output directory must END in the URI path
-    # (Phosphor/Shell/Example) or qmllint and other QML tooling can't
+    # (Lambent/Shell) or qmllint and other QML tooling can't
     # resolve the module. The default is CMAKE_CURRENT_BINARY_DIR, which
     # doesn't — so place it under a URI-shaped subdirectory. This is a
     # build-tree path only; the linked-in resource still lives at
-    # qrc:/qt/qml/Phosphor/Shell/Example via RESOURCE_PREFIX above.
-    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Phosphor/Shell/Example
+    # qrc:/qt/qml/Lambent/Shell via RESOURCE_PREFIX above.
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Lambent/Shell
     QML_FILES
         shell.qml
         QuickSettingsSurface.qml

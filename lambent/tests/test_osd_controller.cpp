@@ -3,7 +3,7 @@
 //
 // Unit tests for the shell's OSD registry owner and its QML-component
 // factory, in the phosphor-shell test tree because the classes ship in the
-// GPL shell binary (phosphor-shell/src), not in the LGPL OSD module. The QML bands
+// GPL shell binary (lambent/src), not in the LGPL OSD module. The QML bands
 // themselves are covered by phosphor-shell-libs/libs/phosphor-shell-osd/tests; what matters
 // here is the C++ contract: which kinds register, every guard on the
 // createOSD path, and the host fan-out an IPC trigger rides.

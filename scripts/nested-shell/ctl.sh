@@ -11,7 +11,7 @@
 set -eu
 
 # These scripts live two levels below the repository root, where the build
-# tree and the shell QML are. The nested KWin session comes from PlasmaZones'
+# tree and lambent/ are. The nested KWin session comes from PlasmaZones'
 # harness: its effect and daemon, from a built PlasmaZones checkout, draw and
 # place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"

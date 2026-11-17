@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Bug report
+description: Something doesn't work, crashes or behaves wrong
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please search the open and closed issues first, in case it is already known.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: The part of the shell where it happens.
+      options:
+        - Bar
+        - Control center or quick settings
+        - Launcher
+        - Notifications or on-screen displays
+        - Lock screen
+        - Authentication prompt
+        - Appearance, wallpaper or theme
+        - phosphorctl
+        - Startup or the shell tree in ~/.config/lambent
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Lambent version
+      description: The output of `lambent --version`, or the commit you built.
+    validations:
+      required: true
+  - type: input
+    id: compositor
+    attributes:
+      label: Compositor
+      description: The Wayland compositor the shell runs under, with its version.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened
+      description: What you did, what you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the control center
+        2. Turn Bluetooth off
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: |
+        The shell's log from around the time it happened: `journalctl --user -b -u lambent.service`, or the terminal output if you started `lambent` yourself. It can contain window titles and notification text, so look it over before posting it.
+      render: text
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or video
+      description: Optional. Drag them here.

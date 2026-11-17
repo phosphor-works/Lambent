@@ -38,8 +38,8 @@ export XDG_CONFIG_HOME="$NEST/quick-settings-preview/config"
 mkdir -p "$XDG_CONFIG_HOME/lambent"
 cp "$REPO/scripts/nested-shell/quick-settings-preview.qml" "$XDG_CONFIG_HOME/lambent/shell.qml"
 cp "$REPO/scripts/nested-shell/StatusIconsPreviewController.qml" "$XDG_CONFIG_HOME/lambent/StatusIconsPreviewController.qml"
-cp "$REPO/shell/wallpapers/spectrum.png" "$XDG_CONFIG_HOME/lambent/fixture-spectrum.png"
-cp "$REPO/shell/wallpapers/ember.png" "$XDG_CONFIG_HOME/lambent/fixture-ember.png"
+cp "$REPO/lambent/shell/wallpapers/spectrum.png" "$XDG_CONFIG_HOME/lambent/fixture-spectrum.png"
+cp "$REPO/lambent/shell/wallpapers/ember.png" "$XDG_CONFIG_HOME/lambent/fixture-ember.png"
 if [ -n "$STATUS_PAGE" ]; then
     sed -i -e 's/property string view: "wifi"/property string view: "status-icons"/' \
         -e 's/property bool statusVisible: false/property bool statusVisible: true/' \

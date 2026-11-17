@@ -67,6 +67,7 @@
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QIcon>
@@ -246,8 +247,15 @@ int main(int argc, char* argv[])
     };
     PhosphorLayer::SurfaceFactory factory(factoryDeps, &app);
 
-    PhosphorShell::ShellLoader loader;
-    const QUrl shellUrl = loader.resolve();
+    // The user's tree (~/.config/lambent/), then the installed one
+    // (share/lambent/), then the copy linked into this binary as the
+    // Lambent.Shell QML module (lambent/shell/CMakeLists.txt), so a build
+    // with neither still starts.
+    PhosphorShell::ShellLoader loader(QStringLiteral("lambent"));
+    QUrl shellUrl = loader.resolve();
+    if (shellUrl.isEmpty() && QFile::exists(QStringLiteral(":/qt/qml/Lambent/Shell/shell.qml"))) {
+        shellUrl = QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/shell.qml"));
+    }
     if (shellUrl.isEmpty()) {
         const QString configDir = loader.shellConfigDir();
         // Build the full diagnostic in one QString. Chaining many
