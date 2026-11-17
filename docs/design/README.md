@@ -41,7 +41,7 @@ when the shell is absent. Shell actions whose bindings are managed externally
 are marked “Set in compositor” without inventing defaults.
 
 For isolated native visual checks, start a nested compositor and run
-`scripts/nested-shell/shortcuts-preview.sh run` with the same `PZ_NESTED_SESSION`.
+`scripts/nested-shell/shortcuts-preview.sh run` with the same `LAMBENT_NESTED_SESSION`.
 Its `preview` IPC target controls mode, custom/unassigned bindings, service
 states, palette, viewport size and text scaling. Stop the foreground preview
 with Ctrl+C before restarting it. See the implementation record for validation.
@@ -183,17 +183,18 @@ and logind; notification content stays hidden. The browser study still uses
 `demo` and simulated power actions for design review.
 
 For native visual review, start the nested harness and run
-`scripts/nested-shell/lock-preview.sh run` with the same `PZ_NESTED_SESSION`.
+`scripts/nested-shell/lock-preview.sh run` with the same `LAMBENT_NESTED_SESSION`.
 It renders the production QML with fixture authentication, media and power
 services in its own config directory. `lock-preview.sh call preview.state`
-reports the state without exposing the password. The virtual compositor
-cannot exercise the real session-lock protocol; service tests cover the
-PAM and release handshake.
+reports the state without exposing the password. Service tests cover the PAM
+and release handshake.
 
-The shell is Qt6/QML on the reusable `phosphor-*` libraries. This branch
-integrates with the PlasmaZones daemon and KWin effect; the nested harness
-runs those build-tree components without installing them. No other shell
-framework is a dependency.
+The shell is Qt6/QML on the reusable `phosphor-*` libraries. It runs under any
+Wayland compositor with wlr-layer-shell, and reads window placement through the
+host-neutral `org.phosphor_works.Placement` D-Bus API when a placement host
+(PlasmaZones' daemon today) provides it. The nested harness runs the build-tree
+shell in a headless labwc or sway session. No other shell framework is a
+dependency.
 
 ## Start here
 

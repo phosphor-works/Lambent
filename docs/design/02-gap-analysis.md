@@ -62,7 +62,7 @@ current interaction decision before implementation.
 
 | Gap | Notes |
 |---|---|
-| Lock screen in the nested harness | The virtual KWin backend does not advertise `ext_session_lock_manager_v1`. The production lock UI is visually testable through `scripts/nested-shell/lock-preview.sh`; PAM and compositor-lock lifecycle remain service-test coverage. |
+| Lock screen in the nested harness | The production lock UI is visually testable through `scripts/nested-shell/lock-preview.sh`; PAM and compositor-lock lifecycle remain service-test coverage. labwc and sway advertise `ext_session_lock_manager_v1`, so the nested harness can exercise the real lock, which has not been checked yet. |
 | Real polkit authentication in the nested harness | The host session's agent owns the seat. `authentication-preview.sh` exercises the production UI with fixtures, while service tests cover the agent. Seat-owned authentication needs a real-session check. |
 | Physical Wi-Fi, Bluetooth, audio and battery behavior | Private D-Bus and PipeWire fixtures exercise service contracts. Hardware association, pairing, device changes and battery reporting still need real devices. |
 | Additional control-center services | Native service tests and isolated visual checks pass. Actual display warmth, radio switches, WWAN hardware and power-profile effects require the corresponding services and hardware. |

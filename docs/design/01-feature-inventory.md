@@ -13,7 +13,7 @@ the live placement model and the services retained by the redesign.
 |---|---|---|
 | Floating bar and placement mini | `Phosphor.Bar` | Per-output placement map, workspace caption, saved widget groups and bounded overflow. |
 | Navigator | `Phosphor.Bar.MapPane`, `Phosphor.Widgets.WorkspaceNavigator` | Anchored preview and complete window list with keyboard activation. |
-| Stage | `Phosphor.Dashboard.StageOverview`, `DesktopStage` | Workspace maps, native desktop preview or map fallback, window inspector and bounded filmstrip. |
+| Stage | `Phosphor.Dashboard.StageOverview` | Workspace maps, a desktop preview from the placement map, window inspector and bounded filmstrip. |
 | Quick settings | `Phosphor.ControlCenter`, `Phosphor.Bar` detail panels | Compact panel anchored to the status area in both presentations, with native Wi-Fi, Bluetooth, Output/Input/Apps, Night light, Dark mode, Airplane mode, Power profiles, Wallpaper and Battery pages. |
 | Status icons | `Phosphor.Bar.Status`, `StatusIconsController` | Configurable nine-icon group with ordering, Always/When active/Hidden policies, a visible limit, overflow, battery percentage and individual context menus. |
 | Calendar | `Phosphor.Bar.CalendarPanel` | Local time/date, month navigation, Today and keyboard day selection. |
@@ -43,8 +43,9 @@ the live placement model and the services retained by the redesign.
 - `PlacementMap` provides visible map cells and complete navigation windows.
   Offscreen columns, minimized windows and inactive tabs stay reachable.
 - `DecorationSlot` and `ShellChrome` provide optional custom surface packs.
-- The effect's gesture relay still connects through `CompositorBridge` and
-  `ShellGestures`; physical gesture progress is a separate service extension.
+- Touchpad gestures are the compositor's. Its gesture binds call the same
+  `phosphorctl` IPC commands as key binds; physical gesture progress is a
+  separate service extension.
 
 ## Services behind the surfaces
 
