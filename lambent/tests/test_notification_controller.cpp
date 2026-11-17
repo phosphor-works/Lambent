@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // Unit tests for the shell's notification centre. The class ships in the
-// GPL shell binary (phosphor-shell/src), so its tests live in the GPL shell
+// GPL shell binary (lambent/src), so its tests live in the GPL shell
 // tree rather than in the LGPL service library's own suite, which covers
 // the server and its LIVE model.
 //
