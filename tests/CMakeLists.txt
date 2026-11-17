@@ -211,7 +211,7 @@ if(TARGET PhosphorPopout::PhosphorPopoutQml AND TARGET PhosphorLayer::PhosphorLa
             ${CMAKE_SOURCE_DIR}/phosphor-shell/src
             # The reusable phosphor-layer test mocks (mocks/mocktransport.h,
             # mocks/mockscreenprovider.h).
-            ${CMAKE_SOURCE_DIR}/phosphor-libs/libs/phosphor-layer/tests
+            ${phosphor-libs_SOURCE_DIR}/libs/phosphor-layer/tests
     )
     target_link_libraries(test_layer_popout_transport
         PRIVATE
@@ -446,7 +446,7 @@ endif()
 # configure time, which means tests added BELOW this line are NOT covered.
 # Always add new test targets ABOVE this block — never after it.
 # ═══════════════════════════════════════════════════════════════════════════════
-include(${CMAKE_SOURCE_DIR}/cmake/PhosphorTestIsolation.cmake)
+include(${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake)
 
 # The shared sweep. It supplies the private-bus TEST_LAUNCHER and a per-target
 # XDG sandbox; the bus config declares no service directories, so the installed

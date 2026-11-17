@@ -12,10 +12,10 @@ tags: ['cmake']
 # that: affectedness does not propagate from a dependency to its dependent, so
 # editing a bundled surface pack would mark only plasmazones affected and this
 # tier's tests would not run under `--affected`. The workspace-relative test
-# input below is what closes it, the same way phosphor-libs/moon.yml does for
-# data/animations and data/pointer.
+# input below is what closes it. The pin file is the second input: the shell
+# builds on the phosphor-libs commit cmake/PlasmaZonesDependencies.cmake pins,
+# which is not a project here.
 dependsOn:
-  - 'phosphor-libs'
   - 'phosphor-shell-libs'
 
 project:
@@ -26,3 +26,4 @@ tasks:
   test:
     inputs:
       - '/plasmazones/data/surface/**/*'
+      - '/cmake/PlasmaZonesDependencies.cmake'

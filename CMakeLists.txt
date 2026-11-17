@@ -227,8 +227,8 @@ endif()
 
 install(TARGETS phosphor-shell DESTINATION ${KDE_INSTALL_BINDIR})
 
-# The shell's icon, from the pinned branding release (cmake/PhosphorDependencies.cmake).
-phosphor_fetch_dependency(branding)
+# The shell's icon, from the pinned branding release (cmake/PlasmaZonesDependencies.cmake).
+plasmazones_fetch_dependency(branding)
 include(${branding_SOURCE_DIR}/cmake/PhosphorBranding.cmake)
 phosphor_install_brand_icons(phosphor-shell phosphor-shell)
 
