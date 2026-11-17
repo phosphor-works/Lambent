@@ -266,6 +266,21 @@ lambent_fetch_dependency(branding)
 include(${branding_SOURCE_DIR}/cmake/PhosphorBranding.cmake)
 phosphor_install_brand_icons(org.phosphor_works.Lambent lambent)
 
+# The surface decoration packs the chrome draws, from the pinned
+# phosphor-surface-packs commit (cmake/LambentDependencies.cmake). They install
+# to share/phosphor-works/surface, where every app of the suite looks for them,
+# so a distribution that packages phosphor-surface-packs on its own turns the
+# install off here. main.cpp hands that subdir to phosphor-surface at startup.
+# The tests read the packs from the source tree, PHOSPHOR_SURFACE_PACKS_DIR.
+option(LAMBENT_INSTALL_SURFACE_PACKS
+       "Install the surface decoration packs (off when the distribution packages phosphor-surface-packs on its own)" ON)
+lambent_fetch_dependency(phosphor-surface-packs)
+include(${phosphor-surface-packs_SOURCE_DIR}/cmake/PhosphorSurfacePacks.cmake)
+if(LAMBENT_INSTALL_SURFACE_PACKS)
+    phosphor_install_surface_packs()
+endif()
+target_compile_definitions(lambent PRIVATE LAMBENT_SURFACE_PACKS_DATA_SUBDIR="${PHOSPHOR_SURFACE_PACKS_DATA_SUBDIR}")
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

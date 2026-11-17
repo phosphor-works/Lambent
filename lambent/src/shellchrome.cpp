@@ -6,10 +6,13 @@
 #include <PhosphorSurface/DecorationProfile.h>
 #include <PhosphorSurface/DecorationSupportedPaths.h>
 #include <PhosphorSurface/SurfaceChainCompose.h>
+#include <PhosphorSurface/SurfacePackLocation.h>
 #include <PhosphorSurface/SurfaceShaderEffect.h>
 #include <PhosphorSurface/SurfaceThemeResolve.h>
 #include <PhosphorTheme/PaletteStore.h>
 #include <PhosphorTheme/ShellPalette.h>
+
+#include "version.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>
@@ -80,7 +83,7 @@ ShellChrome::ShellChrome(const QStringList& packSearchPaths, QObject* parent)
     // does not consult would still cost a QFileSystemWatcher and a whole-directory
     // re-parse on every preset the user saves, which is the reason every other
     // consumer names its families too.
-    m_presetStore->load(PhosphorShaders::standardUserPresetRoot(), {PhosphorShaders::ShaderFamily::Surface});
+    m_presetStore->load(userPresetRoot(), {PhosphorShaders::ShaderFamily::Surface});
 
     // Pack-declared presets live in each pack's metadata.json, which only the pack
     // registry parses, so push what it has now and again on every reload. The
@@ -177,10 +180,13 @@ void ShellChrome::setDecorationComponent(QObject* component)
 
 QStringList ShellChrome::defaultPackSearchPaths()
 {
-    // The daemon's setupSurfaceShaderEffects, verbatim: system dirs lowest
-    // priority first, the user dir last and materialised so the loader can
-    // watch it.
+    // System dirs lowest priority first, the user dir last and materialised
+    // so the loader can watch it. main.cpp sets the subdir before this runs;
+    // without one there is nothing to look up.
     const QString packSubdir = PhosphorSurfaceShaders::surfacePackDataSubdir();
+    if (packSubdir.isEmpty()) {
+        return {};
+    }
     QStringList dirs =
         QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, packSubdir, QStandardPaths::LocateDirectory);
     std::reverse(dirs.begin(), dirs.end());
@@ -191,6 +197,11 @@ QStringList ShellChrome::defaultPackSearchPaths()
     }
     QDir().mkpath(userDir);
     return dirs;
+}
+
+QString ShellChrome::userPresetRoot()
+{
+    return PhosphorShaders::standardUserPresetRoot(Lambent::APP_DIR + QStringLiteral("/shader-presets"));
 }
 
 const PhosphorSurfaceShaders::DecorationProfileTree& ShellChrome::tree() const

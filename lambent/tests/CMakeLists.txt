@@ -182,41 +182,31 @@ endif()
 # The chrome decoration resolver: tree JSON + the bundled packs to a stage
 # list per shell surface path.
 #
-# It resolves against real decoration packs, which ship with PlasmaZones
-# (plasmazones/data/surface, installed under share/plasmazones/surface, where
-# the shell finds them at run time). LAMBENT_SURFACE_PACKS_DIR names such a
-# directory, and the test is registered only when it is set. CI sets it from a
-# PlasmaZones checkout.
-set(LAMBENT_SURFACE_PACKS_DIR "" CACHE PATH
-    "PlasmaZones' plasmazones/data/surface, for test_shell_chrome. Empty: the test is not registered")
-if(NOT LAMBENT_SURFACE_PACKS_DIR)
-    message(STATUS "test_shell_chrome is not registered: set LAMBENT_SURFACE_PACKS_DIR to PlasmaZones' plasmazones/data/surface")
-elseif(NOT IS_DIRECTORY "${LAMBENT_SURFACE_PACKS_DIR}")
-    message(FATAL_ERROR "LAMBENT_SURFACE_PACKS_DIR is ${LAMBENT_SURFACE_PACKS_DIR}, which is not a directory")
-else()
-    add_executable(test_shell_chrome
-        test_shell_chrome.cpp
-        ${LAMBENT_SOURCE_DIR}/src/ShellChrome.h
-        ${LAMBENT_SOURCE_DIR}/src/shellchrome.cpp
-    )
-    target_link_libraries(test_shell_chrome
-        PRIVATE
-            Qt6::Test
-            Qt6::Core
-            Qt6::DBus
-            Qt6::Gui
-            PhosphorProtocol::PhosphorProtocol
-            # Declared rather than taken transitively through PhosphorSurface:
-            # ShellChrome.h includes <PhosphorShaders/ShaderPresetStore.h> and holds
-            # the store by unique_ptr, so the edge belongs to this target too.
-            PhosphorShaders::PhosphorShaders
-            PhosphorSurface::PhosphorSurface
-            PhosphorTheme::PhosphorTheme
-    )
-    target_compile_definitions(test_shell_chrome PRIVATE LAMBENT_SURFACE_PACKS_DIR="${LAMBENT_SURFACE_PACKS_DIR}")
-    target_include_directories(test_shell_chrome PRIVATE ${LAMBENT_SOURCE_DIR}/src)
-    add_test(NAME test_shell_chrome COMMAND test_shell_chrome)
-endif()
+# It resolves against the real decoration packs, from the pinned
+# phosphor-surface-packs tree (PHOSPHOR_SURFACE_PACKS_DIR, set in
+# lambent/CMakeLists.txt).
+add_executable(test_shell_chrome
+    test_shell_chrome.cpp
+    ${LAMBENT_SOURCE_DIR}/src/ShellChrome.h
+    ${LAMBENT_SOURCE_DIR}/src/shellchrome.cpp
+)
+target_link_libraries(test_shell_chrome
+    PRIVATE
+        Qt6::Test
+        Qt6::Core
+        Qt6::DBus
+        Qt6::Gui
+        PhosphorProtocol::PhosphorProtocol
+        # Declared rather than taken transitively through PhosphorSurface:
+        # ShellChrome.h includes <PhosphorShaders/ShaderPresetStore.h> and holds
+        # the store by unique_ptr, so the edge belongs to this target too.
+        PhosphorShaders::PhosphorShaders
+        PhosphorSurface::PhosphorSurface
+        PhosphorTheme::PhosphorTheme
+)
+target_compile_definitions(test_shell_chrome PRIVATE LAMBENT_SURFACE_PACKS_DIR="${PHOSPHOR_SURFACE_PACKS_DIR}")
+target_include_directories(test_shell_chrome PRIVATE ${LAMBENT_SOURCE_DIR}/src)
+add_test(NAME test_shell_chrome COMMAND test_shell_chrome)
 
 # What it costs to OPEN a bar panel: a fence against a blocking service
 # construction moving back onto the click path. Needs the Phosphor.Bar QML

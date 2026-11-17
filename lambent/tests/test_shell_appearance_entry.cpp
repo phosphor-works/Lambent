@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 fuddlesworth
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "PickerController.h"
+#include "version.h"
 
 #include <PhosphorLayer/IScreenProvider.h>
 #include <PhosphorShell/PanelWindow.h>
@@ -79,6 +80,10 @@ class TestShellAppearanceEntry : public QObject
 private Q_SLOTS:
     void initTestCase()
     {
+        // Where main.cpp puts the shell's appearance, under the test's own
+        // config home.
+        AppearanceStore::setSingletonPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
+                                              .filePath(Lambent::APP_DIR + QStringLiteral("/appearance.json")));
         PhosphorShell::registerQmlTypes();
         QVERIFY(QGuiApplication::screens().size() >= 2);
         for (const auto* screen : QGuiApplication::screens())
@@ -105,8 +110,7 @@ private Q_SLOTS:
     }
     void lockedPreviewReportsFailureThenRecovers()
     {
-        const auto path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-            + QStringLiteral("/lambent/appearance.json.preview.lock");
+        const auto path = AppearanceStore::singletonPath() + QStringLiteral(".preview.lock");
         QVERIFY(QDir().mkpath(QFileInfo(path).absolutePath()));
         QLockFile competitor(path);
         QVERIFY(competitor.tryLock());
