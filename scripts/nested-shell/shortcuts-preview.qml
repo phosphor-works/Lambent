@@ -25,7 +25,7 @@ Item {
     property int closeCount: 0
     property int releaseCount: 0
     property var layoutsOverride: null
-    readonly property string selectedOutput: Environment.get("PZ_SHORTCUTS_SCREEN")
+    readonly property string selectedOutput: Environment.get("LAMBENT_SHORTCUTS_SCREEN")
     readonly property bool layoutsSupported: layoutsOverride === null ? modeValue !== 1 : layoutsOverride
     readonly property string workspaceLabel: modeValue === 2 ? qsTr("Listen") : modeValue === 0 ? qsTr("Build") : qsTr("Develop")
 

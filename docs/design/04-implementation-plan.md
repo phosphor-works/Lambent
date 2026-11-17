@@ -94,7 +94,7 @@ light and dark materials, and a 360×480 panel at 115% text size with Ember.
 There are no QML binding errors in that run. Service actions use fixtures and wallpaper changes
 stay in the preview's private configuration. Start a nested session, then use
 `scripts/nested-shell/quick-settings-preview.sh run` with its
-`PZ_NESTED_SESSION`. For example, `call preview.batteryState --arg name=low`
+`LAMBENT_NESTED_SESSION`. For example, `call preview.batteryState --arg name=low`
 opens the low-battery case, and `call preview.state` reports the loaded panel.
 
 The earlier validation records below describe their own commits. Hardware
@@ -232,13 +232,10 @@ window dismisses Navigator. The bar miniature remains bounded as the strip
 grows. Repeated overview replacement and appearance reloads leave the shell
 and compositor running.
 
-The native window decoration is built with the shell under
-`org.kde.kdecoration3`. Appearance's “Match desktop windows” option applies
-the frame and spacing together. A journal preserves the prior settings;
-disabling the option or a clean shutdown restores only values still owned
-by the shell. Per-window colors are shared with the bar and workspace maps.
-Stage keeps the wallpaper in place and fits each complete app view below
-its full-size titlebar without changing the real window's desktop geometry.
+Per-window colors are shared with the bar and workspace maps. The native
+window decoration, Appearance's “Match desktop windows” option and Stage's
+native desktop preview were KWin-only, and were removed when Lambent stopped
+assuming KWin.
 
 Third-party app content and live service data naturally differ from the
 illustrative mockup data. Calendar appointments require an agenda provider.
@@ -314,8 +311,9 @@ window edge with exclusive keyboard focus.
   the settings portal), `SettleAnimation`, `FontFaces`, the OSD readout
   outline.
 - 5b: touchpad gestures registered by the effect, relayed over
-  `CompositorBridge.reportGesture` and `ShellGestures`; toast swipe; rail
-  two-finger step.
+  `CompositorBridge.reportGesture` and `ShellGestures` (since removed:
+  compositor gesture binds call `phosphorctl`); toast swipe; rail two-finger
+  step.
 - 5c: surface packs on the chrome through `ShellChrome` and `DecorationSlot`,
   the `shell.phosphor.*` tree paths with seeded defaults and settings cards.
 
@@ -345,8 +343,8 @@ fixture auth/media/power services on an existing nested session. Its config
 and IPC socket are separate from the ordinary shell. Use the same script
 with `call preview.result --arg name=error`, `success` or `idle` to drive the
 outcome. Success hides the preview windows after the exit; idle shows them
-again. The actual session-lock protocol is unavailable in virtual KWin, so
-PAM and compositor-lock lifecycle validation comes from the service tests.
+again. PAM and compositor-lock lifecycle validation comes from the service
+tests.
 
 The final build passed. The full suite ran 541 cases: 540 passed and the
 existing surface-decoration orientation test was skipped. Real nested

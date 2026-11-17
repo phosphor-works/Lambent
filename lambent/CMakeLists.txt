@@ -50,8 +50,6 @@ add_executable(lambent
     src/layerpopouttransport.cpp
     src/QmlComponentBarWidgetFactory.h
     src/qmlcomponentbarwidgetfactory.cpp
-    src/DesktopStyleController.h
-    src/desktopstylecontroller.cpp
     src/AirplaneController.h
     src/airplanecontroller.cpp
     src/ColorModeController.h
@@ -85,8 +83,6 @@ add_executable(lambent
     src/shelleffects.cpp
     src/ShellMotion.h
     src/shellmotion.cpp
-    src/ShellGestures.h
-    src/shellgestures.cpp
     src/ShellChrome.h
     src/shellchrome.cpp
     # The launcher's registry owner: built-in providers, the model the
@@ -128,9 +124,6 @@ target_link_libraries(lambent
         KF6::ConfigCore
         PhosphorControl::PhosphorControl
         PhosphorShell::PhosphorShell
-        # KPluginMetaData, for DesktopStyleController's probe of the
-        # installed window decoration plugin.
-        KF6::CoreAddons
         # Registry core (Registry<IBarWidgetFactory> + RegistryNotifier)
         # for BarController, and the Phosphor.Bar QML module + its plugin
         # registrar so the bar delegates resolve at runtime.
@@ -175,9 +168,6 @@ target_link_libraries(lambent
         # loaded at startup through PaletteStore (see main.cpp).
         PhosphorShellPicker::PhosphorShellPickerQml
         PhosphorShellPickerQmlplugin
-        # ShellGestures subscribes to the daemon's gestureReported relay
-        # by the protocol's interface constants.
-        PhosphorProtocol::PhosphorProtocol
         # ShellChrome: the decoration tree + pack registry (PhosphorSurface), the
         # preset store it flattens through (PhosphorShaders — declared rather than
         # taken transitively, because ShellChrome.h includes ShaderPresetStore.h and

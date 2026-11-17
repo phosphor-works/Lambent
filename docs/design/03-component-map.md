@@ -29,7 +29,7 @@ phosphor-libs/libs/ and phosphor-shell-libs/libs/  (the two library tiers; the
   phosphor-shell-power/      Phosphor.Power: the word column
   phosphor-shell-lock/       Phosphor.Lock: LockScreen, LockController, LockCard, LockBackdrop,
                              LockClock, LockAuthField, LockMedia, LockPowerMenu
-  phosphor-shell-dashboard/  Phosphor.Dashboard: StageOverview, DesktopStage, Dashboard, Cheatsheet, FullMap
+  phosphor-shell-dashboard/  Phosphor.Dashboard: StageOverview, Dashboard, Cheatsheet, FullMap
   phosphor-shell-picker/     Phosphor.Picker: AppearanceWorkspace, AppearanceLibrary, WallpaperSurface,
                              WallpaperCandidates, RetintController, ThemePresets, reusable Picker strip
   phosphor-shell-polkit/     Phosphor.Polkit: PolkitSurface, PolkitPrompt, PolkitPasswordField, PolkitDim
@@ -52,7 +52,6 @@ lambent/src/                 The shell process (GPL)
   PaneRules                  Seeds the pane's window rule into the daemon
   ShellEffects               Compositor blur behind a region (kde-blur)
   ShellMotion                Profile registry (shell.settle) + reduced motion from the portal
-  ShellGestures              CompositorBridge.gestureReported relay
   ShellChrome                Decoration tree + pack registry → stage lists for DecorationSlot
 
 lambent/shell/shell.qml      The composition root: every surface mounted per screen
@@ -75,11 +74,8 @@ against the output and reserved bar margins. Full-screen Stage takes the
 entire output. The engine-placed pane transport remains available for
 surfaces explicitly routed to it.
 
-**Stage preview.** `DesktopStage` calls the effect's `ShellOverview` adapter
-on KWin's session bus. The adapter transforms desktop windows into a
-normalized output rect. Each QML instance supplies a unique token; a late
-close from an older popup cannot restore the replacement's preview. Without
-the adapter, the QML surface uses the placement-map fallback.
+**Stage preview.** Stage draws its desktop preview from the placement map.
+The compositor's own windows are not transformed.
 
 **Feedback.** `OsdRegistry` and `ToastRegistry` fan a show request out to the
 host on the right screen; the host places the band on the focused window's
@@ -93,10 +89,9 @@ stage list to the shared `SurfaceDecoration` host that a surface's
 Component through `ShellChrome.decorationComponent`, because per-screen
 delegates cannot see ids in `shell.qml`.
 
-**Gestures.** The KWin effect registers the shell's touchpad gestures and
-reports each completed one over `CompositorBridge.reportGesture`; the daemon
-validates and re-emits `gestureReported`; `ShellGestures` relays it to
-`shell.qml`, which maps it to a surface.
+**Gestures.** Touchpad gestures belong to the compositor. Its gesture binds
+run `phosphorctl call launcher.toggle` or `dashboard.toggle`, the same IPC
+commands a key bind uses.
 
 **Motion.** `ShellMotion` owns the process's profile registry and publishes
 it as the QML default, so `SettleAnimation` (a `PhosphorMotionAnimation` on
