@@ -924,7 +924,7 @@ Item {
                 return false;
             AppearanceStore.endPreview();
             AppearanceStore.setValue("wallpapers", {});
-            root.wallpaperScreen = name === "per-display" ? "Virtual-1" : "";
+            root.wallpaperScreen = name === "per-display" ? "HEADLESS-2" : "";
             if (name === "preview")
                 AppearanceStore.beginPreview();
             if (name === "missing") {
@@ -937,7 +937,7 @@ Item {
             } else if (name !== "empty") {
                 AppearanceStore.setWallpaper(root.wallpaperPath("fixture-spectrum.png"), "", ["fit", "stretch", "center"].indexOf(name) >= 0 ? name : "fill");
                 if (name === "per-display")
-                    AppearanceStore.setWallpaper(root.wallpaperPath("fixture-ember.png"), "Virtual-1", "fit");
+                    AppearanceStore.setWallpaper(root.wallpaperPath("fixture-ember.png"), "HEADLESS-2", "fit");
             }
             root.appearancePage = "";
             root.view = "wallpaper";

@@ -7,21 +7,25 @@
 # preview.statusState accepts everyday, meeting, travel, desktop, all, empty,
 # unavailable, pending and error. Settings persist inside the preview sandbox.
 set -eu
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
-# The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
+SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$SCRIPTS/../.." && pwd)"
+# The same state-dir resolution run-nested.sh uses (LAMBENT_NESTED_SESSION included).
+. "$SCRIPTS/nest-dir.sh"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
     exit 1
 fi
 # shellcheck disable=SC1091
 . "$NEST/env.sh"
-case "${WAYLAND_DISPLAY:-}" in
-    pznested*) ;;
+case "${XDG_RUNTIME_DIR:-}" in
+    "${LAMBENT_NESTED_DIR:-}/runtime") ;;
     *) echo "Quick-settings preview requires the nested compositor." >&2; exit 1 ;;
 esac
 BUILD="${LAMBENT_BUILD:-build}"
+case "$BUILD" in
+    /*) ;;
+    *) BUILD="$REPO/$BUILD" ;;
+esac
 export PHOSPHOR_SOCKET="$NEST/quick-settings-preview.sock"
 case "${1:-run}" in
     run) STATUS_PAGE= ;;
@@ -32,7 +36,7 @@ case "${1:-run}" in
             *) echo "Unknown status page: $STATUS_PAGE" >&2; exit 1 ;;
         esac
         ;;
-    *) exec "$REPO/$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@" ;;
+    *) exec "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@" ;;
 esac
 export XDG_CONFIG_HOME="$NEST/quick-settings-preview/config"
 mkdir -p "$XDG_CONFIG_HOME/lambent"
@@ -52,4 +56,4 @@ case "${PIPEWIRE_RUNTIME_DIR:-}" in
         sed -i 's/property bool audioEnabled: false/property bool audioEnabled: true/' "$XDG_CONFIG_HOME/lambent/shell.qml"
         ;;
 esac
-exec "$REPO/$BUILD/bin/lambent"
+exec "$BUILD/bin/lambent"

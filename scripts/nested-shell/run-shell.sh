@@ -2,166 +2,98 @@
 # SPDX-FileCopyrightText: 2026 fuddlesworth
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# One-command Lambent harness: a nested kwin_wayland session with
-# the BUILD-TREE shell running inside it, drivable over the shell's own
-# IPC socket and screenshot-able for eyes-free (AI) test loops. No
-# install or logout. Configuration and shell IPC are isolated. Hardware
-# services and logind power actions still reach the host: use service
-# fixtures when testing actions such as suspend, reboot or shutdown.
+# One-command Lambent harness: a nested headless wlroots compositor with the
+# BUILD-TREE shell running inside it, drivable over the shell's own IPC socket
+# and screenshot-able for eyes-free (AI) test loops. No install or logout.
+# Configuration, the session bus, the runtime dir and shell IPC are isolated.
+# Hardware services (the system bus, PipeWire) and logind power actions still
+# reach the host: use service fixtures when testing actions such as suspend,
+# reboot or shutdown.
 #
 # Usage:
 #   scripts/nested-shell/run-shell.sh [output-count] [width height] [scale]
 #
-# The arguments go to scripts/nested-kwin/run-nested.sh, which passes scale
-# only to a visible window (PZ_NESTED_VISIBLE). A headless output stays at
-# scale 1; set it once the session is up with
-#   kscreen-doctor output.Virtual-0.scale.1.25
-#
-# Headless by default (kwin --virtual; drive it with ctl.sh and read it
-# with capture.sh). Set PZ_NESTED_VISIBLE=1 to get the nested compositor
-# as a window on the host desktop instead, same session semantics, with
-# pointer and keyboard.
+# The arguments go to run-nested.sh, which picks the compositor (labwc, sway,
+# or LAMBENT_NESTED_COMPOSITOR) and documents the rest.
 #
 # What it does, in order:
-#   1. launches scripts/nested-kwin/run-nested.sh in the background
-#      (compositor log: $PZ_NESTED_DIR/compositor.log) and waits for the
-#      session's env.sh;
-#   2. seeds the example shell tree into the nested config home
-#      ($NEST/home/config/lambent/), so shell.qml edits there
-#      hot-reload without rebuilds — seeding must happen AFTER the
-#      launcher, whose home wipe would otherwise eat the seed;
-#   3. starts the build-tree lambent inside the session via
-#      shell.sh (shell log: $NEST/shell.log, IPC socket:
-#      $NEST/phosphor.sock).
+#   1. starts run-nested.sh in the background (compositor log:
+#      $LAMBENT_NESTED_DIR/compositor.log) and waits for a fresh env.sh,
+#      which is written once the compositor's socket is bound;
+#   2. seeds the bundled shell tree into the nested config home
+#      ($NEST/home/config/lambent/), so shell.qml edits there hot-reload
+#      without rebuilds. Seeding happens after the launcher wiped the homes;
+#   3. starts the build-tree lambent inside the session through shell.sh
+#      (shell log: $NEST/shell.log, IPC socket: $NEST/phosphor.sock).
 #
 # Follow-ups (each sources env.sh itself):
-#   scripts/nested-shell/ctl.sh call power.toggle     # drive the shell
-#   scripts/nested-shell/capture.sh Virtual-1 out.png # look at it
-#   scripts/nested-shell/shell.sh                     # restart after a rebuild
+#   scripts/nested-shell/ctl.sh call power.toggle       # drive the shell
+#   scripts/nested-shell/capture.sh HEADLESS-1 out.png  # look at it
+#   scripts/nested-shell/shell.sh                       # restart after a rebuild
+#   kill "$(cat "$LAMBENT_NESTED_DIR/compositor.pid")"  # end the session
 #
-# Screenshot note: the shell is an ordinary layer-shell CLIENT, composited on
-# the normal path, so its bars, popouts and toasts appear in captures, and
-# screenshots are real rendering evidence for this harness. CaptureScreen
-# includes compositor effects on KWin 6.7 as well, so effect transforms can
-# show in the pixels; committed geometry still comes from dump-windows.sh.
+# The shell is an ordinary layer-shell client, so its bars, popouts and toasts
+# appear in captures, and screenshots are real rendering evidence.
 #
-# Environment knobs (all inherited by the sibling scripts through env.sh):
-#   PZ_NESTED_SESSION                 — one name for a whole extra session,
-#                                       setting both the directory and the
-#                                       wayland socket so two can run at
-#                                       once without colliding. Every
-#                                       sibling script reads it too:
-#                                         PZ_NESTED_SESSION=ai run-shell.sh 1
-#                                         PZ_NESTED_SESSION=ai ctl.sh list
-#                                       PZ_NESTED_DIR / PZ_NESTED_SOCKET
-#                                       still win where they are set.
-#   PZ_NESTED_DIR / PZ_NESTED_SOCKET  — per-worktree isolation, as for
-#                                       nested-kwin (defaults pz-nested/
-#                                       pznested).
-#   LAMBENT_BUILD                     — Lambent's build dir other than build/.
-#   LAMBENT_PLASMAZONES               — the PlasmaZones checkout whose
-#                                       nested-kwin harness, effect and daemon
-#                                       run the session (default ../PlasmaZones,
-#                                       built in its build/).
-#   PZ_NESTED_BUILD                   — that checkout's build dir other than
-#                                       build/, as for nested-kwin.
-#   PZ_NESTED_VISIBLE                 — windowed nested compositor.
-#   PZ_SHELL_NO_SEED                  — keep the qrc-baked example instead
-#                                       of seeding an editable copy.
+# Environment knobs (the sibling scripts read the same ones):
+#   LAMBENT_NESTED_SESSION     one name for a whole extra session, so two can
+#                              run at once:
+#                                LAMBENT_NESTED_SESSION=ai run-shell.sh 1
+#                                LAMBENT_NESTED_SESSION=ai ctl.sh list
+#   LAMBENT_NESTED_DIR         the state dir itself, over the session default.
+#   LAMBENT_NESTED_COMPOSITOR  the compositor's command line, over labwc/sway.
+#   LAMBENT_NESTED_VISIBLE     a windowed compositor on the host desktop.
+#   LAMBENT_NESTED_RENDERER    WLR_RENDERER for the compositor.
+#   LAMBENT_BUILD              Lambent's build dir other than build/.
+#   LAMBENT_SHELL_NO_SEED      keep the shell linked into the binary instead of
+#                              seeding an editable copy.
 set -eu
 
-# These scripts live two levels below the repository root, where the build
-# tree and lambent/ are. The nested KWin session comes from PlasmaZones'
-# harness: its effect and daemon, from a built PlasmaZones checkout, draw and
-# place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
-# The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
-BUILD="${LAMBENT_BUILD:-build}"
-
-if [ ! -x "$REPO/$BUILD/bin/lambent" ]; then
-    echo "no $BUILD/bin/lambent ; build Lambent first (cmake --workflow --preset dev)" >&2
-    exit 1
-fi
+REPO="$(cd "$SCRIPTS/../.." && pwd)"
+. "$SCRIPTS/nest-dir.sh"
 
 # A stale env.sh from a crashed previous session must not satisfy the wait
-# below — the launcher deletes and rewrites it, and breaking on the stale
-# one races the launcher's home wipe (which would eat the seed) and can key
-# the socket wait on a dead inode. Record the pre-launch file's identity
-# (inode + mtime; the launcher always mv's a fresh tmp file into place, so
-# the fresh one never matches) and wait for a DIFFERENT env.sh.
+# below. run-nested.sh deletes it and moves a fresh one into place, so a new
+# inode and mtime mark the new session's.
 PRE_ENV_ID=$(stat -c '%i %Y' "$NEST/env.sh" 2>/dev/null || echo none)
+env_fresh() {
+    [ -f "$NEST/env.sh" ] && [ "$(stat -c '%i %Y' "$NEST/env.sh" 2>/dev/null || echo none)" != "$PRE_ENV_ID" ]
+}
 
-# The launcher runs the compositor in the foreground; background it with its
-# output in a private temp file, moved to the documented $NEST/compositor.log
-# once the session is confirmed up. Nothing is written into $NEST before
-# then: the launcher validates PZ_NESTED_DIR and checks the directory is the
-# user's own and private before it writes there, and a write from here first
-# would follow a symlink planted in a shared directory, or create a directory
-# for a value the launcher is about to refuse. A temp name rather than
-# compositor.log itself also keeps this invocation from truncating a LIVE
-# session's log before the launcher's guard refuses. Its stderr is a regular
-# file, so the launcher does not copy the output a second time.
-LAUNCH_LOG=$(mktemp "$RUNTIME_DIR/pz-nested-launch.XXXXXX")
-"$PLASMAZONES/scripts/nested-kwin/run-nested.sh" "$@" > "$LAUNCH_LOG" 2>&1 &
+# Until run-nested.sh has checked the state dir and moved its output into
+# compositor.log there, what it prints (its refusals) goes to a private temp
+# file, shown if it exits before the session is up.
+LAUNCH_LOG=$(mktemp "$RUNTIME_DIR/lambent-nested-launch.XXXXXX")
+trap 'rm -f "$LAUNCH_LOG"' EXIT
+LAMBENT_NESTED_DETACH=1 "$SCRIPTS/run-nested.sh" "$@" > "$LAUNCH_LOG" 2>&1 &
 LAUNCHER_PID=$!
 
-# env.sh is written just before kwin starts, so a FRESH env.sh is the
-# up-signal. The launcher exiting first means its guards refused — surface
-# its log instead of spinning the full timeout.
-env_fresh() {
-    [ "$(stat -c '%i %Y' "$NEST/env.sh" 2>/dev/null || echo none)" != "$PRE_ENV_ID" ] \
-        && [ -f "$NEST/env.sh" ]
-}
-for _ in $(seq 1 100); do
+for _ in $(seq 1 150); do
     env_fresh && break
     if ! kill -0 "$LAUNCHER_PID" 2>/dev/null; then
-        echo "nested launcher exited before the session came up; its output:" >&2
+        echo "the nested session did not come up; its output:" >&2
         cat "$LAUNCH_LOG" >&2
-        rm -f "$LAUNCH_LOG"
+        [ ! -f "$NEST/compositor.log" ] || cat "$NEST/compositor.log" >&2
         exit 1
     fi
     sleep 0.1
 done
 if ! env_fresh; then
-    echo "timed out waiting for a fresh $NEST/env.sh; launcher output ($LAUNCH_LOG):" >&2
-    cat "$LAUNCH_LOG" >&2
-    exit 1
-fi
-# Session confirmed up, so $NEST is validated and private: give the log its
-# documented name. A rename keeps the compositor's open fd and the path on one
-# inode, which needs both on one filesystem. Across filesystems mv would copy
-# and leave the compositor writing to the unlinked original, so the log stays
-# where it is and the documented name links to it instead. run-nested.sh
-# deletes such a launch log along with the link when it next rotates the logs.
-if [ "$(stat -c %d "$LAUNCH_LOG")" = "$(stat -c %d "$NEST")" ]; then
-    mv -f "$LAUNCH_LOG" "$NEST/compositor.log"
-else
-    ln -sfn "$LAUNCH_LOG" "$NEST/compositor.log"
-fi
-
-# Give the compositor a moment to bind its wayland socket — env.sh lands
-# a hair before kwin starts.
-SOCK_PATH="$RUNTIME_DIR/$(. "$NEST/env.sh" && printf %s "$WAYLAND_DISPLAY")"
-for _ in $(seq 1 50); do
-    [ -S "$SOCK_PATH" ] && break
-    sleep 0.1
-done
-if [ ! -S "$SOCK_PATH" ]; then
-    echo "compositor did not bind $SOCK_PATH; see $NEST/compositor.log" >&2
+    echo "timed out waiting for $NEST/env.sh; see $NEST/compositor.log" >&2
     exit 1
 fi
 
-# Seed an EDITABLE copy of the example shell. Without this the binary
-# falls back to its qrc-baked copy, which works but cannot be edited, so
-# the hot-reload loop — the point of the harness — has nothing to watch.
-if [ -z "${PZ_SHELL_NO_SEED:-}" ]; then
+# Seed an EDITABLE copy of the bundled shell. Without it the binary runs the
+# copy linked into it, which works but cannot be edited, so the hot-reload loop
+# the harness exists for has nothing to watch.
+if [ -z "${LAMBENT_SHELL_NO_SEED:-}" ]; then
     SHELL_CFG="$NEST/home/config/lambent"
     mkdir -p "$SHELL_CFG"
     cp -r "$REPO/lambent/shell/." "$SHELL_CFG/"
     echo "seeded editable shell: $SHELL_CFG/shell.qml"
 fi
 
+rm -f "$LAUNCH_LOG"
+trap - EXIT
 exec "$SCRIPTS/shell.sh"

@@ -8,22 +8,20 @@
 # seconds. Evicts a previous harness shell by recorded pid first, so
 # there is exactly one shell with a known pid and log per session.
 #
-#   log:    $PZ_NESTED_DIR/shell.log   (QT_FORCE_STDERR_LOGGING is already
+#   log:    $LAMBENT_NESTED_DIR/shell.log   (QT_FORCE_STDERR_LOGGING is already
 #           in env.sh, so category output lands here, not in journald)
-#   socket: $PZ_NESTED_DIR/phosphor.sock  (via $PHOSPHOR_SOCKET — a
+#   socket: $LAMBENT_NESTED_DIR/phosphor.sock  (via $PHOSPHOR_SOCKET, a
 #           per-session path, so a shell on the HOST session keeps its own
 #           $XDG_RUNTIME_DIR/phosphor.sock undisturbed)
-#   pid:    $PZ_NESTED_DIR/shell.pid
+#   pid:    $LAMBENT_NESTED_DIR/shell.pid
 set -eu
 
 # These scripts live two levels below the repository root, where the build
-# tree and lambent/ are. The nested KWin session comes from PlasmaZones'
-# harness: its effect and daemon, from a built PlasmaZones checkout, draw and
-# place the windows the shell maps. LAMBENT_PLASMAZONES names that checkout.
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
-# The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
+# tree and lambent/ are. nest-dir.sh resolves the session's state dir the way
+# run-nested.sh does (LAMBENT_NESTED_SESSION included).
+SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$SCRIPTS/../.." && pwd)"
+. "$SCRIPTS/nest-dir.sh"
 
 if [ ! -f "$NEST/env.sh" ]; then
     echo "no nested session in $NEST (run scripts/nested-shell/run-shell.sh first)" >&2
@@ -32,6 +30,10 @@ fi
 # shellcheck disable=SC1091
 . "$NEST/env.sh"
 BUILD="${LAMBENT_BUILD:-build}"
+case "$BUILD" in
+    /*) ;;
+    *) BUILD="$REPO/$BUILD" ;;
+esac
 
 # Evict by RECORDED pid, never by name: a pkill pattern would also hit a
 # shell running against the host session in another terminal.
@@ -73,7 +75,7 @@ if [ -f "$SEEDED_SHELL" ] && [ "$REPO_SHELL" -nt "$SEEDED_SHELL" ]; then
     echo "      cp '$REPO_SHELL' '$SEEDED_SHELL'   (or re-run run-shell.sh to reseed everything)" >&2
 fi
 
-nohup "$REPO/$BUILD/bin/lambent" > "$NEST/shell.log" 2>&1 &
+nohup "$BUILD/bin/lambent" > "$NEST/shell.log" 2>&1 &
 echo $! > "$NEST/shell.pid"
 
 # Up means the IPC socket is bound: the shell binds it early in main, so
