@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# The design studies under docs/ are HTML, CSS and JavaScript mockups, not part
+# of the shell. Linguist counts them as code by their extensions, so the
+# repository would read as a JavaScript project. Mark them as documentation.
+docs/** linguist-documentation
