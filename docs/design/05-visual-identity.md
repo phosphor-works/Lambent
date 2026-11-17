@@ -34,13 +34,9 @@ both presentations. This follows the corrected interaction direction; the
 bottom shelves in the earlier Stage study are no longer the shell defaults.
 Wide content layouts remain available to custom composers.
 
-Stage uses the KWin effect's `org.phosphor_works.PlasmaZones.ShellOverview` interface at
-`/org/phosphor_works/PlasmaZones/ShellOverview` on `org.kde.KWin`. The effect transforms the real
-desktop windows and restores them when the shell closes, disconnects or loses
-the output. Per-instance tokens prevent an old closing popup from restoring a
-new preview on the same shell connection. The QML surface stays full-screen so its hit areas match its
-preview. Without that interface, Stage displays a placement-map preview.
-Window selection and activation are distinct: arrows select; Enter opens.
+Stage displays a placement-map preview of the desktop. The QML surface stays
+full-screen so its hit areas match its preview. Window selection and
+activation are distinct: arrows select; Enter opens.
 
 The bar stays compact with four, ten or twenty scrolling windows. Its mini
 shows a viewport and capped offscreen markers with counts. Navigator and
@@ -105,7 +101,6 @@ atomic replacements of `shell.qml`.
 ## Verification
 
 Use `scripts/nested-shell/` with its private IPC socket. Headless screenshots
-show shell surfaces; they bypass the compositor's window transforms. Verify
-Stage's native preview using the visible nested compositor window as well.
-The implementation record distinguishes these captures from unit tests and
+show shell surfaces, and `LAMBENT_NESTED_VISIBLE=1` puts the nested compositor
+in a window on the desktop for interactive checks. The implementation record distinguishes these captures from unit tests and
 from real hardware behavior that the nested session cannot exercise.

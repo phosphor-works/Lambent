@@ -16,6 +16,11 @@ through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CM
 - Read a file before editing it. Never save working files in the repository root.
 - Run the tests after a change, and confirm the build has no warnings before committing.
 - Unreleased: no migration code for renamed settings, paths or IPC names. Change them directly.
+- Lambent assumes no particular compositor: wlr-layer-shell and standard Wayland protocols, and window placement
+  through the host-neutral `org.phosphor_works.Placement` D-Bus API (`PlacementMap`, `ShortcutCatalog`, the pane rule,
+  the chrome's decoration tree). Nothing new talks to `org.kde.KWin`, reads `kwinrc` or needs a KWin-only protocol.
+  Night light and the band blur still do, until their replacements land in the libraries. Shortcuts and gestures
+  are compositor binds that run `phosphorctl`.
 - Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `build:`, `ci:`). Stage files by name.
 - A user-visible change gets a line under `## Unreleased` in `CHANGELOG.md`.
 - `lefthook install` sets up the pre-commit hooks: clang-format and qmlformat on the staged files, and the
@@ -63,9 +68,11 @@ ctest --test-dir build -R <name>         # one test
 - `test_shell_chrome` resolves against PlasmaZones' decoration packs and is registered only with
   `-DLAMBENT_SURFACE_PACKS_DIR=<PlasmaZones>/plasmazones/data/surface`. CI sets it.
 - `PHOSPHOR_PW_TESTS_ALLOW_WRITE=0` keeps the PipeWire smoke test from toggling the host's real sink.
-- `scripts/nested-shell/run-shell.sh` runs the build-tree shell in a nested KWin session from a built PlasmaZones
-  checkout (`LAMBENT_PLASMAZONES`, default `../PlasmaZones`). `ctl.sh`, `capture.sh` and `shell.sh` drive it. Never
-  run the shell, `phosphorctl` or D-Bus calls against the user's own session.
+- `scripts/nested-shell/run-shell.sh [outputs] [width height] [scale]` runs the build-tree shell in a nested headless
+  wlroots compositor (labwc or sway, or `LAMBENT_NESTED_COMPOSITOR`) with its own session bus, runtime dir and XDG
+  homes, under `$XDG_RUNTIME_DIR/lambent-nested` (`LAMBENT_NESTED_SESSION=<name>` for another). `ctl.sh`,
+  `capture.sh` (grim) and `shell.sh` drive it, after sourcing its `env.sh`. Never run the shell, `phosphorctl` or
+  D-Bus calls against the user's own session.
 - The decoration packs the shell draws are PlasmaZones' (`share/plasmazones/surface`, the path phosphor-libs'
   `surfacePackDataSubdir()` names).
 
@@ -75,8 +82,8 @@ ctest --test-dir build -R <name>         # one test
 | --- | --- |
 | Process and engine setup | `lambent/src/main.cpp` |
 | Bar, popouts, panes | `lambent/src/barcontroller.cpp`, `layerpopouttransport.cpp`, `routingpopouttransport.cpp`, `socketpopouttransport.cpp`, `panepopouttransport.cpp`, `panerules.cpp` |
-| Chrome and motion | `lambent/src/shellchrome.cpp` (decoration packs), `shellmotion.cpp`, `shellgestures.cpp`, `shelleffects.cpp` |
-| Controllers | `lambent/src/*controller.cpp`: control center, quick settings, status icons, launcher, OSD, toasts, notifications, polkit, picker, desktop style, color mode, airplane |
+| Chrome and motion | `lambent/src/shellchrome.cpp` (decoration packs), `shellmotion.cpp`, `shelleffects.cpp` |
+| Controllers | `lambent/src/*controller.cpp`: control center, quick settings, status icons, launcher, OSD, toasts, notifications, polkit, picker, color mode, airplane |
 | Shell QML | `lambent/shell/` (the bundled tree, linked in as the `Lambent.Shell` module at `qrc:/qt/qml/Lambent/Shell/` and installed to `share/lambent/`) |
 | CLI | `lambent/cli/phosphorctl/` |
 | Tests | `lambent/tests/` |

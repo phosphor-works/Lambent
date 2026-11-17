@@ -10,14 +10,15 @@ popouts open where the window placement engine puts them, the way windows do.
 - A shell tree in QML that you copy into `~/.config/lambent/` and edit, with hot reload
 
 Lambent is built on [phosphor-libs](https://github.com/phosphor-works/phosphor-libs) and
-[phosphor-shell-libs](https://github.com/phosphor-works/phosphor-shell-libs). Under KDE Plasma it works with
-[PlasmaZones](https://github.com/phosphor-works/PlasmaZones), whose placement daemon places its popouts and whose KWin
-effect draws its decorations.
+[phosphor-shell-libs](https://github.com/phosphor-works/phosphor-shell-libs). It runs under any Wayland compositor with
+wlr-layer-shell. The live window map and engine-placed popouts come from a placement host on the
+`org.phosphor_works.Placement` D-Bus API, such as [PlasmaZones](https://github.com/phosphor-works/PlasmaZones)' daemon.
+Without one the bar shows no window map and popouts open at their anchors.
 
 ## Build
 
 Needs CMake 3.25, Qt 6.10 with its private headers, extra-cmake-modules, Wayland and the Vulkan headers, KF6 Kirigami,
-GuiAddons, Config, CoreAddons and WindowSystem, libpipewire, polkit-qt6 and PAM. The first configure downloads the
+GuiAddons, Config and WindowSystem, libpipewire, polkit-qt6 and PAM. The first configure downloads the
 pinned phosphor-libs, phosphor-shell-libs and branding archives (`cmake/LambentDependencies.cmake`) into
 `.cache/cpm`.
 
@@ -40,8 +41,21 @@ systemctl --user enable --now lambent.service
 ```
 
 `phosphorctl` drives a running shell over its IPC socket (`phosphorctl list`, `phosphorctl call <target>.<fn>`).
-`scripts/nested-shell/run-shell.sh` runs the build-tree shell inside a nested KWin session, using a built PlasmaZones
-checkout beside this one.
+
+Keyboard shortcuts and touchpad gestures belong to the compositor, which runs `phosphorctl` for them. In sway, for
+example:
+
+```
+bindsym $mod+d exec phosphorctl call launcher.toggle
+bindgesture swipe:3:up exec phosphorctl call launcher.toggle
+bindgesture swipe:3:down exec phosphorctl call launcher.hide
+bindgesture swipe:4:up exec phosphorctl call dashboard.toggle
+bindgesture pinch:4:outward exec phosphorctl call dashboard.hide
+```
+
+`scripts/nested-shell/run-shell.sh` runs the build-tree shell in a nested headless labwc or sway session, with its
+own session bus, runtime dir and XDG homes, and `ctl.sh` and `capture.sh` beside it drive it and take screenshots
+with grim.
 
 ## Contributing
 
