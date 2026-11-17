@@ -4,7 +4,7 @@
 // Unit tests for the bar's registry owner and its generic QML-component
 // factory. These live in the phosphor-shell test tree rather than in
 // phosphor-shell-libs/libs/phosphor-shell-bar/tests because the classes under test ship in the
-// GPL shell binary (phosphor-shell/src), not in the LGPL bar module.
+// GPL shell binary (lambent/src), not in the LGPL bar module.
 //
 // The QML delegates themselves are covered by the QuickTest cases in
 // phosphor-shell-libs/libs/phosphor-shell-bar/tests; what matters here is the C++ contract:
