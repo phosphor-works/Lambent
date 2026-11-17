@@ -72,10 +72,10 @@ set(LAMBENT_DEP_phosphor-surface-packs_SHA256 "fbbf0b9849d83396029bc4e310c3dcac4
 
 # The suite's branding release (CC-BY-SA-4.0, phosphor-works/branding): Lambent's
 # icon, installed from it with its cmake/PhosphorBranding.cmake.
-set(LAMBENT_DEP_branding_VERSION "0.1.0")
-set(LAMBENT_DEP_branding_URL "https://github.com/phosphor-works/branding/releases/download/v0.1.0/phosphor-branding-0.1.0.tar.gz")
-set(LAMBENT_DEP_branding_FILE "phosphor-branding-0.1.0.tar.gz")
-set(LAMBENT_DEP_branding_SHA256 "53c7247e7e2c304a4d2e75a7bdd1a87164c63c1defa4159f3cef8da23d8244b3")
+set(LAMBENT_DEP_branding_VERSION "0.2.0")
+set(LAMBENT_DEP_branding_URL "https://github.com/phosphor-works/branding/releases/download/v0.2.0/phosphor-branding-0.2.0.tar.gz")
+set(LAMBENT_DEP_branding_FILE "phosphor-branding-0.2.0.tar.gz")
+set(LAMBENT_DEP_branding_SHA256 "f070cae3490eefe364d0230b737ae7e1ae9463e3ba5c9f93b93a7119665d413c")
 
 # CPM.cmake itself, the same release the libraries pin, so they use this copy.
 set(LAMBENT_CPM_VERSION "0.43.2")
