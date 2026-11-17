@@ -233,16 +233,15 @@ target_link_libraries(lambent
         Qt6::DBus
 )
 
-# Compositor blur behind the bar's band goes through the kde-blur
-# Wayland protocol, which KWindowEffects speaks. Optional: without it
-# the band is a plain navy tint and ShellEffects.blurAvailable() says
-# so, rather than the whole shell tier failing to configure.
+# The notification centre asks for an xdg-activation token through
+# KWaylandExtras when an action opens an app, so the app may take focus.
+# Optional: without it the action runs with no token.
 find_package(KF6WindowSystem QUIET)
 if(KF6WindowSystem_FOUND)
     target_link_libraries(lambent PRIVATE KF6::WindowSystem)
     target_compile_definitions(lambent PRIVATE PHOSPHOR_SHELL_HAVE_KWINDOWSYSTEM)
 else()
-    message(STATUS "KF6WindowSystem not found: the Phosphor bar band gets no compositor blur")
+    message(STATUS "KF6WindowSystem not found: notification actions open apps without an activation token")
 endif()
 
 install(TARGETS lambent DESTINATION ${KDE_INSTALL_BINDIR})
