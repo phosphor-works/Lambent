@@ -4,28 +4,28 @@
 # Production shortcut reference with fixture bindings. It never registers or
 # invokes the displayed shortcuts. Run only inside an existing nested session.
 #
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh run
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.mode --arg name=scrolling
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.profile --arg name=custom
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.query --arg text=column
-# PZ_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.state
+# LAMBENT_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh run
+# LAMBENT_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.mode --arg name=scrolling
+# LAMBENT_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.profile --arg name=custom
+# LAMBENT_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.query --arg text=column
+# LAMBENT_NESTED_SESSION=review scripts/nested-shell/shortcuts-preview.sh call preview.state
 # Stop the foreground preview with Ctrl+C before restarting it.
 #
 # Capture with nested-shell/capture.sh on the original nested session bus.
-# PZ_SHORTCUTS_SCREEN optionally selects an output by name instead of primary.
+# LAMBENT_SHORTCUTS_SCREEN optionally selects an output by name instead of primary.
 set -eu
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-PLASMAZONES="$(cd "${LAMBENT_PLASMAZONES:-$REPO/../PlasmaZones}" && pwd)"
-# The same state-dir resolution run-nested.sh uses (PZ_NESTED_SESSION included).
-. "$PLASMAZONES/scripts/nested-kwin/nest-dir.sh"
+SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$SCRIPTS/../.." && pwd)"
+# The same state-dir resolution run-nested.sh uses (LAMBENT_NESTED_SESSION included).
+. "$SCRIPTS/nest-dir.sh"
 if [ ! -f "$NEST/env.sh" ]; then
     echo "Start a nested session with run-shell.sh first." >&2
     exit 1
 fi
 # shellcheck disable=SC1091
 . "$NEST/env.sh"
-case "${WAYLAND_DISPLAY:-}" in
-    pznested*) ;;
+case "${XDG_RUNTIME_DIR:-}" in
+    "${LAMBENT_NESTED_DIR:-}/runtime") ;;
     *) echo "Shortcut preview requires the nested compositor." >&2; exit 1 ;;
 esac
 if [ ! -S "${XDG_RUNTIME_DIR:?}/$WAYLAND_DISPLAY" ]; then

@@ -9,8 +9,9 @@ Actions and replies are recorded; this fixture never launches applications.
 """
 import dbus, dbus.service, dbus.mainloop.glib, json, os, sys
 from gi.repository import GLib
-if not os.environ.get('WAYLAND_DISPLAY', '').startswith('pznested'):
-    raise SystemExit('This fixture requires the isolated nested compositor.')
+nest = os.environ.get('LAMBENT_NESTED_DIR', '')
+if not nest or os.environ.get('XDG_RUNTIME_DIR') != os.path.join(nest, 'runtime'):
+    raise SystemExit('This fixture requires the isolated nested compositor (source its env.sh).')
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 bus = dbus.SessionBus()
 def notification_server():
