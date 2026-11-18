@@ -122,7 +122,6 @@ add_executable(lambent
 target_link_libraries(lambent
     PRIVATE
         Qt6::QuickControls2
-        KF6::ConfigCore
         PhosphorControl::PhosphorControl
         PhosphorShell::PhosphorShell
         # Registry core (Registry<IBarWidgetFactory> + RegistryNotifier)
@@ -211,6 +210,8 @@ target_link_libraries(lambent
         PhosphorServiceNotifications::PhosphorServiceNotifications
         PhosphorServicePolkit::PhosphorServicePolkit
         PhosphorServiceIdle::PhosphorServiceIdle
+        # The quick settings' night light (wlr-gamma-control).
+        PhosphorServiceNightLight::PhosphorServiceNightLight
         PhosphorServiceClipboard::PhosphorServiceClipboard
         PhosphorServiceLock::PhosphorServiceLock
         PhosphorServiceSession::PhosphorServiceSession

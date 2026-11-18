@@ -31,6 +31,9 @@ All notable changes to Lambent are documented in this file. The format is based 
 
 - Blur behind the bar, popouts and other glass surfaces uses the standard ext-background-effect-v1 protocol, so
   any compositor that offers it blurs them, not only KWin.
+- Night light warms the screen through the standard wlr-gamma-control protocol rather than KWin's Night Light, and
+  keeps its settings in `~/.config/lambent/nightlight.json`. The sunset schedule needs a latitude and longitude saved
+  there, and until one is set the quick settings say a location is needed.
 
 ### Removed
 

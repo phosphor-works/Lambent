@@ -2,25 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "QuickSettingsController.h"
 
-#include <KConfig>
-#include <KConfigGroup>
-#include <KSharedConfig>
+#include <PhosphorServiceNightLight/ColorTemperature.h>
+#include <PhosphorServiceNightLight/GammaBackend.h>
+#include <PhosphorServiceNightLight/NightLight.h>
+
 #include <QDBusMessage>
 #include <QDBusMetaType>
 #include <QDBusVariant>
 #include <QDBusVirtualObject>
 #include <QDateTime>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QProcess>
-#include <QSaveFile>
-#include <QScopeGuard>
 #include <QSignalSpy>
-#include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTest>
-#include <QTime>
+#include <QTimeZone>
 
 #include <memory>
 #include <utility>
@@ -28,52 +28,30 @@
 // Named, not anonymous: the test class below holds a QuickSettingsFixture, and a member of
 // internal-linkage type warns (-Wsubobject-linkage) once the unity build includes this file.
 namespace QuickSettingsTestSupport {
-const QString compositorService = QStringLiteral("org.kde.KWin");
-const QString nightPath = QStringLiteral("/org/kde/KWin/NightLight");
-const QString nightInterface = QStringLiteral("org.kde.KWin.NightLight");
-const QString scheduleService = QStringLiteral("org.kde.NightTime");
-const QString schedulePath = QStringLiteral("/org/kde/NightTime/Manager");
 const QString powerService = QStringLiteral("org.freedesktop.UPower.PowerProfiles");
 const QString powerPath = QStringLiteral("/org/freedesktop/UPower/PowerProfiles");
 const QString propertiesInterface = QStringLiteral("org.freedesktop.DBus.Properties");
 
+// power-profiles-daemon on the test's private bus.
 class QuickSettingsFixture : public QDBusVirtualObject
 {
 public:
-    explicit QuickSettingsFixture(QDBusConnection connection, QString configPath)
+    explicit QuickSettingsFixture(QDBusConnection connection)
         : bus(std::move(connection))
-        , path(std::move(configPath))
     {
     }
 
     QDBusConnection bus;
-    QString path;
-    QVariantMap night{{QStringLiteral("available"), true},
-                      {QStringLiteral("enabled"), false},
-                      {QStringLiteral("running"), false},
-                      {QStringLiteral("inhibited"), false},
-                      {QStringLiteral("scheduledTransitionDateTime"), qint64(0)}};
     QString activeProfile = QStringLiteral("balanced");
     QStringList profiles{QStringLiteral("power-saver"), QStringLiteral("balanced"), QStringLiteral("performance")};
     QString degradation;
-    uint scheduleVersion = 1;
-    int reconfigureCalls = 0;
-    int inhibitCalls = 0;
-    int uninhibitCalls = 0;
-    uint nextCookie = 41;
-    QList<uint> releasedCookies;
     QStringList profileWrites;
     bool refusePowerWrite = false;
-    bool refuseReconfigure = false;
-    bool refuseInhibit = false;
-    bool refuseUninhibit = false;
     bool delayPowerWrites = false;
     bool delayPowerReads = false;
-    bool delayInhibit = false;
     QList<QDBusMessage> heldWrites;
     QList<QDBusMessage> heldReads;
     QList<QVariantMap> heldReadValues;
-    QList<QDBusMessage> heldInhibits;
 
     QString introspect(const QString&) const override
     {
@@ -90,10 +68,10 @@ public:
                 {QStringLiteral("PerformanceDegraded"), degradation}};
     }
 
-    void changed(const QString& path, const QString& interface)
+    void changed()
     {
-        auto message = QDBusMessage::createSignal(path, propertiesInterface, QStringLiteral("PropertiesChanged"));
-        message << interface << QVariantMap{} << QStringList{};
+        auto message = QDBusMessage::createSignal(powerPath, propertiesInterface, QStringLiteral("PropertiesChanged"));
+        message << powerService << QVariantMap{} << QStringList{};
         bus.send(message);
     }
 
@@ -106,44 +84,25 @@ public:
         }
         activeProfile = qvariant_cast<QDBusVariant>(message.arguments().at(2)).variant().toString();
         bus.send(message.createReply());
-        changed(powerPath, powerService);
-    }
-
-    void finishInhibit(const QDBusMessage& message)
-    {
-        if (refuseInhibit) {
-            bus.send(message.createErrorReply(QStringLiteral("org.freedesktop.DBus.Error.Failed"),
-                                              QStringLiteral("Fixture refused inhibition")));
-            return;
-        }
-        night.insert(QStringLiteral("inhibited"), true);
-        bus.send(message.createReply(QVariantList{nextCookie++}));
-        changed(nightPath, nightInterface);
+        changed();
     }
 
     bool handleMessage(const QDBusMessage& message, const QDBusConnection&) override
     {
+        if (message.path() != powerPath)
+            return false;
         if (message.interface() == propertiesInterface && message.member() == QLatin1String("GetAll")) {
-            QVariantMap values;
-            if (message.path() == nightPath)
-                values = night;
-            else if (message.path() == schedulePath)
-                values = {{QStringLiteral("Version"), scheduleVersion}};
-            else if (message.path() == powerPath) {
-                values = powerValues();
-                if (delayPowerReads) {
-                    message.setDelayedReply(true);
-                    heldReads.append(message);
-                    heldReadValues.append(values);
-                    return true;
-                }
-            } else {
-                return false;
+            const auto values = powerValues();
+            if (delayPowerReads) {
+                message.setDelayedReply(true);
+                heldReads.append(message);
+                heldReadValues.append(values);
+                return true;
             }
             bus.send(message.createReply(QVariantList{values}));
             return true;
         }
-        if (message.path() == powerPath && message.member() == QLatin1String("Set")) {
+        if (message.member() == QLatin1String("Set")) {
             if (message.arguments().at(0).toString() != powerService
                 || message.arguments().at(1).toString() != QLatin1String("ActiveProfile")) {
                 bus.send(message.createErrorReply(QStringLiteral("org.freedesktop.DBus.Error.InvalidArgs"),
@@ -159,58 +118,52 @@ public:
             }
             return true;
         }
-        if (message.path() == QLatin1String("/KWin") && message.member() == QLatin1String("reconfigure")) {
-            ++reconfigureCalls;
-            if (refuseReconfigure) {
-                bus.send(message.createErrorReply(QStringLiteral("org.freedesktop.DBus.Error.Failed"),
-                                                  QStringLiteral("Fixture failed to reconfigure")));
-                return true;
-            }
-            const auto config = KSharedConfig::openConfig(path, KConfig::SimpleConfig);
-            config->reparseConfiguration();
-            const KConfigGroup group(config, QStringLiteral("NightColor"));
-            const bool enabled = group.readEntry(QStringLiteral("Active"), false);
-            night.insert(QStringLiteral("enabled"), enabled);
-            night.insert(QStringLiteral("running"), enabled);
-            bus.send(message.createReply());
-            changed(nightPath, nightInterface);
-            return true;
-        }
-        if (message.path() == nightPath && message.member() == QLatin1String("inhibit")) {
-            ++inhibitCalls;
-            if (delayInhibit) {
-                message.setDelayedReply(true);
-                heldInhibits.append(message);
-            } else {
-                finishInhibit(message);
-            }
-            return true;
-        }
-        if (message.path() == nightPath && message.member() == QLatin1String("uninhibit")) {
-            ++uninhibitCalls;
-            if (refuseUninhibit) {
-                bus.send(message.createErrorReply(QStringLiteral("org.freedesktop.DBus.Error.Failed"),
-                                                  QStringLiteral("Fixture refused to resume")));
-                return true;
-            }
-            releasedCookies.append(message.arguments().at(0).toUInt());
-            night.insert(QStringLiteral("inhibited"), false);
-            bus.send(message.createReply());
-            changed(nightPath, nightInterface);
-            return true;
-        }
         return false;
     }
 };
 
-QByteArray contents(const QString& path)
+// The night light's gamma backend, in memory: whether the compositor offers
+// gamma control, and whether the night light holds the outputs.
+class FakeGamma : public PhosphorServiceNightLight::GammaBackend
+{
+    Q_OBJECT
+
+public:
+    bool isAvailable() const override
+    {
+        return available;
+    }
+    void setActive(bool value) override
+    {
+        active = value;
+    }
+    void setWhitePoint(const PhosphorServiceNightLight::WhitePoint&) override
+    {
+    }
+    void retry() override
+    {
+        ++retries;
+    }
+    void setAvailable(bool value)
+    {
+        available = value;
+        Q_EMIT availableChanged();
+    }
+
+    bool available = true;
+    bool active = false;
+    int retries = 0;
+};
+
+QJsonObject savedSettings(const QString& path)
 {
     QFile file(path);
-    return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray{};
+    return file.open(QIODevice::ReadOnly) ? QJsonDocument::fromJson(file.readAll()).object() : QJsonObject{};
 }
 } // namespace QuickSettingsTestSupport
 
 using namespace QuickSettingsTestSupport;
+using PhosphorServiceNightLight::NightLight;
 
 class TestQuickSettingsController : public QObject
 {
@@ -221,14 +174,26 @@ class TestQuickSettingsController : public QObject
     std::unique_ptr<QDBusConnection> m_client;
     std::unique_ptr<QTemporaryDir> m_directory;
     std::unique_ptr<QuickSettingsFixture> m_fixture;
+    // The night light's backend and clock in the controller controller() last
+    // built. The clock is read through m_now, which a test moves on.
+    FakeGamma* m_gamma = nullptr;
+    QDateTime m_now;
 
     QString configPath() const
     {
-        return m_directory->filePath(QStringLiteral("kwinrc"));
+        return m_directory->filePath(QStringLiteral("lambent/nightlight.json"));
     }
-    QString scheduleConfigPath() const
+    std::unique_ptr<PhosphorShellApp::QuickSettingsController> controller(const QString& path = {})
     {
-        return m_directory->filePath(QStringLiteral("knighttimerc"));
+        auto gamma = std::make_unique<FakeGamma>();
+        m_gamma = gamma.get();
+        auto light = std::make_unique<NightLight>(std::move(gamma), [this] {
+            return m_now;
+        });
+        // Changes apply at once, so a test reads the state it asked for.
+        light->setFadeDuration(0);
+        return std::make_unique<PhosphorShellApp::QuickSettingsController>(*m_client, std::move(light),
+                                                                           path.isEmpty() ? configPath() : path);
     }
 
 private Q_SLOTS:
@@ -254,18 +219,16 @@ private Q_SLOTS:
         QVERIFY(m_client->isConnected());
         m_directory = std::make_unique<QTemporaryDir>();
         QVERIFY(m_directory->isValid());
-        m_fixture = std::make_unique<QuickSettingsFixture>(*m_service, configPath());
+        m_fixture = std::make_unique<QuickSettingsFixture>(*m_service);
         QVERIFY(m_service->registerVirtualObject(QStringLiteral("/"), m_fixture.get(), QDBusConnection::SubPath));
-        QVERIFY(m_service->registerService(compositorService));
         QVERIFY(m_service->registerService(powerService));
-        QVERIFY(m_service->registerService(scheduleService));
+        // Noon, so the custom 18:00 to 06:00 hours are in their day.
+        m_now = QDateTime(QDate(2026, 5, 4), QTime(12, 0), QTimeZone::UTC);
     }
 
     void cleanup()
     {
-        m_service->unregisterService(compositorService);
         m_service->unregisterService(powerService);
-        m_service->unregisterService(scheduleService);
         m_service->unregisterObject(QStringLiteral("/"), QDBusConnection::UnregisterTree);
         m_fixture.reset();
         m_client.reset();
@@ -273,6 +236,7 @@ private Q_SLOTS:
         QDBusConnection::disconnectFromBus(QStringLiteral("quick-settings-client"));
         QDBusConnection::disconnectFromBus(QStringLiteral("quick-settings-service"));
         m_directory.reset();
+        m_gamma = nullptr;
     }
 
     void cleanupTestCase()
@@ -281,125 +245,212 @@ private Q_SLOTS:
         QVERIFY(m_daemon.waitForFinished());
     }
 
-    void usesServiceStateAndOnlyWritesOnRequest()
+    void startsFromDefaultsAndOnlyWritesOnRequest()
     {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightAvailable());
-        QTRY_VERIFY(settings.nightLightScheduleAvailable());
-        QTRY_VERIFY(settings.powerAvailable());
+        auto owner = controller();
+        auto& settings = *owner;
+        QVERIFY(settings.nightLightAvailable());
+        QVERIFY(settings.nightLightScheduleAvailable());
         QVERIFY(!settings.nightLightEnabled());
+        QVERIFY(!settings.nightLightRunning());
+        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("custom"));
+        QCOMPARE(settings.nightLightEvening(), QStringLiteral("18:00"));
+        QCOMPARE(settings.nightLightMorning(), QStringLiteral("06:00"));
+        QCOMPARE(settings.nightLightTemperature(), NightLight::DefaultNightTemperature);
         QVERIFY(!QFileInfo::exists(configPath()));
-        QVERIFY(!QFileInfo::exists(scheduleConfigPath()));
-        QVERIFY(m_fixture->profileWrites.isEmpty());
-        QCOMPARE(m_fixture->reconfigureCalls, 0);
-        settings.toggleNightLight();
-        settings.toggleNightLight();
-        QTRY_VERIFY(settings.nightLightEnabled());
-        QCOMPARE(m_fixture->reconfigureCalls, 1);
-        const auto saved = KSharedConfig::openConfig(configPath(), KConfig::SimpleConfig);
-        saved->reparseConfiguration();
-        QCOMPARE(KConfigGroup(saved, QStringLiteral("NightColor")).readEntry(QStringLiteral("Active"), false), true);
-        settings.toggleNightLight();
-        QTRY_VERIFY(!settings.nightLightEnabled());
-        QCOMPARE(m_fixture->reconfigureCalls, 2);
-        QVERIFY(m_service->unregisterService(compositorService));
-        QTRY_VERIFY(!settings.nightLightAvailable());
-        settings.toggleNightLight();
-        QCOMPARE(m_fixture->reconfigureCalls, 2);
-    }
-
-    void absoluteConfigurationTracksExternalEditsAndAtomicReplacement()
-    {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightAvailable());
-        QCOMPARE(settings.nightLightTemperature(), 4500);
-        KConfig external(configPath(), KConfig::SimpleConfig);
-        KConfigGroup night(&external, QStringLiteral("NightColor"));
-        night.writeEntry(QStringLiteral("NightTemperature"), 3700);
-        night.writeEntry(QStringLiteral("Mode"), QStringLiteral("Constant"));
-        QVERIFY(external.sync());
-        QTRY_COMPARE(settings.nightLightTemperature(), 3700);
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("manual"));
-
-        KConfig sharedSchedule(scheduleConfigPath(), KConfig::SimpleConfig);
-        KConfigGroup(&sharedSchedule, QStringLiteral("General"))
-            .writeEntry(QStringLiteral("Source"), QStringLiteral("Times"));
-        KConfigGroup times(&sharedSchedule, QStringLiteral("Times"));
-        times.writeEntry(QStringLiteral("SunriseStart"), QTime(8, 15));
-        times.writeEntry(QStringLiteral("SunsetStart"), QTime(20, 45));
-        QVERIFY(sharedSchedule.sync());
-        night.writeEntry(QStringLiteral("Mode"), QStringLiteral("DarkLight"));
-        QVERIFY(external.sync());
-        QTRY_COMPARE(settings.nightLightSchedule(), QStringLiteral("custom"));
-        QTRY_COMPARE(settings.nightLightMorning(), QStringLiteral("08:15"));
-        QCOMPARE(settings.nightLightEvening(), QStringLiteral("20:45"));
-
-        // Editors commonly replace the inode rather than write into the file.
-        QSaveFile replacement(configPath());
-        QVERIFY(replacement.open(QIODevice::WriteOnly));
-        const QByteArray replacementContents("[NightColor]\nMode=Constant\nNightTemperature=2900\n");
-        QCOMPARE(replacement.write(replacementContents), replacementContents.size());
-        QVERIFY(replacement.commit());
-        QTRY_COMPARE(settings.nightLightTemperature(), 2900);
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("manual"));
-
-        external.reparseConfiguration();
-        night.writeEntry(QStringLiteral("NightTemperature"), 3100);
-        QVERIFY(external.sync());
-        QTRY_COMPARE(settings.nightLightTemperature(), 3100);
-        QCOMPARE(m_fixture->reconfigureCalls, 0);
+        QTRY_VERIFY(settings.powerAvailable());
+        QVERIFY(!QFileInfo::exists(configPath()));
         QVERIFY(m_fixture->profileWrites.isEmpty());
     }
 
-    void relativeConfigurationTracksKConfigNotificationsInPrivateConfigHome()
+    void enablingRunsAndPersists()
     {
-        const QByteArray previousConfigHome = qgetenv("XDG_CONFIG_HOME");
-        const bool hadConfigHome = qEnvironmentVariableIsSet("XDG_CONFIG_HOME");
-        qputenv("XDG_CONFIG_HOME", m_directory->path().toUtf8());
-        const auto restoreConfigHome = qScopeGuard([previousConfigHome, hadConfigHome] {
-            if (hadConfigHome)
-                qputenv("XDG_CONFIG_HOME", previousConfigHome);
-            else
-                qunsetenv("XDG_CONFIG_HOME");
-        });
-        QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation), m_directory->path());
-        QVERIFY(QDBusConnection::sessionBus().isConnected());
         {
-            PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, QStringLiteral("kwinrc"));
-            QTRY_VERIFY(settings.nightLightAvailable());
-            QVERIFY(!QFileInfo::exists(configPath()));
-            KConfig external(QStringLiteral("kwinrc"), KConfig::SimpleConfig);
-            KConfigGroup night(&external, QStringLiteral("NightColor"));
-            night.writeEntry(QStringLiteral("NightTemperature"), 3300, KConfig::Notify);
-            night.writeEntry(QStringLiteral("Mode"), QStringLiteral("Constant"), KConfig::Notify);
-            QVERIFY(external.sync());
-            QTRY_COMPARE(settings.nightLightTemperature(), 3300);
-            QCOMPARE(settings.nightLightSchedule(), QStringLiteral("manual"));
-            QVERIFY(QFileInfo::exists(configPath()));
-
-            KConfig sharedSchedule(QStringLiteral("knighttimerc"), KConfig::SimpleConfig);
-            KConfigGroup(&sharedSchedule, QStringLiteral("General"))
-                .writeEntry(QStringLiteral("Source"), QStringLiteral("Times"), KConfig::Notify);
-            KConfigGroup times(&sharedSchedule, QStringLiteral("Times"));
-            times.writeEntry(QStringLiteral("SunriseStart"), QTime(7, 30), KConfig::Notify);
-            times.writeEntry(QStringLiteral("SunsetStart"), QTime(21, 15), KConfig::Notify);
-            QVERIFY(sharedSchedule.sync());
-            QTRY_COMPARE(settings.nightLightMorning(), QStringLiteral("07:30"));
-            QCOMPARE(settings.nightLightEvening(), QStringLiteral("21:15"));
-            night.writeEntry(QStringLiteral("Mode"), QStringLiteral("DarkLight"), KConfig::Notify);
-            QVERIFY(external.sync());
-            QTRY_COMPARE(settings.nightLightSchedule(), QStringLiteral("custom"));
-            QCOMPARE(m_fixture->reconfigureCalls, 0);
+            auto owner = controller();
+            auto& settings = *owner;
+            settings.setNightLightSchedule(QStringLiteral("manual"));
+            QVERIFY(!settings.nightLightRunning());
+            settings.toggleNightLight();
+            QVERIFY(settings.nightLightEnabled());
+            QVERIFY(settings.nightLightRunning());
+            QVERIFY(m_gamma->active);
+            QVERIFY(settings.nightLightError().isEmpty());
+            const auto saved = savedSettings(configPath());
+            QCOMPARE(saved.value(QLatin1String("enabled")).toBool(), true);
+            QCOMPARE(saved.value(QLatin1String("schedule")).toString(), QStringLiteral("manual"));
         }
-        QVERIFY(QFile::remove(configPath()));
-        QVERIFY(QFile::remove(scheduleConfigPath()));
+        auto owner = controller();
+        QVERIFY(owner->nightLightEnabled());
+        QCOMPARE(owner->nightLightSchedule(), QStringLiteral("manual"));
+        QVERIFY(owner->nightLightRunning());
+    }
+
+    void savesTemperatureHoursAndLocationForTheNextStart()
+    {
+        {
+            auto owner = controller();
+            auto& settings = *owner;
+            settings.setNightLightTemperature(3200);
+            settings.setNightLightTimes(QStringLiteral("07:30"), QStringLiteral("21:15"));
+            settings.setNightLightLocation(52.5, 13.4);
+            settings.setNightLightSchedule(QStringLiteral("automatic"));
+            QVERIFY(settings.nightLightError().isEmpty());
+        }
+        const auto saved = savedSettings(configPath());
+        QCOMPARE(saved.value(QLatin1String("temperature")).toInt(), 3200);
+        QCOMPARE(saved.value(QLatin1String("morning")).toString(), QStringLiteral("07:30"));
+        QCOMPARE(saved.value(QLatin1String("evening")).toString(), QStringLiteral("21:15"));
+        QCOMPARE(saved.value(QLatin1String("schedule")).toString(), QStringLiteral("automatic"));
+        QCOMPARE(saved.value(QLatin1String("latitude")).toDouble(), 52.5);
+        QCOMPARE(saved.value(QLatin1String("longitude")).toDouble(), 13.4);
+        auto owner = controller();
+        QCOMPARE(owner->nightLightTemperature(), 3200);
+        QCOMPARE(owner->nightLightMorning(), QStringLiteral("07:30"));
+        QCOMPARE(owner->nightLightEvening(), QStringLiteral("21:15"));
+        QCOMPARE(owner->nightLightSchedule(), QStringLiteral("automatic"));
+        QVERIFY(!owner->nightLightNeedsLocation());
+    }
+
+    void customHoursSwitchToTheCustomSchedule()
+    {
+        auto owner = controller();
+        auto& settings = *owner;
+        settings.setNightLightSchedule(QStringLiteral("manual"));
+        settings.setNightLightTimes(QStringLiteral("05:00"), QStringLiteral("22:00"));
+        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("custom"));
+        settings.toggleNightLight();
+        QVERIFY(!settings.nightLightRunning());
+        m_now = QDateTime(QDate(2026, 5, 4), QTime(23, 0), QTimeZone::UTC);
+        settings.refreshNightLight();
+        QVERIFY(settings.nightLightRunning());
+    }
+
+    void automaticScheduleSaysWhenItNeedsALocation()
+    {
+        auto owner = controller();
+        auto& settings = *owner;
+        QSignalSpy changed(&settings, &PhosphorShellApp::QuickSettingsController::changed);
+        QVERIFY(!settings.nightLightNeedsLocation());
+        settings.setNightLightSchedule(QStringLiteral("automatic"));
+        QVERIFY(settings.nightLightNeedsLocation());
+        QVERIFY(!changed.isEmpty());
+        settings.toggleNightLight();
+        m_now = QDateTime(QDate(2026, 5, 4), QTime(23, 0), QTimeZone::UTC);
+        settings.refreshNightLight();
+        // Without a location the sunset schedule is permanent day.
+        QVERIFY(!settings.nightLightRunning());
+        settings.setNightLightLocation(52.5, 13.4);
+        QVERIFY(!settings.nightLightNeedsLocation());
+        QVERIFY(settings.nightLightRunning());
+    }
+
+    void invalidRequestsNeverTouchTheSettings()
+    {
+        auto owner = controller();
+        auto& settings = *owner;
+        settings.setNightLightTemperature(900);
+        QVERIFY(!settings.nightLightError().isEmpty());
+        settings.setNightLightSchedule(QStringLiteral("sometimes"));
+        QVERIFY(!settings.nightLightError().isEmpty());
+        settings.setNightLightTimes(QStringLiteral("08:00"), QStringLiteral("08:00"));
+        QVERIFY(!settings.nightLightError().isEmpty());
+        settings.setNightLightTimes(QStringLiteral("25:00"), QStringLiteral("08:00"));
+        QVERIFY(!settings.nightLightError().isEmpty());
+        settings.setNightLightLocation(91, 0);
+        QVERIFY(!settings.nightLightError().isEmpty());
+        QVERIFY(!QFileInfo::exists(configPath()));
+        QCOMPARE(settings.nightLightTemperature(), NightLight::DefaultNightTemperature);
+        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("custom"));
+        settings.setNightLightTemperature(4000);
+        QVERIFY(settings.nightLightError().isEmpty());
+    }
+
+    void unsavableSettingsReportAnError()
+    {
+        // The settings file's directory is a regular file, so nothing can be saved.
+        QFile blocker(m_directory->filePath(QStringLiteral("blocked")));
+        QVERIFY(blocker.open(QIODevice::WriteOnly));
+        blocker.close();
+        auto owner = controller(m_directory->filePath(QStringLiteral("blocked/nightlight.json")));
+        owner->toggleNightLight();
+        QVERIFY(owner->nightLightEnabled());
+        QVERIFY(!owner->nightLightError().isEmpty());
+    }
+
+    void pauseHoldsOneInhibitionUntilResumed()
+    {
+        auto owner = controller();
+        auto& settings = *owner;
+        settings.setNightLightSchedule(QStringLiteral("manual"));
+        settings.toggleNightLightPause();
+        QVERIFY2(!settings.nightLightPaused(), "nothing to pause while the night light is off");
+        settings.toggleNightLight();
+        settings.toggleNightLightPause();
+        QVERIFY(settings.nightLightPaused());
+        QVERIFY(settings.nightLightInhibited());
+        QVERIFY(!settings.nightLightRunning());
+        settings.toggleNightLightPause();
+        QVERIFY(!settings.nightLightPaused());
+        QVERIFY(!settings.nightLightInhibited());
+        QVERIFY(settings.nightLightRunning());
+    }
+
+    void scheduledPauseEndsAtTheNextTransition()
+    {
+        auto owner = controller();
+        auto& settings = *owner;
+        m_now = QDateTime(QDate(2026, 5, 4), QTime(23, 0), QTimeZone::UTC);
+        settings.refreshNightLight();
+        settings.toggleNightLight();
+        QVERIFY(settings.nightLightRunning());
+        settings.toggleNightLightPause();
+        QVERIFY(settings.nightLightPaused());
+        // Past the morning transition and into the next evening's.
+        m_now = QDateTime(QDate(2026, 5, 5), QTime(19, 0), QTimeZone::UTC);
+        settings.refreshNightLight();
+        QVERIFY(!settings.nightLightPaused());
+        QVERIFY(!settings.nightLightInhibited());
+        QVERIFY(settings.nightLightRunning());
+    }
+
+    void disablingAPausedNightLightReleasesItsInhibition()
+    {
+        auto owner = controller();
+        auto& settings = *owner;
+        settings.setNightLightSchedule(QStringLiteral("manual"));
+        settings.toggleNightLight();
+        settings.toggleNightLightPause();
+        QVERIFY(settings.nightLightPaused());
+        settings.setNightLightEnabled(false);
+        QVERIFY(!settings.nightLightPaused());
+        QVERIFY(!settings.nightLightInhibited());
+        settings.setNightLightEnabled(true);
+        QVERIFY(settings.nightLightRunning());
+    }
+
+    void followsTheBackendsAvailability()
+    {
+        auto owner = controller();
+        auto& settings = *owner;
+        QSignalSpy changed(&settings, &PhosphorShellApp::QuickSettingsController::changed);
+        m_gamma->setAvailable(false);
+        QVERIFY(!settings.nightLightAvailable());
+        QVERIFY(!changed.isEmpty());
+        settings.toggleNightLight();
+        settings.toggleNightLightPause();
+        QVERIFY(!settings.nightLightPaused());
+        m_gamma->setAvailable(true);
+        QVERIFY(settings.nightLightAvailable());
+        settings.refreshNightLight();
+        QVERIFY(m_gamma->retries > 0);
     }
 
     void powerProfilesFollowServiceCapabilities()
     {
         m_fixture->profiles = {QStringLiteral("balanced"), QStringLiteral("future-profile"),
                                QStringLiteral("power-saver"), QStringLiteral("balanced")};
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
+        auto owner = controller();
+        auto& settings = *owner;
         QTRY_VERIFY(settings.powerAvailable());
         QCOMPARE(settings.powerProfiles(), QStringList({QStringLiteral("balanced"), QStringLiteral("power-saver")}));
         QCOMPARE(settings.powerProfile(), QStringLiteral("balanced"));
@@ -416,7 +467,8 @@ private Q_SLOTS:
     void degradedPerformanceRemainsSelectable()
     {
         m_fixture->degradation = QStringLiteral("high-operating-temperature");
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
+        auto owner = controller();
+        auto& settings = *owner;
         QTRY_VERIFY(settings.powerAvailable());
         QCOMPARE(settings.performanceDegraded(), m_fixture->degradation);
         settings.setPowerProfile(QStringLiteral("performance"));
@@ -427,7 +479,8 @@ private Q_SLOTS:
 
     void powerWriteFailureKeepsConfirmedProfileAndAllowsRetry()
     {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
+        auto owner = controller();
+        auto& settings = *owner;
         QTRY_VERIFY(settings.powerAvailable());
         m_fixture->refusePowerWrite = true;
         settings.setPowerProfile(QStringLiteral("power-saver"));
@@ -442,7 +495,8 @@ private Q_SLOTS:
 
     void duplicatePowerRequestsWaitForConfirmation()
     {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
+        auto owner = controller();
+        auto& settings = *owner;
         QTRY_VERIFY(settings.powerAvailable());
         m_fixture->delayPowerWrites = true;
         settings.setPowerProfile(QStringLiteral("performance"));
@@ -461,7 +515,8 @@ private Q_SLOTS:
 
     void stalePowerReadCannotReplaceNewerState()
     {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
+        auto owner = controller();
+        auto& settings = *owner;
         QTRY_VERIFY(settings.powerAvailable());
         m_fixture->delayPowerReads = true;
         settings.refreshPower();
@@ -478,7 +533,8 @@ private Q_SLOTS:
 
     void powerRestartInvalidatesOldWriteWithoutClearingNewPendingRequest()
     {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
+        auto owner = controller();
+        auto& settings = *owner;
         QTRY_VERIFY(settings.powerAvailable());
         m_fixture->delayPowerWrites = true;
         settings.setPowerProfile(QStringLiteral("power-saver"));
@@ -497,282 +553,6 @@ private Q_SLOTS:
         m_fixture->finishPowerWrite(m_fixture->heldWrites.at(1), false);
         QTRY_COMPARE(settings.powerProfile(), QStringLiteral("performance"));
         QVERIFY(!settings.powerPending());
-    }
-
-    void savesNightTemperatureAndSharedScheduleWithNativeKConfigTypes()
-    {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightAvailable());
-        QTRY_VERIFY(settings.nightLightScheduleAvailable());
-        settings.setNightLightSchedule(QStringLiteral("manual"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("manual"));
-        auto saved = KSharedConfig::openConfig(configPath(), KConfig::SimpleConfig);
-        saved->reparseConfiguration();
-        QCOMPARE(KConfigGroup(saved, QStringLiteral("NightColor")).readEntry(QStringLiteral("Mode"), QString()),
-                 QStringLiteral("Constant"));
-        QVERIFY(!QFileInfo::exists(scheduleConfigPath()));
-        settings.setNightLightTemperature(3200);
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(settings.nightLightTemperature(), 3200);
-        saved->reparseConfiguration();
-        QCOMPARE(KConfigGroup(saved, QStringLiteral("NightColor")).readEntry(QStringLiteral("NightTemperature"), 0),
-                 3200);
-        settings.setNightLightTimes(QStringLiteral("06:15"), QStringLiteral("22:30"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("custom"));
-        QCOMPARE(settings.nightLightMorning(), QStringLiteral("06:15"));
-        QCOMPARE(settings.nightLightEvening(), QStringLiteral("22:30"));
-        const auto schedule = KSharedConfig::openConfig(scheduleConfigPath(), KConfig::SimpleConfig);
-        schedule->reparseConfiguration();
-        saved->reparseConfiguration();
-        QCOMPARE(KConfigGroup(saved, QStringLiteral("NightColor")).readEntry(QStringLiteral("Mode"), QString()),
-                 QStringLiteral("DarkLight"));
-        QCOMPARE(KConfigGroup(schedule, QStringLiteral("General")).readEntry(QStringLiteral("Source"), QString()),
-                 QStringLiteral("Times"));
-        const KConfigGroup times(schedule, QStringLiteral("Times"));
-        QCOMPARE(times.readEntry(QStringLiteral("SunriseStart"), QTime()), QTime(6, 15));
-        QCOMPARE(times.readEntry(QStringLiteral("SunsetStart"), QTime()), QTime(22, 30));
-        QCOMPARE(times.readEntry(QStringLiteral("TransitionDuration"), 0), 1800);
-        settings.setNightLightTimes(QStringLiteral("06:00"), QStringLiteral("06:10"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        schedule->reparseConfiguration();
-        QCOMPARE(KConfigGroup(schedule, QStringLiteral("Times")).readEntry(QStringLiteral("TransitionDuration"), 0),
-                 300);
-        settings.setNightLightSchedule(QStringLiteral("automatic"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("automatic"));
-        schedule->reparseConfiguration();
-        QCOMPARE(KConfigGroup(schedule, QStringLiteral("General")).readEntry(QStringLiteral("Source"), QString()),
-                 QStringLiteral("Location"));
-    }
-
-    void invalidNightRequestsNeverTouchConfiguration()
-    {
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightAvailable());
-        settings.setNightLightTemperature(999);
-        settings.setNightLightTemperature(6501);
-        settings.setNightLightTimes(QStringLiteral("25:00"), QStringLiteral("22:00"));
-        settings.setNightLightTimes(QStringLiteral("06:00"), QStringLiteral("06:00"));
-        settings.setNightLightTimes(QString(), QStringLiteral("22:00"));
-        settings.setNightLightSchedule(QStringLiteral("unsupported"));
-        QVERIFY(!settings.nightLightError().isEmpty());
-        QVERIFY(!settings.nightLightPending());
-        QVERIFY(!QFileInfo::exists(configPath()));
-        QVERIFY(!QFileInfo::exists(scheduleConfigPath()));
-        QCOMPARE(m_fixture->reconfigureCalls, 0);
-        QTRY_VERIFY(settings.nightLightScheduleAvailable());
-        settings.setNightLightTimes(QStringLiteral("07:00"), QStringLiteral("21:00"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        const auto previousConfig = contents(configPath());
-        const auto previousSchedule = contents(scheduleConfigPath());
-        settings.setNightLightTemperature(-1);
-        settings.setNightLightTimes(QStringLiteral("no time"), QStringLiteral("21:00"));
-        QCOMPARE(contents(configPath()), previousConfig);
-        QCOMPARE(contents(scheduleConfigPath()), previousSchedule);
-        QCOMPARE(m_fixture->reconfigureCalls, 1);
-    }
-
-    void unavailableSharedScheduleStillAllowsManualNightLight()
-    {
-        m_fixture->scheduleVersion = 0;
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightAvailable());
-        QVERIFY(!settings.nightLightScheduleAvailable());
-        settings.setNightLightTimes(QStringLiteral("07:00"), QStringLiteral("21:00"));
-        QVERIFY(!settings.nightLightError().isEmpty());
-        QVERIFY(!QFileInfo::exists(configPath()));
-        QVERIFY(!QFileInfo::exists(scheduleConfigPath()));
-        settings.setNightLightSchedule(QStringLiteral("manual"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("manual"));
-        QVERIFY(settings.nightLightError().isEmpty());
-        m_fixture->scheduleVersion = 1;
-        QVERIFY(m_service->unregisterService(scheduleService));
-        QVERIFY(m_service->registerService(scheduleService));
-        QTRY_VERIFY(settings.nightLightScheduleAvailable());
-    }
-
-    void reconfigureFailureReportsSavedButUnappliedSetting()
-    {
-        m_fixture->refuseReconfigure = true;
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightAvailable());
-        settings.setNightLightEnabled(true);
-        QTRY_VERIFY(!settings.nightLightPending());
-        QVERIFY(!settings.nightLightError().isEmpty());
-        QVERIFY(!settings.nightLightEnabled());
-        const auto saved = KSharedConfig::openConfig(configPath(), KConfig::SimpleConfig);
-        saved->reparseConfiguration();
-        QVERIFY(KConfigGroup(saved, QStringLiteral("NightColor")).readEntry(QStringLiteral("Active"), false));
-        m_fixture->refuseReconfigure = false;
-        settings.setNightLightEnabled(true);
-        QTRY_VERIFY(settings.nightLightEnabled());
-        QVERIFY(settings.nightLightError().isEmpty());
-    }
-
-    void pauseOwnsOneCookieAndRetriesFailedResume()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightEnabled());
-        settings.toggleNightLightPause();
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(settings.nightLightPaused());
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(m_fixture->inhibitCalls, 1);
-        QTRY_VERIFY(settings.nightLightInhibited());
-        m_fixture->refuseUninhibit = true;
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(!settings.nightLightPending());
-        QVERIFY(settings.nightLightPaused());
-        QVERIFY(!settings.nightLightError().isEmpty());
-        QVERIFY(m_fixture->releasedCookies.isEmpty());
-        m_fixture->refuseUninhibit = false;
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(!settings.nightLightPaused());
-        QCOMPARE(m_fixture->releasedCookies, QList<uint>{41});
-        QVERIFY(settings.nightLightError().isEmpty());
-    }
-
-    void pauseFailureDoesNotClaimOwnershipOfExternalInhibition()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        m_fixture->night.insert(QStringLiteral("inhibited"), true);
-        m_fixture->refuseInhibit = true;
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightEnabled());
-        QVERIFY(settings.nightLightInhibited());
-        QVERIFY(!settings.nightLightPaused());
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(!settings.nightLightPending());
-        QVERIFY(!settings.nightLightPaused());
-        QVERIFY(!settings.nightLightError().isEmpty());
-        QCOMPARE(m_fixture->uninhibitCalls, 0);
-    }
-
-    void destructionReleasesOnlyTheOwnedCookie()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        {
-            PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-            QTRY_VERIFY(settings.nightLightEnabled());
-            settings.toggleNightLightPause();
-            QTRY_VERIFY(settings.nightLightPaused());
-        }
-        QTRY_COMPARE(m_fixture->releasedCookies, QList<uint>{41});
-        QCOMPARE(m_fixture->uninhibitCalls, 1);
-    }
-
-    void scheduledPauseResumesAtNextTransition()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        m_fixture->night.insert(QStringLiteral("scheduledTransitionDateTime"), QDateTime::currentSecsSinceEpoch() + 2);
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightEnabled());
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(settings.nightLightPaused());
-        QTRY_VERIFY_WITH_TIMEOUT(!settings.nightLightPaused(), 4000);
-        QCOMPARE(m_fixture->releasedCookies, QList<uint>{41});
-    }
-
-    void failedAutomaticResumeStopsRetryingUntilUserRequestsIt()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        m_fixture->night.insert(QStringLiteral("scheduledTransitionDateTime"), QDateTime::currentSecsSinceEpoch() - 1);
-        m_fixture->refuseUninhibit = true;
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightEnabled());
-        settings.toggleNightLightPause();
-        QTRY_COMPARE(m_fixture->uninhibitCalls, 1);
-        QTRY_VERIFY(!settings.nightLightPending());
-        QVERIFY(settings.nightLightPaused());
-        QVERIFY(!settings.nightLightError().isEmpty());
-        QTest::qWait(120);
-        QCOMPARE(m_fixture->uninhibitCalls, 1);
-        m_fixture->refuseUninhibit = false;
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(!settings.nightLightPaused());
-        QCOMPARE(m_fixture->releasedCookies, QList<uint>{41});
-        QCOMPARE(m_fixture->uninhibitCalls, 2);
-        QVERIFY(settings.nightLightError().isEmpty());
-    }
-
-    void pausedScheduleChangesCancelAndRearmAutomaticResume()
-    {
-        const qint64 firstTransition = QDateTime::currentSecsSinceEpoch() + 2;
-        m_fixture->night.insert(QStringLiteral("scheduledTransitionDateTime"), firstTransition);
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightAvailable());
-        QTRY_VERIFY(settings.nightLightScheduleAvailable());
-        settings.setNightLightEnabled(true);
-        QTRY_VERIFY(settings.nightLightEnabled());
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(settings.nightLightPaused());
-        settings.setNightLightSchedule(QStringLiteral("manual"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("manual"));
-        QTRY_VERIFY_WITH_TIMEOUT(QDateTime::currentSecsSinceEpoch() > firstTransition, 4000);
-        QVERIFY(settings.nightLightPaused());
-        QCOMPARE(m_fixture->uninhibitCalls, 0);
-        m_fixture->night.insert(QStringLiteral("scheduledTransitionDateTime"), QDateTime::currentSecsSinceEpoch() + 2);
-        settings.setNightLightSchedule(QStringLiteral("automatic"));
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(settings.nightLightSchedule(), QStringLiteral("automatic"));
-        QTRY_VERIFY_WITH_TIMEOUT(!settings.nightLightPaused(), 4000);
-        QCOMPARE(m_fixture->releasedCookies, QList<uint>{41});
-    }
-
-    void disablingPausedNightLightReleasesItsInhibition()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightEnabled());
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(settings.nightLightPaused());
-        settings.setNightLightEnabled(false);
-        QTRY_VERIFY(!settings.nightLightEnabled());
-        QTRY_VERIFY(!settings.nightLightPaused());
-        QTRY_VERIFY(!settings.nightLightPending());
-        QCOMPARE(m_fixture->releasedCookies, QList<uint>{41});
-        QCOMPARE(m_fixture->uninhibitCalls, 1);
-    }
-
-    void destructionDuringPendingPauseReleasesTheReplyCookie()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        m_fixture->delayInhibit = true;
-        auto settings = std::make_unique<PhosphorShellApp::QuickSettingsController>(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings->nightLightEnabled());
-        settings->toggleNightLightPause();
-        QTRY_COMPARE(m_fixture->heldInhibits.size(), 1);
-        QVERIFY(settings->nightLightPending());
-        settings.reset();
-        m_fixture->finishInhibit(m_fixture->heldInhibits.constFirst());
-        QTRY_COMPARE(m_fixture->releasedCookies, QList<uint>{41});
-        QCOMPARE(m_fixture->uninhibitCalls, 1);
-    }
-
-    void compositorRestartDiscardsThePreviousOwnersCookie()
-    {
-        m_fixture->night.insert(QStringLiteral("enabled"), true);
-        PhosphorShellApp::QuickSettingsController settings(*m_client, *m_client, configPath());
-        QTRY_VERIFY(settings.nightLightEnabled());
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(settings.nightLightPaused());
-        QVERIFY(m_service->unregisterService(compositorService));
-        QTRY_VERIFY(!settings.nightLightAvailable());
-        QVERIFY(!settings.nightLightPaused());
-        QVERIFY(!settings.nightLightPending());
-        m_fixture->night.insert(QStringLiteral("inhibited"), false);
-        QVERIFY(m_service->registerService(compositorService));
-        QTRY_VERIFY(settings.nightLightEnabled());
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(settings.nightLightPaused());
-        settings.toggleNightLightPause();
-        QTRY_VERIFY(!settings.nightLightPaused());
-        QCOMPARE(m_fixture->releasedCookies, QList<uint>{42});
     }
 };
 QTEST_GUILESS_MAIN(TestQuickSettingsController)

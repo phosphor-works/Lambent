@@ -130,9 +130,8 @@ stdenv.mkDerivation {
     # phosphor-shell-lock reads the keyboard layout and Caps Lock from the
     # seat's keymap.
     libxkbcommon
-    # Lambent's own: KConfig for the quick settings' night light, and
-    # KWindowSystem for the notification centre's activation tokens.
-    kdePackages.kconfig
+    # Lambent's own: KWindowSystem for the notification centre's activation
+    # tokens.
     kdePackages.kwindowsystem
     # The service libraries' system interfaces: PipeWire, polkit-qt6, PAM, and
     # ddcutil for phosphor-service-brightness's optional external-monitor

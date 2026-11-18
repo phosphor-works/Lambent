@@ -32,7 +32,7 @@ Navigator and Stage, including links between Battery and Power profiles.
 
 | Detail | Native implementation |
 |---|---|
-| Night light | KWin temperature, enabled/running/inhibited state and pause/resume. System day/night and custom hours use KNightTime's shared schedule; manual control remains separate. Custom hours are validated and schedule-service failures are reported. |
+| Night light | phosphor-service-nightlight on wlr-gamma-control: temperature, enabled/running/inhibited state and pause/resume. Manual, custom-hour and sunset schedules, saved in `~/.config/lambent/nightlight.json`; the sunset schedule needs a stored location. |
 | Dark mode | Light/dark/system choices use the settings portal and `AppearanceStore`, retaining palette, wallpaper and the chosen dark glass/solid material. Portal restart and unavailable states are handled. |
 | Airplane mode | Coordinates NetworkManager Wi-Fi and WWAN with BlueZ Bluetooth, remembers radio settings and restores them on request or when disabled. Supports a Bluetooth exception, hardware-switch feedback and partial-failure recovery while preserving wired networking. |
 | Power profiles | Reads and selects the daemon's supported Balanced, Power saver and Performance profiles. Pending changes, failures and service restarts are represented. `PerformanceDegraded` supplies a notice while Performance remains selectable. |
@@ -45,10 +45,9 @@ transaction ends. Explicit material choices and built-in presets stop following
 the system preference; saved looks can retain the preference and dark material.
 Wallpaper shortcuts enter the same workspace and transaction.
 
-The native Night light API does not expose geolocation availability. Its system
-schedule therefore reports the real scheduler service rather than reproducing
-the browser's simulated missing-location state. Changing custom hours updates
-the desktop's shared KNightTime schedule.
+The night light has no geolocation. Its sunset schedule computes sunset and
+sunrise for a latitude and longitude stored in Lambent's settings, and reports
+when none is set. Custom hours are Lambent's own.
 
 ## Configurable status icons
 
