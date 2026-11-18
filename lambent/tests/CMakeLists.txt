@@ -58,7 +58,8 @@ add_executable(test_quick_settings_controller
     ${LAMBENT_SOURCE_DIR}/src/QuickSettingsController.h
     ${LAMBENT_SOURCE_DIR}/src/quicksettingscontroller.cpp
 )
-target_link_libraries(test_quick_settings_controller PRIVATE Qt6::Test Qt6::Core Qt6::DBus KF6::ConfigCore)
+target_link_libraries(test_quick_settings_controller PRIVATE Qt6::Test Qt6::Core Qt6::DBus
+    PhosphorServiceNightLight::PhosphorServiceNightLight)
 target_include_directories(test_quick_settings_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 target_compile_definitions(test_quick_settings_controller PRIVATE
     LAMBENT_DBUS_DAEMON="${LAMBENT_DBUS_DAEMON}" LAMBENT_TEST_BUS_CONFIG="${LAMBENT_TEST_BUS_CONFIG}")

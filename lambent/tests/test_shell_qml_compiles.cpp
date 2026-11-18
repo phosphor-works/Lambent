@@ -316,6 +316,7 @@ void TestShellQmlCompiles::quickSettingsForwardsAppearanceFromForeignContext()
             {QStringLiteral("nightLightMorning"), QStringLiteral("06:00")},
             {QStringLiteral("nightLightEvening"), QStringLiteral("18:00")},
             {QStringLiteral("nightLightPending"), false},
+            {QStringLiteral("nightLightNeedsLocation"), false},
             {QStringLiteral("nightLightError"), QString()},
             {QStringLiteral("powerAvailable"), true},
             {QStringLiteral("powerPending"), false},

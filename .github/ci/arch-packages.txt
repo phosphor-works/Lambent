@@ -26,9 +26,8 @@ kirigami
 # keymap; xkeyboard-config gives its test keymaps to compile.
 libxkbcommon
 xkeyboard-config
-# Lambent's own: KConfig for the quick settings' night light, and
-# KWindowSystem for the notification centre's activation tokens.
-kconfig
+# Lambent's own: KWindowSystem for the notification centre's activation
+# tokens.
 kwindowsystem
 # The service libraries' system interfaces: PipeWire (phosphor-service-pipewire),
 # polkit-qt6 (phosphor-service-polkit), PAM (phosphor-service-lock) and ddcutil

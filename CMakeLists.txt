@@ -63,8 +63,7 @@ file(GLOB_RECURSE LAMBENT_CLANG_FORMAT_FILES
 kde_clang_format(${LAMBENT_CLANG_FORMAT_FILES})
 
 # The shell draws its icons through Kirigami and has no Qt-only fallback.
-# KConfig for the quick settings' night light.
-find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami Config)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami)
 
 # The Qt lookups every library and the shell share, at this scope before the
 # libraries are added: an IMPORTED target belongs to the directory that found
