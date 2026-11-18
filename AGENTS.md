@@ -19,9 +19,9 @@ through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CM
 - Lambent assumes no particular compositor: wlr-layer-shell and standard Wayland protocols, and window placement
   through the host-neutral `org.phosphor_works.Placement` D-Bus API (`PlacementMap`, `ShortcutCatalog`, the pane rule,
   the chrome's decoration tree). Nothing new talks to `org.kde.KWin`, reads `kwinrc` or needs a KWin-only protocol.
-  Night light still does, until its replacement lands in the libraries. Blur behind a surface is
-  ext-background-effect-v1, through `ShellEffects` and phosphor-wayland's `BackgroundEffect`. Shortcuts and gestures
-  are compositor binds that run `phosphorctl`.
+  Night light is phosphor-service-nightlight on wlr-gamma-control, with Lambent's settings in
+  `~/.config/lambent/nightlight.json`. Blur behind a surface is ext-background-effect-v1, through `ShellEffects`
+  and phosphor-wayland's `BackgroundEffect`. Shortcuts and gestures are compositor binds that run `phosphorctl`.
 - Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `build:`, `ci:`). Stage files by name.
 - A user-visible change gets a line under `## Unreleased` in `CHANGELOG.md`.
 - `lefthook install` sets up the pre-commit hooks: clang-format and qmlformat on the staged files, and the

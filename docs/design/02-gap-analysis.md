@@ -17,9 +17,10 @@ policies, overflow, keyboard access and per-icon menus.
 Automated regressions and isolated native visual checks pass. The current
 validation record is in `04-implementation-plan.md`.
 
-Night light uses KWin and the shared KNightTime schedule. The native service does
-not expose geolocation availability, so the browser's missing-location fixture
-does not become a claimed native service state. Power profiles show the daemon's
+Night light is phosphor-service-nightlight on wlr-gamma-control, with manual,
+custom-hour and sunset schedules. The sunset schedule needs a location stored in
+Lambent's settings; there is no geolocation, and without a location the panel
+says one is needed. Power profiles show the daemon's
 supported choices; `PerformanceDegraded` is informational and does not disable
 Performance. Airplane mode covers Wi-Fi, WWAN and Bluetooth with remembered
 radio restoration and a Bluetooth exception. Wired networking stays available.

@@ -17,8 +17,8 @@ Without one the bar shows no window map and popouts open at their anchors.
 
 ## Build
 
-Needs CMake 3.25, Qt 6.10 with its private headers, extra-cmake-modules, Wayland and the Vulkan headers, KF6 Kirigami,
-Config and WindowSystem, libxkbcommon, libpipewire, polkit-qt6 and PAM. The first configure downloads the
+Needs CMake 3.25, Qt 6.10 with its private headers, extra-cmake-modules, Wayland and the Vulkan headers, KF6 Kirigami
+and WindowSystem, libxkbcommon, libpipewire, polkit-qt6 and PAM. The first configure downloads the
 pinned phosphor-libs, phosphor-shell-libs, phosphor-surface-packs and branding archives
 (`cmake/LambentDependencies.cmake`) into `.cache/cpm`.
 
