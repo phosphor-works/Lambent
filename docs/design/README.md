@@ -89,10 +89,10 @@ health, power draw and connected-device readouts. The browser controls simulate
 services and do not change host settings. Their interactions have automated DOM
 checks; the user approved these studies for native implementation.
 
-The native panels use KWin Night Light with the shared KNightTime day/night
-schedule, the settings portal's color preference, NetworkManager and BlueZ
-radios, power-profiles-daemon, and UPower. Night light exposes system, custom-hour
-and manual schedules without claiming a geolocation-availability signal.
+The native panels use phosphor-service-nightlight on wlr-gamma-control, the
+settings portal's color preference, NetworkManager and BlueZ radios,
+power-profiles-daemon, and UPower. Night light exposes sunset, custom-hour and
+manual schedules; the sunset one needs a stored location.
 Airplane mode covers Wi-Fi, WWAN and Bluetooth, preserves wired networking and
 can restore the remembered radio settings. Performance remains selectable when
 the power service reports degraded performance. Dark mode and wallpaper access
