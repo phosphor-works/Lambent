@@ -110,7 +110,7 @@ ControlCenter {
     focusAvailable: NotificationRegistry.serverActive
     nightLightEnabled: QuickSettings.nightLightEnabled
     nightLightAvailable: QuickSettings.nightLightAvailable
-    nightLightSummary: !QuickSettings.nightLightAvailable ? i18n("Unavailable") : QuickSettings.nightLightPaused || QuickSettings.nightLightInhibited ? i18n("Paused") : !QuickSettings.nightLightEnabled ? i18n("Off") : QuickSettings.nightLightRunning ? i18n("On") : i18n("Scheduled")
+    nightLightSummary: !QuickSettings.nightLightAvailable ? i18n("Unavailable") : QuickSettings.nightLightPaused || QuickSettings.nightLightInhibited ? i18n("Paused") : !QuickSettings.nightLightEnabled ? i18n("Off") : QuickSettings.nightLightNeedsLocation ? i18n("Needs a location") : QuickSettings.nightLightRunning ? i18n("On") : i18n("Scheduled")
     darkModeEnabled: ColorMode.effectiveDark
     darkModeSummary: ColorMode.mode === "system" ? i18n("Follow system") : ColorMode.effectiveDark ? i18n("Dark") : i18n("Light")
     airplaneEnabled: Airplane.enabled

@@ -2,43 +2,39 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "QuickSettingsController.h"
 #include "PhosphorShellI18n.h"
+#include "version.h"
 
-#include <KConfigGroup>
-#include <KConfigWatcher>
-#include <QCoreApplication>
-#include <QPointer>
+#include <PhosphorServiceNightLight/NightLight.h>
+
 #include <QDBusArgument>
 #include <QDBusMessage>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 #include <QDBusServiceWatcher>
 #include <QDBusVariant>
-#include <QDateTime>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
-#include <QFileSystemWatcher>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QSaveFile>
+#include <QStandardPaths>
 #include <QTime>
 
+#include <utility>
+
 namespace PhosphorShellApp {
+using PhosphorServiceNightLight::NightLight;
 namespace {
-const QString kwin = QStringLiteral("org.kde.KWin");
-const QString nightPath = QStringLiteral("/org/kde/KWin/NightLight");
-const QString nightInterface = QStringLiteral("org.kde.KWin.NightLight");
-const QString scheduleService = QStringLiteral("org.kde.NightTime");
-const QString schedulePath = QStringLiteral("/org/kde/NightTime/Manager");
-const QString scheduleInterface = QStringLiteral("org.kde.NightTime.Manager");
 const QString power = QStringLiteral("org.freedesktop.UPower.PowerProfiles");
 const QString powerPath = QStringLiteral("/org/freedesktop/UPower/PowerProfiles");
 const QString propertiesInterface = QStringLiteral("org.freedesktop.DBus.Properties");
+const QString timeFormat = QStringLiteral("HH:mm");
 QDBusMessage getAll(const QString& service, const QString& path, const QString& interface)
 {
     auto message = QDBusMessage::createMethodCall(service, path, propertiesInterface, QStringLiteral("GetAll"));
     message << interface;
     return message;
-}
-QDBusMessage nightCall(const QString& method, const QString& owner)
-{
-    return QDBusMessage::createMethodCall(owner, nightPath, nightInterface, method);
 }
 QStringList profileIds(const QVariant& value)
 {
@@ -58,38 +54,54 @@ QStringList profileIds(const QVariant& value)
     }
     return result;
 }
+QString scheduleName(NightLight::Mode mode)
+{
+    switch (mode) {
+    case NightLight::Mode::Constant:
+        return QStringLiteral("manual");
+    case NightLight::Mode::Hours:
+        return QStringLiteral("custom");
+    case NightLight::Mode::Location:
+        return QStringLiteral("automatic");
+    }
+    return {};
+}
+std::optional<NightLight::Mode> scheduleMode(const QString& name)
+{
+    if (name == QLatin1String("manual"))
+        return NightLight::Mode::Constant;
+    if (name == QLatin1String("custom"))
+        return NightLight::Mode::Hours;
+    if (name == QLatin1String("automatic"))
+        return NightLight::Mode::Location;
+    return std::nullopt;
+}
 }
 QuickSettingsController::QuickSettingsController(QObject* parent)
-    : QuickSettingsController(QDBusConnection::sessionBus(), QDBusConnection::systemBus(), QStringLiteral("kwinrc"),
+    : QuickSettingsController(QDBusConnection::systemBus(), std::make_unique<NightLight>(),
+                              QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
+                                  .filePath(Lambent::APP_DIR + QStringLiteral("/nightlight.json")),
                               parent)
 {
 }
-QuickSettingsController::QuickSettingsController(QDBusConnection session, QDBusConnection system, QString configPath,
-                                                 QObject* parent)
+QuickSettingsController::QuickSettingsController(QDBusConnection system, std::unique_ptr<NightLight> nightLight,
+                                                 QString nightLightConfig, QObject* parent)
     : QObject(parent)
-    , m_session(std::move(session))
     , m_system(std::move(system))
-    , m_config(KSharedConfig::openConfig(configPath, KConfig::SimpleConfig))
-    , m_scheduleConfig(
-          KSharedConfig::openConfig(QFileInfo(configPath).path() == QLatin1String(".")
-                                        ? QStringLiteral("knighttimerc")
-                                        : QFileInfo(configPath).dir().filePath(QStringLiteral("knighttimerc")),
-                                    KConfig::SimpleConfig))
+    , m_nightLight(std::move(nightLight))
+    , m_nightConfig(std::move(nightLightConfig))
 {
-    auto* compositor = new QDBusServiceWatcher(kwin, m_session, QDBusServiceWatcher::WatchForOwnerChange, this);
-    connect(compositor, &QDBusServiceWatcher::serviceOwnerChanged, this, [this] {
-        const bool hadState = m_cookie || m_nightPending || m_night != NightState{};
-        ++m_nightEpoch;
-        m_cookie.reset();
-        m_cookieOwner.clear();
-        m_resumeTimer.stop();
-        m_resumeAt = 0;
-        m_autoResume = false;
-        m_nightPending = false;
-        m_night = {};
-        if (hadState)
-            Q_EMIT changed();
-        refreshNightLight();
+    loadNightConfig();
+    // The library emits each signal only when its value changed.
+    for (const auto signal : {&NightLight::availableChanged, &NightLight::enabledChanged, &NightLight::modeChanged,
+                              &NightLight::nightTemperatureChanged, &NightLight::hoursChanged,
+                              &NightLight::locationChanged, &NightLight::activeChanged})
+        connect(m_nightLight.get(), signal, this, &QuickSettingsController::changed);
+    // An inhibition taken "until the next transition" ends by itself there.
+    connect(m_nightLight.get(), &NightLight::inhibitedChanged, this, [this] {
+        if (!m_nightLight->isInhibited())
+            m_cookie.reset();
+        Q_EMIT changed();
     });
     auto* profiles = new QDBusServiceWatcher(power, m_system, QDBusServiceWatcher::WatchForOwnerChange, this);
     connect(profiles, &QDBusServiceWatcher::serviceOwnerChanged, this, [this] {
@@ -101,136 +113,81 @@ QuickSettingsController::QuickSettingsController(QDBusConnection session, QDBusC
             Q_EMIT changed();
         refreshPower();
     });
-    auto* scheduler =
-        new QDBusServiceWatcher(scheduleService, m_session, QDBusServiceWatcher::WatchForOwnerChange, this);
-    connect(scheduler, &QDBusServiceWatcher::serviceOwnerChanged, this, &QuickSettingsController::refreshSchedule);
-    for (const auto& item : {qMakePair(nightPath, kwin), qMakePair(powerPath, power)}) {
-        auto& bus = item.second == kwin ? m_session : m_system;
-        bus.connect(item.second, item.first, propertiesInterface, QStringLiteral("PropertiesChanged"), this,
-                    SLOT(propertiesChanged(QString, QVariantMap, QStringList)));
-    }
-    // KConfig notifications use relative names. Absolute injected paths
-    // use file and directory watches, including atomic file replacement.
-    QStringList absolutePaths;
-    for (const auto& config : {m_config, m_scheduleConfig}) {
-        if (QDir::isAbsolutePath(config->name())) {
-            absolutePaths.append(config->name());
-            continue;
-        }
-        const auto watcher = KConfigWatcher::create(config);
-        connect(watcher.data(), &KConfigWatcher::configChanged, this, &QuickSettingsController::refreshNightLight);
-        m_configWatchers.append(watcher);
-    }
-    if (!absolutePaths.isEmpty()) {
-        auto* watcher = new QFileSystemWatcher(this);
-        auto updatePaths = [watcher, absolutePaths] {
-            for (const auto& path : absolutePaths) {
-                const auto directory = QFileInfo(path).absolutePath();
-                if (!watcher->directories().contains(directory))
-                    watcher->addPath(directory);
-                if (QFileInfo::exists(path) && !watcher->files().contains(path))
-                    watcher->addPath(path);
-            }
-        };
-        auto reload = [this, updatePaths] {
-            updatePaths();
-            refreshNightLight();
-        };
-        connect(watcher, &QFileSystemWatcher::fileChanged, this, reload);
-        connect(watcher, &QFileSystemWatcher::directoryChanged, this, reload);
-        updatePaths();
-    }
-    m_resumeTimer.setSingleShot(true);
-    connect(&m_resumeTimer, &QTimer::timeout, this, &QuickSettingsController::resumeNightLight);
-    readNightConfig();
-    refreshNightLight();
+    m_system.connect(power, powerPath, propertiesInterface, QStringLiteral("PropertiesChanged"), this,
+                     SLOT(propertiesChanged(QString, QVariantMap, QStringList)));
     refreshPower();
-    refreshSchedule();
 }
-QuickSettingsController::~QuickSettingsController()
+QuickSettingsController::~QuickSettingsController() = default;
+bool QuickSettingsController::nightLightAvailable() const
 {
-    if (m_cookie) {
-        auto message = nightCall(QStringLiteral("uninhibit"), m_cookieOwner);
-        message << *m_cookie;
-        m_session.asyncCall(message);
+    return m_nightLight->isAvailable();
+}
+bool QuickSettingsController::nightLightEnabled() const
+{
+    return m_nightLight->isEnabled();
+}
+bool QuickSettingsController::nightLightRunning() const
+{
+    return m_nightLight->isActive();
+}
+bool QuickSettingsController::nightLightInhibited() const
+{
+    return m_nightLight->isInhibited();
+}
+int QuickSettingsController::nightLightTemperature() const
+{
+    return m_nightLight->nightTemperature();
+}
+QString QuickSettingsController::nightLightSchedule() const
+{
+    return scheduleName(m_nightLight->mode());
+}
+QString QuickSettingsController::nightLightMorning() const
+{
+    return m_nightLight->morningStart().toString(timeFormat);
+}
+QString QuickSettingsController::nightLightEvening() const
+{
+    return m_nightLight->eveningStart().toString(timeFormat);
+}
+bool QuickSettingsController::nightLightNeedsLocation() const
+{
+    return m_nightLight->mode() == NightLight::Mode::Location && !m_nightLight->hasLocation();
+}
+void QuickSettingsController::loadNightConfig()
+{
+    QFile file(m_nightConfig);
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+    const auto settings = QJsonDocument::fromJson(file.readAll()).object();
+    if (const auto mode = scheduleMode(settings.value(QLatin1String("schedule")).toString()))
+        m_nightLight->setMode(*mode);
+    if (settings.contains(QLatin1String("temperature")))
+        m_nightLight->setNightTemperature(settings.value(QLatin1String("temperature")).toInt());
+    const QTime evening = QTime::fromString(settings.value(QLatin1String("evening")).toString(), timeFormat);
+    const QTime morning = QTime::fromString(settings.value(QLatin1String("morning")).toString(), timeFormat);
+    if (evening.isValid() && morning.isValid())
+        m_nightLight->setHours(evening, morning);
+    if (settings.contains(QLatin1String("latitude")) && settings.contains(QLatin1String("longitude")))
+        m_nightLight->setLocation(settings.value(QLatin1String("latitude")).toDouble(),
+                                  settings.value(QLatin1String("longitude")).toDouble());
+    m_nightLight->setEnabled(settings.value(QLatin1String("enabled")).toBool());
+}
+void QuickSettingsController::saveNightConfig()
+{
+    QJsonObject settings{{QLatin1String("enabled"), m_nightLight->isEnabled()},
+                         {QLatin1String("schedule"), nightLightSchedule()},
+                         {QLatin1String("temperature"), m_nightLight->nightTemperature()},
+                         {QLatin1String("evening"), nightLightEvening()},
+                         {QLatin1String("morning"), nightLightMorning()}};
+    if (m_nightLight->hasLocation()) {
+        settings.insert(QLatin1String("latitude"), m_nightLight->latitude());
+        settings.insert(QLatin1String("longitude"), m_nightLight->longitude());
     }
-}
-void QuickSettingsController::readNightConfig()
-{
-    m_config->reparseConfiguration();
-    m_scheduleConfig->reparseConfiguration();
-    const KConfigGroup night(m_config, QStringLiteral("NightColor"));
-    const KConfigGroup general(m_scheduleConfig, QStringLiteral("General"));
-    const KConfigGroup times(m_scheduleConfig, QStringLiteral("Times"));
-    const int temperature = qBound(1000, night.readEntry(QStringLiteral("NightTemperature"), 4500), 6500);
-    const QString mode = night.readEntry(QStringLiteral("Mode"), QStringLiteral("DarkLight"));
-    const QString source = general.readEntry(QStringLiteral("Source"), QStringLiteral("Location"));
-    const QString schedule = mode == QLatin1String("Constant") ? QStringLiteral("manual")
-        : source == QLatin1String("Times")                     ? QStringLiteral("custom")
-                                                               : QStringLiteral("automatic");
-    const QString morning =
-        times.readEntry(QStringLiteral("SunriseStart"), QTime(6, 0)).toString(QStringLiteral("HH:mm"));
-    const QString evening =
-        times.readEntry(QStringLiteral("SunsetStart"), QTime(18, 0)).toString(QStringLiteral("HH:mm"));
-    if (m_temperature != temperature || m_schedule != schedule || m_morning != morning || m_evening != evening) {
-        if (m_cookie && (m_schedule != schedule || m_morning != morning || m_evening != evening)) {
-            m_autoResume = schedule != QLatin1String("manual");
-            m_resumeAt = 0;
-            m_resumeTimer.stop();
-        }
-        m_temperature = temperature;
-        m_schedule = schedule;
-        m_morning = morning;
-        m_evening = evening;
-        Q_EMIT changed();
-    }
-}
-void QuickSettingsController::refreshSchedule()
-{
-    const auto serial = ++m_scheduleRead;
-    auto* watcher = new QDBusPendingCallWatcher(
-        m_session.asyncCall(getAll(scheduleService, schedulePath, scheduleInterface)), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher, serial] {
-        const QDBusPendingReply<QVariantMap> reply = *watcher;
-        watcher->deleteLater();
-        if (serial != m_scheduleRead)
-            return;
-        const bool available = !reply.isError() && reply.value().value(QLatin1String("Version")).toUInt() >= 1;
-        if (available != m_scheduleAvailable) {
-            m_scheduleAvailable = available;
-            Q_EMIT changed();
-        }
-    });
-}
-void QuickSettingsController::refreshNightLight()
-{
-    readNightConfig();
-    refreshSchedule();
-    const auto serial = ++m_nightRead;
-    const auto epoch = m_nightEpoch;
-    auto* watcher = new QDBusPendingCallWatcher(m_session.asyncCall(getAll(kwin, nightPath, nightInterface)), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher, serial, epoch] {
-        const QDBusPendingReply<QVariantMap> reply = *watcher;
-        watcher->deleteLater();
-        if (serial != m_nightRead || epoch != m_nightEpoch)
-            return;
-        const auto values = reply.isError() ? QVariantMap{} : reply.value();
-        const NightState state{
-            values.value(QLatin1String("available")).toBool(), values.value(QLatin1String("enabled")).toBool(),
-            values.value(QLatin1String("running")).toBool(), values.value(QLatin1String("inhibited")).toBool(),
-            values.value(QLatin1String("scheduledTransitionDateTime")).toLongLong()};
-        if (state != m_night) {
-            m_night = state;
-            Q_EMIT changed();
-        }
-        if (m_cookie && m_autoResume && (m_resumeAt == 0 || m_resumeAt > QDateTime::currentSecsSinceEpoch())
-            && state.transition > QDateTime::currentSecsSinceEpoch())
-            m_resumeAt = state.transition;
-        if (m_cookie && state.available && !state.enabled && m_nightError.isEmpty())
-            resumeNightLight();
-        else
-            scheduleResume();
-    });
+    QSaveFile file(m_nightConfig);
+    const bool saved = QDir().mkpath(QFileInfo(m_nightConfig).absolutePath()) && file.open(QIODevice::WriteOnly)
+        && file.write(QJsonDocument(settings).toJson()) >= 0 && file.commit();
+    setNightError(saved ? QString() : PhosphorI18n::tr("Could not save Night light settings"));
 }
 void QuickSettingsController::refreshPower()
 {
@@ -254,9 +211,7 @@ void QuickSettingsController::refreshPower()
 }
 void QuickSettingsController::propertiesChanged(const QString& interface, const QVariantMap&, const QStringList&)
 {
-    if (interface == nightInterface)
-        refreshNightLight();
-    else if (interface == power)
+    if (interface == power)
         refreshPower();
 }
 void QuickSettingsController::setNightError(const QString& error)
@@ -266,92 +221,21 @@ void QuickSettingsController::setNightError(const QString& error)
     m_nightError = error;
     Q_EMIT changed();
 }
-void QuickSettingsController::applyNightConfig(const QVariantMap& night, const QVariantMap& general,
-                                               const QVariantMap& times)
-{
-    if (!m_night.available || m_nightPending)
-        return;
-    const bool shared = !general.isEmpty() || !times.isEmpty();
-    if (shared && !m_scheduleAvailable) {
-        setNightError(PhosphorI18n::tr("The system day and night schedule is unavailable"));
-        return;
-    }
-    if (!m_config->isConfigWritable(false) || (shared && !m_scheduleConfig->isConfigWritable(false))) {
-        setNightError(PhosphorI18n::tr("Could not save Night light settings"));
-        return;
-    }
-    // Both files belong to KDE. Preserve unrelated keys and restore the
-    // previous values if either save fails, including previously absent keys.
-    auto previous = [](const KSharedConfig::Ptr& config, const QString& name, const QVariantMap& entries) {
-        const KConfigGroup group(config, name);
-        QVariantMap values;
-        for (auto it = entries.cbegin(); it != entries.cend(); ++it)
-            values.insert(it.key(),
-                          group.hasKey(it.key()) ? QVariant(group.readEntry(it.key(), QString())) : QVariant());
-        return values;
-    };
-    auto writeGroup = [](const KSharedConfig::Ptr& config, const QString& name, const QVariantMap& entries) {
-        KConfigGroup group(config, name);
-        for (auto it = entries.cbegin(); it != entries.cend(); ++it) {
-            if (it.value().isValid())
-                group.writeEntry(it.key(), it.value(), KConfig::Notify);
-            else
-                group.deleteEntry(it.key(), KConfig::Notify);
-        }
-    };
-    const auto oldNight = previous(m_config, QStringLiteral("NightColor"), night);
-    const auto oldGeneral = previous(m_scheduleConfig, QStringLiteral("General"), general);
-    const auto oldTimes = previous(m_scheduleConfig, QStringLiteral("Times"), times);
-    writeGroup(m_config, QStringLiteral("NightColor"), night);
-    writeGroup(m_scheduleConfig, QStringLiteral("General"), general);
-    writeGroup(m_scheduleConfig, QStringLiteral("Times"), times);
-    if ((shared && !m_scheduleConfig->sync()) || !m_config->sync()) {
-        writeGroup(m_config, QStringLiteral("NightColor"), oldNight);
-        writeGroup(m_scheduleConfig, QStringLiteral("General"), oldGeneral);
-        writeGroup(m_scheduleConfig, QStringLiteral("Times"), oldTimes);
-        const bool restoredSchedule = !shared || m_scheduleConfig->sync();
-        const bool restoredNight = m_config->sync();
-        // A failed rollback must not be silently saved later by a destructor.
-        m_config->markAsClean();
-        m_scheduleConfig->markAsClean();
-        setNightError(
-            restoredSchedule && restoredNight
-                ? PhosphorI18n::tr("Could not save Night light settings")
-                : PhosphorI18n::tr(
-                      "Some Night light settings could not be saved. Check the current schedule and try again."));
-        readNightConfig();
-        return;
-    }
-    m_nightPending = true;
-    m_nightError.clear();
-    Q_EMIT changed();
-    const auto epoch = m_nightEpoch;
-    auto message = QDBusMessage::createMethodCall(kwin, QStringLiteral("/KWin"), kwin, QStringLiteral("reconfigure"));
-    auto* watcher = new QDBusPendingCallWatcher(m_session.asyncCall(message), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher, epoch] {
-        const QDBusPendingReply<> reply = *watcher;
-        watcher->deleteLater();
-        if (epoch != m_nightEpoch)
-            return;
-        finishNightWrite(reply.isError() ? PhosphorI18n::tr("Settings were saved but Night light could not apply them")
-                                         : QString());
-    });
-}
-void QuickSettingsController::finishNightWrite(const QString& error)
-{
-    m_nightPending = false;
-    m_nightError = error;
-    Q_EMIT changed();
-    refreshNightLight();
-}
 void QuickSettingsController::toggleNightLight()
 {
-    setNightLightEnabled(!m_night.enabled);
+    setNightLightEnabled(!m_nightLight->isEnabled());
 }
 void QuickSettingsController::setNightLightEnabled(bool enabled)
 {
-    if (enabled != m_night.enabled)
-        applyNightConfig({{QStringLiteral("Active"), enabled}});
+    if (enabled == m_nightLight->isEnabled())
+        return;
+    // Turning it off ends a pause: there is nothing left to hold off.
+    if (!enabled && m_cookie) {
+        m_nightLight->uninhibit(*std::exchange(m_cookie, std::nullopt));
+        Q_EMIT changed();
+    }
+    m_nightLight->setEnabled(enabled);
+    saveNightConfig();
 }
 void QuickSettingsController::setNightLightTemperature(int temperature)
 {
@@ -359,132 +243,59 @@ void QuickSettingsController::setNightLightTemperature(int temperature)
         setNightError(PhosphorI18n::tr("Choose a temperature from 1000 K to 6500 K"));
         return;
     }
-    if (temperature != m_temperature)
-        applyNightConfig({{QStringLiteral("NightTemperature"), temperature}});
+    if (temperature == m_nightLight->nightTemperature())
+        return;
+    m_nightLight->setNightTemperature(temperature);
+    saveNightConfig();
 }
 void QuickSettingsController::setNightLightSchedule(const QString& schedule)
 {
-    if (schedule == QLatin1String("manual"))
-        applyNightConfig({{QStringLiteral("Mode"), QStringLiteral("Constant")}});
-    else if (schedule == QLatin1String("custom") || schedule == QLatin1String("automatic"))
-        applyNightConfig(
-            {{QStringLiteral("Mode"), QStringLiteral("DarkLight")}},
-            {{QStringLiteral("Source"),
-              schedule == QLatin1String("custom") ? QStringLiteral("Times") : QStringLiteral("Location")}});
-    else
+    const auto mode = scheduleMode(schedule);
+    if (!mode) {
         setNightError(PhosphorI18n::tr("Choose a valid Night light schedule"));
+        return;
+    }
+    if (*mode == m_nightLight->mode())
+        return;
+    m_nightLight->setMode(*mode);
+    saveNightConfig();
 }
 void QuickSettingsController::setNightLightTimes(const QString& morning, const QString& evening)
 {
-    const QTime start = QTime::fromString(morning, QStringLiteral("HH:mm"));
-    const QTime end = QTime::fromString(evening, QStringLiteral("HH:mm"));
-    if (!start.isValid() || !end.isValid() || start == end) {
+    const QTime start = QTime::fromString(morning, timeFormat);
+    const QTime end = QTime::fromString(evening, timeFormat);
+    if (!start.isValid() || !end.isValid() || !m_nightLight->setHours(end, start)) {
         setNightError(PhosphorI18n::tr("Choose different valid start and end times"));
         return;
     }
-    // Keep transitions from overlapping when the user chooses a short interval.
-    const int span = (start.secsTo(end) + 86400) % 86400;
-    const int duration = qMin(1800, qMin(span, 86400 - span) / 2);
-    applyNightConfig({{QStringLiteral("Mode"), QStringLiteral("DarkLight")}},
-                     {{QStringLiteral("Source"), QStringLiteral("Times")}},
-                     {{QStringLiteral("SunriseStart"), start},
-                      {QStringLiteral("SunsetStart"), end},
-                      {QStringLiteral("TransitionDuration"), duration}});
+    m_nightLight->setMode(NightLight::Mode::Hours);
+    saveNightConfig();
+}
+void QuickSettingsController::setNightLightLocation(double latitude, double longitude)
+{
+    if (!m_nightLight->setLocation(latitude, longitude)) {
+        setNightError(PhosphorI18n::tr("Choose a latitude from -90 to 90 and a longitude from -180 to 180"));
+        return;
+    }
+    saveNightConfig();
 }
 void QuickSettingsController::toggleNightLightPause()
 {
-    if (!m_night.available || !m_night.enabled || m_nightPending)
-        return;
     if (m_cookie) {
-        resumeNightLight();
+        m_nightLight->uninhibit(*std::exchange(m_cookie, std::nullopt));
+        Q_EMIT changed();
         return;
     }
-    m_nightPending = true;
-    m_nightError.clear();
+    if (!m_nightLight->isAvailable() || !m_nightLight->isEnabled())
+        return;
+    // On a schedule the pause ends by itself at the next transition, the way
+    // "pause until tomorrow" reads. In manual mode it lasts until resumed.
+    m_cookie = m_nightLight->inhibit(m_nightLight->mode() != NightLight::Mode::Constant);
     Q_EMIT changed();
-    const auto epoch = m_nightEpoch;
-    // Resolve a unique owner before creating a cookie. Retain that address
-    // for cleanup even if the compositor's well-known name is replaced.
-    auto lookup =
-        QDBusMessage::createMethodCall(QStringLiteral("org.freedesktop.DBus"), QStringLiteral("/org/freedesktop/DBus"),
-                                       QStringLiteral("org.freedesktop.DBus"), QStringLiteral("GetNameOwner"));
-    lookup << kwin;
-    auto* ownerWatcher = new QDBusPendingCallWatcher(m_session.asyncCall(lookup), this);
-    connect(ownerWatcher, &QDBusPendingCallWatcher::finished, this, [this, ownerWatcher, epoch] {
-        const QDBusPendingReply<QString> ownerReply = *ownerWatcher;
-        ownerWatcher->deleteLater();
-        if (epoch != m_nightEpoch)
-            return;
-        if (ownerReply.isError() || ownerReply.value().isEmpty()) {
-            finishNightWrite(PhosphorI18n::tr("Could not pause Night light"));
-            return;
-        }
-        const auto owner = ownerReply.value();
-        const QPointer<QuickSettingsController> guard(this);
-        const auto bus = m_session;
-        auto* watcher = new QDBusPendingCallWatcher(bus.asyncCall(nightCall(QStringLiteral("inhibit"), owner)),
-                                                    QCoreApplication::instance());
-        connect(watcher, &QDBusPendingCallWatcher::finished, watcher, [guard, bus, watcher, epoch, owner] {
-            const QDBusPendingReply<uint> reply = *watcher;
-            watcher->deleteLater();
-            if (!guard || epoch != guard->m_nightEpoch) {
-                if (!reply.isError()) {
-                    auto cleanup = nightCall(QStringLiteral("uninhibit"), owner);
-                    cleanup << reply.value();
-                    bus.asyncCall(cleanup);
-                }
-                return;
-            }
-            if (!reply.isError()) {
-                guard->m_cookie = reply.value();
-                guard->m_cookieOwner = owner;
-                guard->m_autoResume = guard->m_schedule != QLatin1String("manual");
-                guard->m_resumeAt = guard->m_autoResume ? guard->m_night.transition : 0;
-            }
-            guard->finishNightWrite(reply.isError() ? PhosphorI18n::tr("Could not pause Night light") : QString());
-        });
-    });
 }
-void QuickSettingsController::scheduleResume()
+void QuickSettingsController::refreshNightLight()
 {
-    if (!m_cookie || !m_autoResume || !m_resumeAt)
-        return;
-    const auto milliseconds = qMax<qint64>(1, (m_resumeAt - QDateTime::currentSecsSinceEpoch()) * 1000);
-    // Recheck wall time across suspend and clock adjustments.
-    m_resumeTimer.start(int(qMin<qint64>(milliseconds, 30000)));
-}
-void QuickSettingsController::resumeNightLight()
-{
-    if (!m_cookie)
-        return;
-    if (m_nightPending) {
-        m_resumeTimer.start(250);
-        return;
-    }
-    if (m_resumeAt > QDateTime::currentSecsSinceEpoch() && sender() == &m_resumeTimer) {
-        scheduleResume();
-        return;
-    }
-    m_nightPending = true;
-    Q_EMIT changed();
-    const auto epoch = m_nightEpoch;
-    auto message = nightCall(QStringLiteral("uninhibit"), m_cookieOwner);
-    message << *m_cookie;
-    auto* watcher = new QDBusPendingCallWatcher(m_session.asyncCall(message), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher, epoch] {
-        const QDBusPendingReply<> reply = *watcher;
-        watcher->deleteLater();
-        if (epoch != m_nightEpoch)
-            return;
-        m_autoResume = false;
-        m_resumeAt = 0;
-        m_resumeTimer.stop();
-        if (!reply.isError()) {
-            m_cookie.reset();
-            m_cookieOwner.clear();
-        }
-        finishNightWrite(reply.isError() ? PhosphorI18n::tr("Could not resume Night light") : QString());
-    });
+    m_nightLight->refresh();
 }
 void QuickSettingsController::setPowerProfile(const QString& profile)
 {

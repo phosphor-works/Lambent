@@ -2,17 +2,28 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include <KSharedConfig>
-#include <KConfigWatcher>
 #include <QDBusConnection>
 #include <QObject>
-#include <QTimer>
+#include <QStringList>
 #include <QVariantMap>
+
+#include <memory>
 #include <optional>
+
+namespace PhosphorServiceNightLight {
+class NightLight;
+}
 
 namespace PhosphorShellApp {
 
-// Process-owned live controls. Reads never change compositor or power settings.
+// Process-owned live controls: the night light and the power profile.
+//
+// The night light is phosphor-service-nightlight's NightLight, which warms the
+// outputs through wlr-gamma-control on any compositor that offers it. The
+// library keeps no settings, so this controller loads the user's from
+// ~/.config/lambent/nightlight.json, hands them over and saves what the user
+// changes. The power profile is power-profiles-daemon's, read and written over
+// the system bus; reads never change it.
 class QuickSettingsController : public QObject
 {
     Q_OBJECT
@@ -21,12 +32,13 @@ class QuickSettingsController : public QObject
     Q_PROPERTY(bool nightLightRunning READ nightLightRunning NOTIFY changed)
     Q_PROPERTY(bool nightLightInhibited READ nightLightInhibited NOTIFY changed)
     Q_PROPERTY(bool nightLightPaused READ nightLightPaused NOTIFY changed)
-    Q_PROPERTY(bool nightLightScheduleAvailable READ nightLightScheduleAvailable NOTIFY changed)
+    Q_PROPERTY(bool nightLightScheduleAvailable READ nightLightScheduleAvailable CONSTANT)
     Q_PROPERTY(int nightLightTemperature READ nightLightTemperature NOTIFY changed)
     Q_PROPERTY(QString nightLightSchedule READ nightLightSchedule NOTIFY changed)
     Q_PROPERTY(QString nightLightMorning READ nightLightMorning NOTIFY changed)
     Q_PROPERTY(QString nightLightEvening READ nightLightEvening NOTIFY changed)
-    Q_PROPERTY(bool nightLightPending READ nightLightPending NOTIFY changed)
+    Q_PROPERTY(bool nightLightPending READ nightLightPending CONSTANT)
+    Q_PROPERTY(bool nightLightNeedsLocation READ nightLightNeedsLocation NOTIFY changed)
     Q_PROPERTY(QString nightLightError READ nightLightError NOTIFY changed)
     Q_PROPERTY(bool powerAvailable READ powerAvailable NOTIFY changed)
     Q_PROPERTY(QString powerProfile READ powerProfile NOTIFY changed)
@@ -37,82 +49,71 @@ class QuickSettingsController : public QObject
     Q_PROPERTY(QString error READ error NOTIFY changed)
 public:
     explicit QuickSettingsController(QObject* parent = nullptr);
-    QuickSettingsController(QDBusConnection session, QDBusConnection system, QString configPath,
-                            QObject* parent = nullptr);
+    /// @p nightLight is the night light to drive (tests give one a fake gamma
+    /// backend and clock); @p nightLightConfig the JSON file its settings are
+    /// loaded from and saved to.
+    QuickSettingsController(QDBusConnection system, std::unique_ptr<PhosphorServiceNightLight::NightLight> nightLight,
+                            QString nightLightConfig, QObject* parent = nullptr);
     ~QuickSettingsController() override;
-    bool nightLightAvailable() const
-    {
-        return m_night.available;
-    }
-    bool nightLightEnabled() const
-    {
-        return m_night.enabled;
-    }
-    bool nightLightRunning() const
-    {
-        return m_night.running;
-    }
-    bool nightLightInhibited() const
-    {
-        return m_night.inhibited;
-    }
-    bool nightLightPaused() const
+
+    [[nodiscard]] bool nightLightAvailable() const;
+    [[nodiscard]] bool nightLightEnabled() const;
+    [[nodiscard]] bool nightLightRunning() const;
+    [[nodiscard]] bool nightLightInhibited() const;
+    [[nodiscard]] bool nightLightPaused() const
     {
         return m_cookie.has_value();
     }
-    bool nightLightScheduleAvailable() const
+    /// Every schedule runs in the library, so all three can always be chosen.
+    /// Read by Phosphor.Bar's NightLightPanel.
+    [[nodiscard]] bool nightLightScheduleAvailable() const
     {
-        return m_scheduleAvailable;
+        return true;
     }
-    int nightLightTemperature() const
+    [[nodiscard]] int nightLightTemperature() const;
+    /// "manual", "custom" or "automatic": the Constant, Hours and Location
+    /// schedules.
+    [[nodiscard]] QString nightLightSchedule() const;
+    [[nodiscard]] QString nightLightMorning() const;
+    [[nodiscard]] QString nightLightEvening() const;
+    /// The library applies a change at once, so no request is ever in flight.
+    /// Read by Phosphor.Bar's NightLightPanel.
+    [[nodiscard]] bool nightLightPending() const
     {
-        return m_temperature;
+        return false;
     }
-    QString nightLightSchedule() const
-    {
-        return m_schedule;
-    }
-    QString nightLightMorning() const
-    {
-        return m_morning;
-    }
-    QString nightLightEvening() const
-    {
-        return m_evening;
-    }
-    bool nightLightPending() const
-    {
-        return m_nightPending;
-    }
-    QString nightLightError() const
+    /// The automatic schedule follows sunset and sunrise, which needs a
+    /// location. Without one the night light stays at day colour.
+    [[nodiscard]] bool nightLightNeedsLocation() const;
+    [[nodiscard]] QString nightLightError() const
     {
         return m_nightError;
     }
-    bool powerAvailable() const
+    [[nodiscard]] bool powerAvailable() const
     {
         return m_power.available;
     }
-    QString powerProfile() const
+    [[nodiscard]] QString powerProfile() const
     {
         return m_power.profile;
     }
-    QStringList powerProfiles() const
+    [[nodiscard]] QStringList powerProfiles() const
     {
         return m_power.profiles;
     }
-    QString performanceDegraded() const
+    [[nodiscard]] QString performanceDegraded() const
     {
         return m_power.degraded;
     }
-    bool powerPending() const
+    [[nodiscard]] bool powerPending() const
     {
         return m_powerPending;
     }
-    QString powerError() const
+    [[nodiscard]] QString powerError() const
     {
         return m_powerError;
     }
-    QString error() const
+    [[nodiscard]] QString error() const
     {
         return m_nightError;
     }
@@ -121,6 +122,9 @@ public:
     Q_INVOKABLE void setNightLightTemperature(int temperature);
     Q_INVOKABLE void setNightLightSchedule(const QString& schedule);
     Q_INVOKABLE void setNightLightTimes(const QString& morning, const QString& evening);
+    /// The location the automatic schedule computes sunset and sunrise for,
+    /// degrees north and east.
+    Q_INVOKABLE void setNightLightLocation(double latitude, double longitude);
     Q_INVOKABLE void toggleNightLightPause();
     Q_INVOKABLE void refreshNightLight();
     Q_INVOKABLE void refreshPower();
@@ -131,15 +135,6 @@ private Q_SLOTS:
     void propertiesChanged(const QString& interface, const QVariantMap& values, const QStringList& invalidated);
 
 private:
-    struct NightState
-    {
-        bool available = false;
-        bool enabled = false;
-        bool running = false;
-        bool inhibited = false;
-        qint64 transition = 0;
-        bool operator==(const NightState&) const = default;
-    };
     struct PowerState
     {
         bool available = false;
@@ -148,38 +143,18 @@ private:
         QString degraded;
         bool operator==(const PowerState&) const = default;
     };
-    void readNightConfig();
-    void refreshSchedule();
-    void applyNightConfig(const QVariantMap& night, const QVariantMap& general = {}, const QVariantMap& times = {});
-    void finishNightWrite(const QString& error);
-    void resumeNightLight();
-    void scheduleResume();
+    void loadNightConfig();
+    void saveNightConfig();
     void setNightError(const QString& error);
-    QDBusConnection m_session;
     QDBusConnection m_system;
-    KSharedConfig::Ptr m_config;
-    KSharedConfig::Ptr m_scheduleConfig;
-    QList<KConfigWatcher::Ptr> m_configWatchers;
-    NightState m_night;
+    std::unique_ptr<PhosphorServiceNightLight::NightLight> m_nightLight;
+    QString m_nightConfig;
     PowerState m_power;
-    int m_temperature = 4500;
-    QString m_schedule = QStringLiteral("automatic");
-    QString m_morning = QStringLiteral("06:00");
-    QString m_evening = QStringLiteral("18:00");
     QString m_nightError;
     QString m_powerError;
-    bool m_nightPending = false;
     bool m_powerPending = false;
-    bool m_scheduleAvailable = false;
-    quint64 m_nightEpoch = 0;
     quint64 m_powerEpoch = 0;
-    quint64 m_nightRead = 0;
     quint64 m_powerRead = 0;
-    quint64 m_scheduleRead = 0;
     std::optional<uint> m_cookie;
-    QString m_cookieOwner;
-    QTimer m_resumeTimer;
-    qint64 m_resumeAt = 0;
-    bool m_autoResume = false;
 };
 }
