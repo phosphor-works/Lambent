@@ -32,7 +32,7 @@ of the libraries, add `-DCPM_phosphor-libs_SOURCE=/path/to/phosphor-libs` and
 
 The surface decoration packs the bar and popouts draw come from
 [phosphor-surface-packs](https://github.com/phosphor-works/phosphor-surface-packs) and install to
-`share/phosphor-works/surface`, where every app of the suite finds them. A distribution that packages them once for all
+`share/phosphor-works/shaders/surface`, where every app of the suite finds them. A distribution that packages them once for all
 apps configures with `-DLAMBENT_INSTALL_SURFACE_PACKS=OFF`.
 
 ## Run

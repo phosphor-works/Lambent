@@ -24,7 +24,7 @@ All notable changes to Lambent are documented in this file. The format is based 
 - The nested test session is a headless labwc or sway compositor with its own session bus and runtime dir, and takes
   screenshots with grim. It no longer needs a PlasmaZones checkout.
 
-- The surface decoration packs come from phosphor-surface-packs and install to `share/phosphor-works/surface`,
+- The surface decoration packs come from phosphor-surface-packs and install to `share/phosphor-works/shaders/surface`,
   shared with the suite's other apps. They were PlasmaZones' before.
 - Lambent passes the libraries its own paths: `~/.config/lambent/` for the shell tree, appearance and wallpapers,
   `~/.local/share/lambent/` for the appearance library and saved shader presets.
