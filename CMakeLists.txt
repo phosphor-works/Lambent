@@ -100,6 +100,13 @@ endforeach()
 # ═══════════════════════════════════════════════════════════════════════════════
 
 include(cmake/LambentDependencies.cmake)
+# The surface decoration packs, fetched BEFORE the libraries: phosphor-libs
+# fetches its own pinned copy for its tests unless an app has already set
+# PHOSPHOR_SURFACE_PACKS_DIR, and CPM keeps the first copy declared, so
+# fetching them after the libraries let phosphor-libs' pin decide the packs
+# Lambent compiles and installs.
+lambent_fetch_dependency(phosphor-surface-packs)
+include(${phosphor-surface-packs_SOURCE_DIR}/cmake/PhosphorSurfacePacks.cmake)
 lambent_add_phosphor_libraries()
 
 # ═══════════════════════════════════════════════════════════════════════════════

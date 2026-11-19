@@ -77,7 +77,7 @@ ctest --test-dir build -R <name>         # one test
   homes, under `$XDG_RUNTIME_DIR/lambent-nested` (`LAMBENT_NESTED_SESSION=<name>` for another). `ctl.sh`,
   `capture.sh` (grim) and `shell.sh` drive it, after sourcing its `env.sh`. Never run the shell, `phosphorctl` or
   D-Bus calls against the user's own session.
-- The decoration packs the shell draws are phosphor-surface-packs', installed to `share/phosphor-works/surface`
+- The decoration packs the shell draws are phosphor-surface-packs', installed to `share/phosphor-works/shaders/surface`
   (`PHOSPHOR_SURFACE_PACKS_DATA_SUBDIR`, set as phosphor-surface's pack subdir at startup).
   `-DLAMBENT_INSTALL_SURFACE_PACKS=OFF` leaves the install to a distribution's own package of them.
 

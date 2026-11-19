@@ -65,10 +65,10 @@ set(LAMBENT_DEP_phosphor-shell-libs_SHA256 "6addb9a2c36d2a8b30583177c179a0aa7d98
 # shaders, phosphor-works/phosphor-surface-packs): the surface decoration packs
 # the shell's chrome draws, installed from it with its
 # cmake/PhosphorSurfacePacks.cmake. A commit, so VERSION is the commit hash.
-set(LAMBENT_DEP_phosphor-surface-packs_VERSION "e89d9f7bb6320eab8b6a0b3325858d2ca5356ce3")
-set(LAMBENT_DEP_phosphor-surface-packs_URL "https://github.com/phosphor-works/phosphor-surface-packs/archive/e89d9f7bb6320eab8b6a0b3325858d2ca5356ce3.tar.gz")
-set(LAMBENT_DEP_phosphor-surface-packs_FILE "phosphor-surface-packs-e89d9f7bb6320eab8b6a0b3325858d2ca5356ce3.tar.gz")
-set(LAMBENT_DEP_phosphor-surface-packs_SHA256 "fbbf0b9849d83396029bc4e310c3dcac49c08758e73d560538888e685f0a5e30")
+set(LAMBENT_DEP_phosphor-surface-packs_VERSION "087bd740eb0650b5a4256566663d8332d00c7cd7")
+set(LAMBENT_DEP_phosphor-surface-packs_URL "https://github.com/phosphor-works/phosphor-surface-packs/archive/087bd740eb0650b5a4256566663d8332d00c7cd7.tar.gz")
+set(LAMBENT_DEP_phosphor-surface-packs_FILE "phosphor-surface-packs-087bd740eb0650b5a4256566663d8332d00c7cd7.tar.gz")
+set(LAMBENT_DEP_phosphor-surface-packs_SHA256 "2b3244bbd1d198cc9361dea105b01bfbcd32bbe35843ddd392881208370b40e1")
 
 # The suite's branding release (CC-BY-SA-4.0, phosphor-works/branding): Lambent's
 # icon, installed from it with its cmake/PhosphorBranding.cmake.
