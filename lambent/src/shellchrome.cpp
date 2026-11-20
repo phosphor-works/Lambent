@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ShellChrome.h"
 
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorProtocol/ServiceConstants.h>
 #include <PhosphorSurface/DecorationProfile.h>
 #include <PhosphorSurface/DecorationSupportedPaths.h>
@@ -11,8 +12,6 @@
 #include <PhosphorSurface/SurfaceThemeResolve.h>
 #include <PhosphorTheme/PaletteStore.h>
 #include <PhosphorTheme/ShellPalette.h>
-
-#include "version.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>
@@ -201,7 +200,9 @@ QStringList ShellChrome::defaultPackSearchPaths()
 
 QString ShellChrome::userPresetRoot()
 {
-    return PhosphorShaders::standardUserPresetRoot(Lambent::APP_DIR + QStringLiteral("/shader-presets"));
+    // The suite's shared preset tree, where every app that draws the same
+    // packs keeps the user's presets for them.
+    return PhosphorShaders::standardUserPresetRoot(PhosphorPaths::commonDataSubdir(QStringLiteral("shaders/presets")));
 }
 
 const PhosphorSurfaceShaders::DecorationProfileTree& ShellChrome::tree() const

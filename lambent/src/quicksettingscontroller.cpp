@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "QuickSettingsController.h"
 #include "PhosphorShellI18n.h"
-#include "version.h"
 
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorServiceNightLight/NightLight.h>
 
 #include <QDBusArgument>
@@ -18,7 +18,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSaveFile>
-#include <QStandardPaths>
 #include <QTime>
 
 #include <utility>
@@ -79,9 +78,7 @@ std::optional<NightLight::Mode> scheduleMode(const QString& name)
 }
 QuickSettingsController::QuickSettingsController(QObject* parent)
     : QuickSettingsController(QDBusConnection::systemBus(), std::make_unique<NightLight>(),
-                              QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
-                                  .filePath(Lambent::APP_DIR + QStringLiteral("/nightlight.json")),
-                              parent)
+                              PhosphorPaths::appConfigDir() + QStringLiteral("/nightlight.json"), parent)
 {
 }
 QuickSettingsController::QuickSettingsController(QDBusConnection system, std::unique_ptr<NightLight> nightLight,

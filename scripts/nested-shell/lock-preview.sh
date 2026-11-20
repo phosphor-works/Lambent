@@ -35,6 +35,6 @@ if [ "${1:-run}" != run ]; then
     exec "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@"
 fi
 export XDG_CONFIG_HOME="$NEST/lock-preview/config"
-mkdir -p "$XDG_CONFIG_HOME/lambent"
-cp "$REPO/scripts/nested-shell/lock-preview.qml" "$XDG_CONFIG_HOME/lambent/shell.qml"
+mkdir -p "$XDG_CONFIG_HOME/phosphor-works/lambent"
+cp "$REPO/scripts/nested-shell/lock-preview.qml" "$XDG_CONFIG_HOME/phosphor-works/lambent/shell.qml"
 exec "$BUILD/bin/lambent"

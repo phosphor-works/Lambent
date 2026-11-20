@@ -4,6 +4,7 @@
 #include "version.h"
 
 #include <PhosphorLayer/IScreenProvider.h>
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorShell/PanelWindow.h>
 #include <PhosphorShell/QmlRegistration.h>
 #include <PhosphorShell/ScreenModel.h>
@@ -20,7 +21,6 @@
 #include <QQuickWindow>
 #include <QScreen>
 #include <QSignalSpy>
-#include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTest>
 
@@ -82,8 +82,8 @@ private Q_SLOTS:
     {
         // Where main.cpp puts the shell's appearance, under the test's own
         // config home.
-        AppearanceStore::setSingletonPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
-                                              .filePath(Lambent::APP_DIR + QStringLiteral("/appearance.json")));
+        PhosphorPaths::setAppDirectoryName(Lambent::APP_DIRECTORY_NAME);
+        AppearanceStore::setSingletonPath(PhosphorPaths::appConfigDir() + QStringLiteral("/appearance.json"));
         PhosphorShell::registerQmlTypes();
         QVERIFY(QGuiApplication::screens().size() >= 2);
         for (const auto* screen : QGuiApplication::screens())

@@ -29,10 +29,11 @@ add_subdirectory(shell)
 # them into their config dir and edit. Same source as the qrc above.
 # The qrc is the build-time frozen copy used as final fallback. This
 # install is the user-editable copy. ShellLoader::resolve() probes
-# GenericConfigLocation (~/.config), then GenericDataLocation (this
-# install), then the linked-in qrc:/ copy main.cpp hands it.
+# Lambent's folder of the suite in GenericConfigLocation (~/.config), then in
+# GenericDataLocation (this install), then the linked-in qrc:/ copy main.cpp
+# hands it.
 install(DIRECTORY shell/
-    DESTINATION ${KDE_INSTALL_DATADIR}/lambent
+    DESTINATION ${KDE_INSTALL_DATADIR}/${PHOSPHOR_SUITE_DIRECTORY_NAME}/${LAMBENT_APP_DIRECTORY_NAME}
     FILES_MATCHING
         PATTERN "*.qml"
         PATTERN "*.frag"
@@ -121,6 +122,8 @@ add_executable(lambent
 
 target_link_libraries(lambent
     PRIVATE
+        # Lambent's folder of the suite: every config and data path.
+        PhosphorPaths::PhosphorPaths
         Qt6::QuickControls2
         PhosphorControl::PhosphorControl
         PhosphorShell::PhosphorShell

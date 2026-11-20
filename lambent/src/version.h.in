@@ -18,9 +18,11 @@ inline const QString VERSION_STRING = QStringLiteral("@PROJECT_VERSION@");
 /// The application ID: the .desktop file, the AppStream id and the icon name.
 inline const QString APP_ID = QStringLiteral("org.phosphor_works.Lambent");
 
-/// The directory Lambent's files live in under each XDG config and data
-/// directory: ~/.config/lambent/, ~/.local/share/lambent/, share/lambent/.
-/// The libraries take their paths under it from Lambent.
-inline const QString APP_DIR = QStringLiteral("lambent");
+/// Lambent's folder inside the suite folder of each XDG root
+/// (~/.config/phosphor-works/lambent/, share/phosphor-works/lambent/), which
+/// main() names with PhosphorPaths::setAppDirectoryName before anything reads
+/// a path, and the name of its layer-shell surfaces. Set once, in the root
+/// CMakeLists.txt.
+inline const QString APP_DIRECTORY_NAME = QStringLiteral("@LAMBENT_APP_DIRECTORY_NAME@");
 
 } // namespace Lambent

@@ -66,8 +66,8 @@ export XDG_STATE_HOME="$PREVIEW/state"
 export PIPEWIRE_RUNTIME_DIR="$PREVIEW/runtime"
 unset PIPEWIRE_REMOTE
 export PULSE_SERVER="unix:$PREVIEW/runtime/pulse-native"
-mkdir -p "$XDG_CONFIG_HOME/lambent" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME" "$PIPEWIRE_RUNTIME_DIR"
-cp "$REPO/scripts/nested-shell/shortcuts-preview.qml" "$XDG_CONFIG_HOME/lambent/shell.qml"
+mkdir -p "$XDG_CONFIG_HOME/phosphor-works/lambent" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME" "$PIPEWIRE_RUNTIME_DIR"
+cp "$REPO/scripts/nested-shell/shortcuts-preview.qml" "$XDG_CONFIG_HOME/phosphor-works/lambent/shell.qml"
 cat > "$PREVIEW/bus.conf" <<EOF
 <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>

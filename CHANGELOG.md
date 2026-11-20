@@ -26,14 +26,16 @@ All notable changes to Lambent are documented in this file. The format is based 
 
 - The surface decoration packs come from phosphor-surface-packs and install to `share/phosphor-works/shaders/surface`,
   shared with the suite's other apps. They were PlasmaZones' before.
-- Lambent passes the libraries its own paths: `~/.config/lambent/` for the shell tree, appearance and wallpapers,
-  `~/.local/share/lambent/` for the appearance library and saved shader presets.
+- Lambent keeps its files in its own folder of the suite, beside the other Phosphor apps' files:
+  `~/.config/phosphor-works/lambent/` for the shell tree, appearance, wallpapers, night light and launcher pins,
+  `~/.local/share/phosphor-works/lambent/` for the appearance library, and `share/phosphor-works/lambent/` for the
+  installed shell tree. Saved shader presets go in the suite's shared `~/.local/share/phosphor-works/shaders/presets/`.
 
 - Blur behind the bar, popouts and other glass surfaces uses the standard ext-background-effect-v1 protocol, so
   any compositor that offers it blurs them, not only KWin.
 - Night light warms the screen through the standard wlr-gamma-control protocol rather than KWin's Night Light, and
-  keeps its settings in `~/.config/lambent/nightlight.json`. The sunset schedule needs a latitude and longitude saved
-  there, and until one is set the quick settings say a location is needed.
+  keeps its settings in `~/.config/phosphor-works/lambent/nightlight.json`. The sunset schedule needs a latitude and
+  longitude saved there, and until one is set the quick settings say a location is needed.
 
 ### Removed
 

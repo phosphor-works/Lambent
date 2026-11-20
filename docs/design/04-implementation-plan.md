@@ -32,7 +32,7 @@ Navigator and Stage, including links between Battery and Power profiles.
 
 | Detail | Native implementation |
 |---|---|
-| Night light | phosphor-service-nightlight on wlr-gamma-control: temperature, enabled/running/inhibited state and pause/resume. Manual, custom-hour and sunset schedules, saved in `~/.config/lambent/nightlight.json`; the sunset schedule needs a stored location. |
+| Night light | phosphor-service-nightlight on wlr-gamma-control: temperature, enabled/running/inhibited state and pause/resume. Manual, custom-hour and sunset schedules, saved in `~/.config/phosphor-works/lambent/nightlight.json`; the sunset schedule needs a stored location. |
 | Dark mode | Light/dark/system choices use the settings portal and `AppearanceStore`, retaining palette, wallpaper and the chosen dark glass/solid material. Portal restart and unavailable states are handled. |
 | Airplane mode | Coordinates NetworkManager Wi-Fi and WWAN with BlueZ Bluetooth, remembers radio settings and restores them on request or when disabled. Supports a Bluetooth exception, hardware-switch feedback and partial-failure recovery while preserving wired networking. |
 | Power profiles | Reads and selects the daemon's supported Balanced, Power saver and Performance profiles. Pending changes, failures and service restarts are represented. `PerformanceDegraded` supplies a notice while Performance remains selectable. |

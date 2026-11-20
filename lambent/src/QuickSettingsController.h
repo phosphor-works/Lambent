@@ -21,7 +21,7 @@ namespace PhosphorShellApp {
 // The night light is phosphor-service-nightlight's NightLight, which warms the
 // outputs through wlr-gamma-control on any compositor that offers it. The
 // library keeps no settings, so this controller loads the user's from
-// ~/.config/lambent/nightlight.json, hands them over and saves what the user
+// ~/.config/phosphor-works/lambent/nightlight.json, hands them over and saves what the user
 // changes. The power profile is power-profiles-daemon's, read and written over
 // the system bus; reads never change it.
 class QuickSettingsController : public QObject
