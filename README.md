@@ -7,7 +7,7 @@ popouts open where the window placement engine puts them, the way windows do.
 - A control center with quick settings for audio, network, Bluetooth and brightness
 - An application launcher, notifications with a history, and on-screen displays
 - A lock screen and a PolicyKit authentication prompt
-- A shell tree in QML that you copy into `~/.config/lambent/` and edit, with hot reload
+- A shell tree in QML that you copy into `~/.config/phosphor-works/lambent/` and edit, with hot reload
 
 Lambent is built on [phosphor-libs](https://github.com/phosphor-works/phosphor-libs) and
 [phosphor-shell-libs](https://github.com/phosphor-works/phosphor-shell-libs). It runs under any Wayland compositor with

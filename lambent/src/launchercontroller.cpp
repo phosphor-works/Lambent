@@ -3,6 +3,7 @@
 
 #include "LauncherController.h"
 
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorServiceClipboard/ClipboardService.h>
 #include <PhosphorShell/Toplevels.h>
 #include <PhosphorShell/PlacementMap.h>
@@ -18,7 +19,6 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QSettings>
-#include <QStandardPaths>
 #include <QTimer>
 #include <QLoggingCategory>
 
@@ -125,9 +125,7 @@ LauncherController::LauncherController(QObject* parent)
         }
         m_model->addProvider(provider);
     }
-    QSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-                           + QStringLiteral("/lambent/launcher.ini"),
-                       QSettings::IniFormat);
+    QSettings settings(PhosphorPaths::appConfigDir() + QStringLiteral("/launcher.ini"), QSettings::IniFormat);
     m_pinnedIds = settings
                       .value(QStringLiteral("Launcher/pinnedApplications"),
                              QStringList{QStringLiteral("firefox"), QStringLiteral("org.kde.kate"),
@@ -201,9 +199,7 @@ void LauncherController::togglePinned(const QString& id)
     if (!m_pinnedIds.removeOne(id)) {
         m_pinnedIds.append(id);
     }
-    QSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-                           + QStringLiteral("/lambent/launcher.ini"),
-                       QSettings::IniFormat);
+    QSettings settings(PhosphorPaths::appConfigDir() + QStringLiteral("/launcher.ini"), QSettings::IniFormat);
     settings.setValue(QStringLiteral("Launcher/pinnedApplications"), m_pinnedIds);
     Q_EMIT pinnedApplicationsChanged();
 }

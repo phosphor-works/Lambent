@@ -68,7 +68,7 @@ export PHOSPHOR_SOCKET="$NEST/phosphor.sock"
 #
 # So say so. Non-destructive on purpose: re-seeding automatically would
 # throw away exactly the live edits the seed exists to allow.
-SEEDED_SHELL="$NEST/home/config/lambent/shell.qml"
+SEEDED_SHELL="$NEST/home/config/phosphor-works/lambent/shell.qml"
 REPO_SHELL="$REPO/lambent/shell/shell.qml"
 if [ -f "$SEEDED_SHELL" ] && [ "$REPO_SHELL" -nt "$SEEDED_SHELL" ]; then
     echo "note: $REPO_SHELL is newer than the seeded copy; this restart will run the OLD one." >&2
