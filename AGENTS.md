@@ -3,7 +3,7 @@
 Lambent is a desktop shell for Wayland: Qt 6, C++20 and QML. The `lambent` binary hosts the shell QML tree, its
 controllers in `lambent/src/` own the registries, services and popout transports the QML reads, and `phosphorctl`
 drives a running shell over phosphor-ipc. Application ID `org.phosphor_works.Lambent` (the `.desktop` file, AppStream
-id and icon); user files in `~/.config/lambent/`, installed data in `share/lambent/`.
+id and icon); user files in `~/.config/phosphor-works/lambent/`, installed data in `share/phosphor-works/lambent/`.
 
 The application is in `lambent/` (`src/`, `shell/`, `cli/`, `tests/`, `data/`, entered from the root CMakeLists.txt
 through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CMakePresets.json`, `flake.nix`),
@@ -20,8 +20,8 @@ through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CM
   through the host-neutral `org.phosphor_works.Placement` D-Bus API (`PlacementMap`, `ShortcutCatalog`, the pane rule,
   the chrome's decoration tree). Nothing new talks to `org.kde.KWin`, reads `kwinrc` or needs a KWin-only protocol.
   Night light is phosphor-service-nightlight on wlr-gamma-control, with Lambent's settings in
-  `~/.config/lambent/nightlight.json`. Blur behind a surface is ext-background-effect-v1, through `ShellEffects`
-  and phosphor-wayland's `BackgroundEffect`. Shortcuts and gestures are compositor binds that run `phosphorctl`.
+  `~/.config/phosphor-works/lambent/nightlight.json`. Blur behind a surface is ext-background-effect-v1, through
+  `ShellEffects` and phosphor-wayland's `BackgroundEffect`. Shortcuts and gestures are compositor binds that run `phosphorctl`.
 - Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `build:`, `ci:`). Stage files by name.
 - A user-visible change gets a line under `## Unreleased` in `CHANGELOG.md`.
 - `lefthook install` sets up the pre-commit hooks: clang-format and qmlformat on the staged files, and the
@@ -40,9 +40,13 @@ decoration packs come from the phosphor-surface-packs commit pinned there too.
   `cmake/LambentDependencies.cmake` and `packaging/nix/package.nix`. The phosphor-libs pin here is the one
   phosphor-shell-libs builds against, so move both when the shell libraries need a newer phosphor-libs.
 - `${PHOSPHOR_LIBS_CMAKE_DIR}` holds the shared test helpers (`PhosphorTestIsolation`, `PhosphorTestPch`).
-- The libraries keep no app paths. `main.cpp` hands them Lambent's at startup, before QML loads: the shell name
-  (`Lambent::APP_DIR`, `lambent`, from the generated `version.h`) to ShellLoader and ShellEngine, the appearance file
-  and library folder, the surface pack subdir, and ShellChrome's preset root. A new library path setting goes there.
+- Lambent's files are in its folder of the suite, `phosphor-works/lambent`, in each XDG root. `main.cpp` names it
+  first thing with `PhosphorPaths::setAppDirectoryName(Lambent::APP_DIRECTORY_NAME)` (set once in the root
+  CMakeLists.txt as `LAMBENT_APP_DIRECTORY_NAME`, through the generated `version.h`); ShellLoader, the wallpaper
+  store and every Lambent path come from PhosphorPaths after that. The suite folder's name comes from phosphor-libs
+  (`PHOSPHOR_SUITE_DIRECTORY_NAME` in CMake). Before QML loads, `main.cpp` also hands the libraries that take a path
+  from their app the appearance file and library folder and the surface pack subdir; ShellChrome's preset root is the
+  suite's shared `phosphor-works/shaders/presets`. A test that reads a Lambent path names the folder first.
 
 ## License
 
@@ -89,7 +93,7 @@ ctest --test-dir build -R <name>         # one test
 | Bar, popouts, panes | `lambent/src/barcontroller.cpp`, `layerpopouttransport.cpp`, `routingpopouttransport.cpp`, `socketpopouttransport.cpp`, `panepopouttransport.cpp`, `panerules.cpp` |
 | Chrome and motion | `lambent/src/shellchrome.cpp` (decoration packs), `shellmotion.cpp`, `shelleffects.cpp` |
 | Controllers | `lambent/src/*controller.cpp`: control center, quick settings, status icons, launcher, OSD, toasts, notifications, polkit, picker, color mode, airplane |
-| Shell QML | `lambent/shell/` (the bundled tree, linked in as the `Lambent.Shell` module at `qrc:/qt/qml/Lambent/Shell/` and installed to `share/lambent/`) |
+| Shell QML | `lambent/shell/` (the bundled tree, linked in as the `Lambent.Shell` module at `qrc:/qt/qml/Lambent/Shell/` and installed to `share/phosphor-works/lambent/`) |
 | CLI | `lambent/cli/phosphorctl/` |
 | Tests | `lambent/tests/` |
 | Desktop integration | `lambent/data/`: the `.desktop` file, AppStream metadata, the `lambent.service` user unit |

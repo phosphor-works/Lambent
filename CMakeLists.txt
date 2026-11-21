@@ -109,6 +109,13 @@ lambent_fetch_dependency(phosphor-surface-packs)
 include(${phosphor-surface-packs_SOURCE_DIR}/cmake/PhosphorSurfacePacks.cmake)
 lambent_add_phosphor_libraries()
 
+# Where Lambent's files live: its own folder inside the suite folder every
+# Phosphor app shares, in each XDG root. phosphor-libs names the suite folder
+# (PHOSPHOR_SUITE_DIRECTORY_NAME); Lambent's own name is set here once and
+# reaches the code through the generated version.h.
+include("${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorSuite.cmake")
+set(LAMBENT_APP_DIRECTORY_NAME "lambent")
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # The application
 # ═══════════════════════════════════════════════════════════════════════════════

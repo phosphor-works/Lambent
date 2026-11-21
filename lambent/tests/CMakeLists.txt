@@ -59,7 +59,7 @@ add_executable(test_quick_settings_controller
     ${LAMBENT_SOURCE_DIR}/src/quicksettingscontroller.cpp
 )
 target_link_libraries(test_quick_settings_controller PRIVATE Qt6::Test Qt6::Core Qt6::DBus
-    PhosphorServiceNightLight::PhosphorServiceNightLight)
+    PhosphorPaths::PhosphorPaths PhosphorServiceNightLight::PhosphorServiceNightLight)
 target_include_directories(test_quick_settings_controller PRIVATE ${LAMBENT_SOURCE_DIR}/src)
 target_compile_definitions(test_quick_settings_controller PRIVATE
     LAMBENT_DBUS_DAEMON="${LAMBENT_DBUS_DAEMON}" LAMBENT_TEST_BUS_CONFIG="${LAMBENT_TEST_BUS_CONFIG}")
@@ -170,7 +170,7 @@ if(TARGET PhosphorShellPicker::PhosphorShellPickerQml)
     target_include_directories(test_shell_appearance_entry PRIVATE ${LAMBENT_SOURCE_DIR}/src)
     target_link_libraries(test_shell_appearance_entry PRIVATE
         Qt6::Test Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick
-        PhosphorLayer::PhosphorLayer PhosphorShell::PhosphorShell
+        PhosphorPaths::PhosphorPaths PhosphorLayer::PhosphorLayer PhosphorShell::PhosphorShell
         PhosphorShellPickerQml PhosphorShellPickerQmlplugin
         PhosphorShellWidgetsQml PhosphorShellWidgetsQmlplugin
         PhosphorThemeQml PhosphorThemeQmlplugin
@@ -193,6 +193,7 @@ add_executable(test_shell_chrome
 )
 target_link_libraries(test_shell_chrome
     PRIVATE
+        PhosphorPaths::PhosphorPaths
         Qt6::Test
         Qt6::Core
         Qt6::DBus

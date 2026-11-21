@@ -8,6 +8,7 @@
 #include "ColorModeController.h"
 #include "StatusIconsController.h"
 #include <PhosphorControl/LocalizedContext.h>
+#include <PhosphorPaths/SuiteDirectories.h>
 #include "LauncherController.h"
 #include "LayerPopoutTransport.h"
 #include "OsdController.h"
@@ -67,7 +68,6 @@
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
-#include <QDir>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QIcon>
@@ -76,7 +76,6 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickStyle>
-#include <QStandardPaths>
 #include <QUrl>
 
 #include <memory>
@@ -86,6 +85,8 @@ Q_LOGGING_CATEGORY(lcShell, "phosphorshell.main")
 
 int main(int argc, char* argv[])
 {
+    // Lambent's folder of the suite, before anything reads a path.
+    PhosphorPaths::setAppDirectoryName(Lambent::APP_DIRECTORY_NAME);
     // Answer --help / --help-all / --version headlessly, before any
     // Wayland-touching work, the same shape plasmazonesd uses: a scoped
     // QCoreApplication that never opens a display, so a box without a
@@ -138,17 +139,15 @@ int main(int argc, char* argv[])
         QQuickStyle::setStyle(QStringLiteral("Basic"));
     }
 
-    // The libraries keep no paths of their own: Lambent's files live under
-    // its own directory in the XDG config and data dirs, and the decoration
-    // packs where phosphor-surface-packs installs them for every app. Set
-    // before anything creates the stores or QML resolves a pack.
+    // The libraries that take a path from their app get Lambent's: its own
+    // folder of the suite in the XDG config and data dirs, and the
+    // decoration packs where phosphor-surface-packs installs them for every
+    // app. Set before anything creates the stores or QML resolves a pack.
     PhosphorSurfaceShaders::setSurfacePackDataSubdir(QStringLiteral(LAMBENT_SURFACE_PACKS_DATA_SUBDIR));
-    PhosphorTheme::AppearanceStore::setSingletonPath(
-        QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
-            .filePath(Lambent::APP_DIR + QStringLiteral("/appearance.json")));
-    PhosphorShellPicker::AppearanceLibrary::setSingletonDirectory(
-        QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
-            .filePath(Lambent::APP_DIR + QStringLiteral("/appearance")));
+    PhosphorTheme::AppearanceStore::setSingletonPath(PhosphorPaths::appConfigDir()
+                                                     + QStringLiteral("/appearance.json"));
+    PhosphorShellPicker::AppearanceLibrary::setSingletonDirectory(PhosphorPaths::appDataDir()
+                                                                  + QStringLiteral("/appearance"));
 
     // Guarantee named freedesktop icons resolve (bar widgets use
     // Kirigami.Icon → QIcon::fromTheme). On a desktop session the platform
@@ -260,11 +259,11 @@ int main(int argc, char* argv[])
     };
     PhosphorLayer::SurfaceFactory factory(factoryDeps, &app);
 
-    // The user's tree (~/.config/lambent/), then the installed one
-    // (share/lambent/), then the copy linked into this binary as the
+    // The user's tree (~/.config/phosphor-works/lambent/), then the installed
+    // one (share/phosphor-works/lambent/), then the copy linked into this binary as the
     // Lambent.Shell QML module (lambent/shell/CMakeLists.txt), so a build
     // with neither still starts.
-    PhosphorShell::ShellLoader loader(Lambent::APP_DIR, QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/shell.qml")));
+    PhosphorShell::ShellLoader loader(QUrl(QStringLiteral("qrc:/qt/qml/Lambent/Shell/shell.qml")));
     const QUrl shellUrl = loader.resolve();
     if (shellUrl.isEmpty()) {
         const QString configDir = loader.shellConfigDir();
@@ -287,15 +286,15 @@ int main(int argc, char* argv[])
         const QString message = QStringLiteral(
                                     "No shell.qml found.\n"
                                     "  Searched:    %1\n"
-                                    "               and ${XDG_CONFIG_DIRS}/lambent/\n"
-                                    "               and ${XDG_DATA_HOME}/lambent/\n"
-                                    "               and ${XDG_DATA_DIRS}/lambent/\n\n"
+                                    "               and ${XDG_CONFIG_DIRS}/%2/\n"
+                                    "               and ${XDG_DATA_HOME}/%2/\n"
+                                    "               and ${XDG_DATA_DIRS}/%2/\n\n"
                                     "  To get started, copy the bundled example:\n"
                                     "    mkdir -p %1\n"
-                                    "    cp -r ${CMAKE_INSTALL_PREFIX}/share/lambent/* %1\n"
+                                    "    cp -r ${CMAKE_INSTALL_PREFIX}/share/%2/* %1\n"
                                     "  (replace ${CMAKE_INSTALL_PREFIX} with the prefix used at install; "
                                     "/usr or /usr/local for distro packages.)")
-                                    .arg(configDir);
+                                    .arg(configDir, PhosphorPaths::appSubdir());
         qCCritical(lcShell).noquote() << message;
         return 1;
     }
@@ -477,7 +476,7 @@ int main(int argc, char* argv[])
         PhosphorShell::ShellEngine::Deps{
             .surfaceFactory = &factory,
             .screenProvider = screenProvider.get(),
-            .shellName = Lambent::APP_DIR,
+            .shellName = Lambent::APP_DIRECTORY_NAME,
         },
         &app);
 

@@ -9,12 +9,12 @@
 #   2. qmlsc type-checks bindings; typed bindings compile to C++ skipping
 #      the JS engine on the hot binding path.
 #   3. The resource is linked into the lambent binary, so a fresh
-#      install with no XDG config and no /usr/share/lambent/ install
+#      install with no XDG config and no /usr/share/phosphor-works/lambent/ install
 #      still has a working default shell to fall back on (main.cpp hands
 #      ShellLoader qrc:/qt/qml/Lambent/Shell/shell.qml, which it loads
 #      when it finds no shell.qml on disk).
 #
-# The same files are still installed to ${DATADIR}/lambent/ by the
+# The same files are still installed to ${DATADIR}/phosphor-works/lambent/ by the
 # install(DIRECTORY) in lambent/CMakeLists.txt, so users can `cp -r` and edit.
 # Both paths read identical source — the resource is the build-time
 # snapshot, the installed files are the user-editable copy.

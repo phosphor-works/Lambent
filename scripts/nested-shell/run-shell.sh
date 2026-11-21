@@ -21,7 +21,7 @@
 #      $LAMBENT_NESTED_DIR/compositor.log) and waits for a fresh env.sh,
 #      which is written once the compositor's socket is bound;
 #   2. seeds the bundled shell tree into the nested config home
-#      ($NEST/home/config/lambent/), so shell.qml edits there hot-reload
+#      ($NEST/home/config/phosphor-works/lambent/), so shell.qml edits there hot-reload
 #      without rebuilds. Seeding happens after the launcher wiped the homes;
 #   3. starts the build-tree lambent inside the session through shell.sh
 #      (shell log: $NEST/shell.log, IPC socket: $NEST/phosphor.sock).
@@ -88,7 +88,7 @@ fi
 # copy linked into it, which works but cannot be edited, so the hot-reload loop
 # the harness exists for has nothing to watch.
 if [ -z "${LAMBENT_SHELL_NO_SEED:-}" ]; then
-    SHELL_CFG="$NEST/home/config/lambent"
+    SHELL_CFG="$NEST/home/config/phosphor-works/lambent"
     mkdir -p "$SHELL_CFG"
     cp -r "$REPO/lambent/shell/." "$SHELL_CFG/"
     echo "seeded editable shell: $SHELL_CFG/shell.qml"

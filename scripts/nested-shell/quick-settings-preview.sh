@@ -39,21 +39,21 @@ case "${1:-run}" in
     *) exec "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@" ;;
 esac
 export XDG_CONFIG_HOME="$NEST/quick-settings-preview/config"
-mkdir -p "$XDG_CONFIG_HOME/lambent"
-cp "$REPO/scripts/nested-shell/quick-settings-preview.qml" "$XDG_CONFIG_HOME/lambent/shell.qml"
-cp "$REPO/scripts/nested-shell/StatusIconsPreviewController.qml" "$XDG_CONFIG_HOME/lambent/StatusIconsPreviewController.qml"
-cp "$REPO/lambent/shell/wallpapers/spectrum.png" "$XDG_CONFIG_HOME/lambent/fixture-spectrum.png"
-cp "$REPO/lambent/shell/wallpapers/ember.png" "$XDG_CONFIG_HOME/lambent/fixture-ember.png"
+mkdir -p "$XDG_CONFIG_HOME/phosphor-works/lambent"
+cp "$REPO/scripts/nested-shell/quick-settings-preview.qml" "$XDG_CONFIG_HOME/phosphor-works/lambent/shell.qml"
+cp "$REPO/scripts/nested-shell/StatusIconsPreviewController.qml" "$XDG_CONFIG_HOME/phosphor-works/lambent/StatusIconsPreviewController.qml"
+cp "$REPO/lambent/shell/wallpapers/spectrum.png" "$XDG_CONFIG_HOME/phosphor-works/lambent/fixture-spectrum.png"
+cp "$REPO/lambent/shell/wallpapers/ember.png" "$XDG_CONFIG_HOME/phosphor-works/lambent/fixture-ember.png"
 if [ -n "$STATUS_PAGE" ]; then
     sed -i -e 's/property string view: "wifi"/property string view: "status-icons"/' \
         -e 's/property bool statusVisible: false/property bool statusVisible: true/' \
         -e "s/property string statusPage: \"settings\"/property string statusPage: \"$STATUS_PAGE\"/" \
-        "$XDG_CONFIG_HOME/lambent/shell.qml"
+        "$XDG_CONFIG_HOME/phosphor-works/lambent/shell.qml"
 fi
 # Enable audio writes only against an explicitly supplied nested fixture.
 case "${PIPEWIRE_RUNTIME_DIR:-}" in
     "$NEST"/*)
-        sed -i 's/property bool audioEnabled: false/property bool audioEnabled: true/' "$XDG_CONFIG_HOME/lambent/shell.qml"
+        sed -i 's/property bool audioEnabled: false/property bool audioEnabled: true/' "$XDG_CONFIG_HOME/phosphor-works/lambent/shell.qml"
         ;;
 esac
 exec "$BUILD/bin/lambent"

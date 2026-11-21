@@ -23,7 +23,7 @@ body:
         - Authentication prompt
         - Appearance, wallpaper or theme
         - phosphorctl
-        - Startup or the shell tree in ~/.config/lambent
+        - Startup or the shell tree in ~/.config/phosphor-works/lambent
         - Something else
     validations:
       required: true
