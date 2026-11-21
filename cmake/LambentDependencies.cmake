@@ -47,19 +47,19 @@ set(LAMBENT_DEPS phosphor-libs phosphor-shell-libs phosphor-surface-packs brandi
 
 # The phosphor-libs commit (LGPL-2.1-or-later, phosphor-works/phosphor-libs).
 # A commit, not a release, so VERSION is the commit hash.
-set(LAMBENT_DEP_phosphor-libs_VERSION "d41667f4005dbc1bbf3d2ce21da1655838cb6474")
-set(LAMBENT_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/d41667f4005dbc1bbf3d2ce21da1655838cb6474.tar.gz")
-set(LAMBENT_DEP_phosphor-libs_FILE "phosphor-libs-d41667f4005dbc1bbf3d2ce21da1655838cb6474.tar.gz")
-set(LAMBENT_DEP_phosphor-libs_SHA256 "5b74faa9bf154619af64936d554b56d7a09e82d27898b34fdabe8feb2f7d8c20")
+set(LAMBENT_DEP_phosphor-libs_VERSION "388a858e974424e30b4a3615ef776db9603089a3")
+set(LAMBENT_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/388a858e974424e30b4a3615ef776db9603089a3.tar.gz")
+set(LAMBENT_DEP_phosphor-libs_FILE "phosphor-libs-388a858e974424e30b4a3615ef776db9603089a3.tar.gz")
+set(LAMBENT_DEP_phosphor-libs_SHA256 "7503ff8c334673a5c5c092c0afcdd9c9e0253f08a3439765cb5f38f2a30cc762")
 
 # The phosphor-shell-libs commit (LGPL-2.1-or-later,
 # phosphor-works/phosphor-shell-libs): the theme, popout and Phosphor.* surface
 # libraries and the system service libraries the shell is built from. Added
 # after phosphor-libs, so the phosphor-libs pin above is the one it uses.
-set(LAMBENT_DEP_phosphor-shell-libs_VERSION "ac2adf6d443af042690bc29882ac060d92120c83")
-set(LAMBENT_DEP_phosphor-shell-libs_URL "https://github.com/phosphor-works/phosphor-shell-libs/archive/ac2adf6d443af042690bc29882ac060d92120c83.tar.gz")
-set(LAMBENT_DEP_phosphor-shell-libs_FILE "phosphor-shell-libs-ac2adf6d443af042690bc29882ac060d92120c83.tar.gz")
-set(LAMBENT_DEP_phosphor-shell-libs_SHA256 "6addb9a2c36d2a8b30583177c179a0aa7d9815337a6d174f89f4da3655dcd2f6")
+set(LAMBENT_DEP_phosphor-shell-libs_VERSION "c5657960be4b691b2f752b727472b116cd51745b")
+set(LAMBENT_DEP_phosphor-shell-libs_URL "https://github.com/phosphor-works/phosphor-shell-libs/archive/c5657960be4b691b2f752b727472b116cd51745b.tar.gz")
+set(LAMBENT_DEP_phosphor-shell-libs_FILE "phosphor-shell-libs-c5657960be4b691b2f752b727472b116cd51745b.tar.gz")
+set(LAMBENT_DEP_phosphor-shell-libs_SHA256 "934debc01da7ca5c059022c6fa52495bddb7915e346a5d1b6de34282f833290e")
 
 # The phosphor-surface-packs commit (LGPL-2.1-or-later with some GPL-3.0-or-later
 # shaders, phosphor-works/phosphor-surface-packs): the surface decoration packs
