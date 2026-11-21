@@ -219,6 +219,9 @@ target_link_libraries(lambent
         PhosphorServiceLock::PhosphorServiceLock
         PhosphorServiceSession::PhosphorServiceSession
         PhosphorLayer::PhosphorLayer
+        # The wlr-layer-shell transport main.cpp builds (PhosphorWaylandTransport),
+        # in its own target since phosphor-libs#3.
+        PhosphorLayer::Wayland
         PhosphorWayland::PhosphorWayland
         # Linked from shell/ (the bundled shell QML module): bakes the default shell.qml
         # tree into the binary as a qt-qml-module resource. Two effects:
