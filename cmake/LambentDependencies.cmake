@@ -6,7 +6,7 @@
 # commits it builds against, the phosphor-surface-packs commit whose decoration
 # packs it installs, and the suite's branding release. This file is the
 # only place these pins live. phosphor-libs pins its own third-party sources
-# (Luau, valijson) in its cmake/PhosphorDependencies.cmake, at the commit pinned
+# (Luau, jsoncons) in its cmake/PhosphorDependencies.cmake, at the commit pinned
 # here.
 #
 # How each archive is obtained, in order:
@@ -47,10 +47,10 @@ set(LAMBENT_DEPS phosphor-libs phosphor-shell-libs phosphor-surface-packs brandi
 
 # The phosphor-libs commit (LGPL-2.1-or-later, phosphor-works/phosphor-libs).
 # A commit, not a release, so VERSION is the commit hash.
-set(LAMBENT_DEP_phosphor-libs_VERSION "388a858e974424e30b4a3615ef776db9603089a3")
-set(LAMBENT_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/388a858e974424e30b4a3615ef776db9603089a3.tar.gz")
-set(LAMBENT_DEP_phosphor-libs_FILE "phosphor-libs-388a858e974424e30b4a3615ef776db9603089a3.tar.gz")
-set(LAMBENT_DEP_phosphor-libs_SHA256 "7503ff8c334673a5c5c092c0afcdd9c9e0253f08a3439765cb5f38f2a30cc762")
+set(LAMBENT_DEP_phosphor-libs_VERSION "05c411aab54f7771e5f50f1639ac118be6b15876")
+set(LAMBENT_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/05c411aab54f7771e5f50f1639ac118be6b15876.tar.gz")
+set(LAMBENT_DEP_phosphor-libs_FILE "phosphor-libs-05c411aab54f7771e5f50f1639ac118be6b15876.tar.gz")
+set(LAMBENT_DEP_phosphor-libs_SHA256 "b7c5f99b0b2a22d1e0deb678c82daaa268eb6bd9002bab500fff2fe26b423936")
 
 # The phosphor-shell-libs commit (LGPL-2.1-or-later,
 # phosphor-works/phosphor-shell-libs): the theme, popout and Phosphor.* surface
