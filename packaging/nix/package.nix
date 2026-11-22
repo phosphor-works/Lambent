@@ -37,7 +37,7 @@
 let
   # The phosphor-libs, phosphor-shell-libs and phosphor-surface-packs commits
   # and the branding release cmake/LambentDependencies.cmake pins, and the Luau
-  # and valijson archives the phosphor-libs commit pins in its
+  # and jsoncons archives the phosphor-libs commit pins in its
   # cmake/PhosphorDependencies.cmake. The sandbox has no network, so they are
   # fetched here as fixed-output derivations and handed to CMake as one
   # directory (PHOSPHOR_DEPS_ARCHIVES), each under the FILE name its pin gives
@@ -45,11 +45,11 @@ let
   # fetchurl, not fetchFromGitHub: the pin hashes the archive file itself.
   depsArchives = linkFarm "lambent-deps-archives" [
     {
-      name = "phosphor-libs-388a858e974424e30b4a3615ef776db9603089a3.tar.gz";
+      name = "phosphor-libs-e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-libs/archive/388a858e974424e30b4a3615ef776db9603089a3.tar.gz";
-        # sha256 7503ff8c334673a5c5c092c0afcdd9c9e0253f08a3439765cb5f38f2a30cc762
-        hash = "sha256-dQP/jDNGc6XFwJLAr83ZyeAlPwijQ5dly1848qMMx2I=";
+        url = "https://github.com/phosphor-works/phosphor-libs/archive/e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz";
+        # sha256 508b16cb46a133b9bc1d9d3c48c7793df78441a1bbcf19dda68274a2823d9ae6
+        hash = "sha256-UIsWy0ahM7m8HZ08SMd5PfeEQaG7zxndpoJ0ooI9muY=";
       };
     }
     {
@@ -85,11 +85,11 @@ let
       };
     }
     {
-      name = "valijson-1.1.3.tar.gz";
+      name = "jsoncons-1.10.0.tar.gz";
       path = fetchurl {
-        url = "https://github.com/tristanpenman/valijson/archive/refs/tags/v1.1.3.tar.gz";
-        # sha256 887b53b1a924f6fe0b35fa3bbc9bbbe5ae8c72097b7f0f7c17b45f4cfa646029
-        hash = "sha256-iHtTsakk9v4LNfo7vJu75a6Mcgl7fw98F7RfTPpkYCk=";
+        url = "https://github.com/danielaparker/jsoncons/archive/refs/tags/v1.10.0.tar.gz";
+        # sha256 c829350a2eece662beb378143e2ab1c1cbb07d703687bf168626665a8a7d8bc1
+        hash = "sha256-yCk1Ci7s5mK+s3gUPiqxwcuwfXA2h78WhiZmWop9i8E=";
       };
     }
   ];
@@ -202,7 +202,7 @@ stdenv.mkDerivation {
       gpl3Plus
       lgpl21Plus
       mit
-      bsd2
+      boost
       # The vendored wlr-gamma-control protocol of phosphor-service-nightlight.
       hpndSellVariant
     ];
