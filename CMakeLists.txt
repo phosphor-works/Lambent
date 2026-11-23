@@ -24,8 +24,19 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC_PARALLEL_ENABLED ON)
 
-option(CMAKE_UNITY_BUILD "Enable unity builds for faster compilation" ON)
-set(CMAKE_UNITY_BUILD_BATCH_SIZE 16 CACHE STRING "Number of sources per unity batch")
+# As the top-level project the unity switch is the CMAKE_UNITY_BUILD cache entry
+# (-DCMAKE_UNITY_BUILD=OFF for a non-unity build). Inside a superbuild a cache
+# entry would reach every project in the tree, including third-party code that
+# does not build as unity, so there the switch is LAMBENT_UNITY_BUILD and the
+# setting is a directory variable: this tree and the libraries it adds only.
+if(PROJECT_IS_TOP_LEVEL)
+    option(CMAKE_UNITY_BUILD "Enable unity builds for faster compilation" ON)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE 16 CACHE STRING "Number of sources per unity batch")
+else()
+    option(LAMBENT_UNITY_BUILD "Build Lambent and the libraries it adds as unity builds" ON)
+    set(CMAKE_UNITY_BUILD ${LAMBENT_UNITY_BUILD})
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE 16)
+endif()
 option(ENABLE_PCH "Share one precompiled header across the test targets" ON)
 
 find_program(CCACHE_PROGRAM ccache)
@@ -128,10 +139,10 @@ add_subdirectory(lambent)  # lambent, phosphorctl, the bundled shell tree, deskt
 # Finish
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# The shared test PCH walks the whole tree, so only the top-level project
-# attaches it, as phosphor-libs does. A tree that adds Lambent as a subproject
-# (the workspace superbuild) makes the one call itself.
-if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND ENABLE_PCH)
+# The shared test PCH covers every test target in this tree and the library
+# trees it adds (cmake/PhosphorTestPch.cmake). Also inside a superbuild, where
+# each app makes its own call so the PCH has its flags.
+if(BUILD_TESTING AND ENABLE_PCH)
     include(PhosphorTestPch)
     phosphor_share_test_pch()
 endif()
