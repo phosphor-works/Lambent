@@ -128,7 +128,10 @@ add_subdirectory(lambent)  # lambent, phosphorctl, the bundled shell tree, deskt
 # Finish
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(BUILD_TESTING AND ENABLE_PCH)
+# The shared test PCH walks the whole tree, so only the top-level project
+# attaches it, as phosphor-libs does. A tree that adds Lambent as a subproject
+# (the workspace superbuild) makes the one call itself.
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND ENABLE_PCH)
     include(PhosphorTestPch)
     phosphor_share_test_pch()
 endif()
