@@ -45,19 +45,19 @@ let
   # fetchurl, not fetchFromGitHub: the pin hashes the archive file itself.
   depsArchives = linkFarm "lambent-deps-archives" [
     {
-      name = "phosphor-libs-e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz";
+      name = "phosphor-libs-7bb59db9b7eeea0a03b7a757be47bd06c2d629c4.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-libs/archive/e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz";
-        # sha256 508b16cb46a133b9bc1d9d3c48c7793df78441a1bbcf19dda68274a2823d9ae6
-        hash = "sha256-UIsWy0ahM7m8HZ08SMd5PfeEQaG7zxndpoJ0ooI9muY=";
+        url = "https://github.com/phosphor-works/phosphor-libs/archive/7bb59db9b7eeea0a03b7a757be47bd06c2d629c4.tar.gz";
+        # sha256 da202cc943f724ddd1d8dc60888b994b079ff5a96ece0592efbd7b721ca1ccaa
+        hash = "sha256-2iAsyUP3JN3R2NxgiIuZSwef9aluzgWS7717chyhzKo=";
       };
     }
     {
-      name = "phosphor-shell-libs-c5657960be4b691b2f752b727472b116cd51745b.tar.gz";
+      name = "phosphor-shell-libs-6199df2027eb38c0b9f5819b4fdcc1a58d4b4e5a.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/c5657960be4b691b2f752b727472b116cd51745b.tar.gz";
-        # sha256 934debc01da7ca5c059022c6fa52495bddb7915e346a5d1b6de34282f833290e
-        hash = "sha256-k03rwB2nylwFkCLG+lJJW923kV40al0bbeNCgvgzKQ4=";
+        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/6199df2027eb38c0b9f5819b4fdcc1a58d4b4e5a.tar.gz";
+        # sha256 d04f5f0b8ce66c813e3f122cfd2ae8b4cd4668bfe724a03967a440adab1180cf
+        hash = "sha256-0E9fC4zmbIE+PxIs/SrotM1GaL/nJKA5Z6RArasRgM8=";
       };
     }
     {
