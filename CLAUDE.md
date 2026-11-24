@@ -35,7 +35,7 @@ Lambent's own. The shared Claude Code tooling (the command guard, `phosphor-work
 - Commits follow Conventional Commits, as the conventions file says. Stage files by name.
 - A user-visible change gets a line under `## Unreleased` in `CHANGELOG.md`.
 - `lefthook install` sets up the pre-commit hooks: clang-format and qmlformat on the staged files, and the
-  conventional-commit check. CI's lint job runs the same formatters over the files a change touches.
+  conventional-commit check. CI's lint job runs the same formatters over every tracked file.
 
 ## The libraries
 
