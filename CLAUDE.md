@@ -7,7 +7,14 @@ id and icon); user files in `~/.config/phosphor-works/lambent/`, installed data 
 
 The application is in `lambent/` (`src/`, `shell/`, `cli/`, `tests/`, `data/`, entered from the root CMakeLists.txt
 through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CMakePresets.json`, `flake.nix`),
-`packaging/`, `docs/` and `scripts/`. `AGENTS.md` is this file for Codex: change both together.
+`packaging/`, `docs/` and `scripts/`.
+
+The rules every phosphor-works repository follows come from the workspace repository, imported below. This file adds
+Lambent's own. The shared Claude Code tooling (the command guard, `phosphor-works:code-audit`,
+`phosphor-works:record-lesson`) comes from the `phosphor-works` plugin, which `.claude/settings.json` enables and
+`workspace/tools/setup` installs.
+
+@../workspace/claude/conventions.md
 
 ## Rules
 
@@ -22,7 +29,7 @@ through `lambent/CMakeLists.txt`). The root holds the build setup (`cmake/`, `CM
   Night light is phosphor-service-nightlight on wlr-gamma-control, with Lambent's settings in
   `~/.config/phosphor-works/lambent/nightlight.json`. Blur behind a surface is ext-background-effect-v1, through
   `ShellEffects` and phosphor-wayland's `BackgroundEffect`. Shortcuts and gestures are compositor binds that run `phosphorctl`.
-- Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `build:`, `ci:`). Stage files by name.
+- Commits follow Conventional Commits, as the conventions file says. Stage files by name.
 - A user-visible change gets a line under `## Unreleased` in `CHANGELOG.md`.
 - `lefthook install` sets up the pre-commit hooks: clang-format and qmlformat on the staged files, and the
   conventional-commit check. CI's lint job runs the same formatters over the files a change touches.
