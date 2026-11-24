@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 fuddlesworth -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
 # Lambent
 
 Lambent is a desktop shell for Wayland: Qt 6, C++20 and QML. The `lambent` binary hosts the shell QML tree, its
