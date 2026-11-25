@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Device and service controls use local fixtures. Appearance writes stay in
 // the preview's private XDG config home. Audio requires a private PipeWire

@@ -1,4 +1,4 @@
-<!-- SPDX-FileCopyrightText: 2026 fuddlesworth -->
+<!-- SPDX-FileCopyrightText: 2026 Phosphor Works Team -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 # Lambent
@@ -60,7 +60,7 @@ decoration packs come from the phosphor-surface-packs commit pinned there too.
 
 ## License
 
-- Every file that can hold a comment starts with `SPDX-FileCopyrightText: 2026 fuddlesworth` and
+- Every file that can hold a comment starts with `SPDX-FileCopyrightText: 2026 Phosphor Works Team` and
   `SPDX-License-Identifier: GPL-3.0-or-later`. AppStream metadata is `CC0-1.0`. JSON carries no header.
 
 ## C++ and QML

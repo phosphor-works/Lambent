@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Native production PolkitSurface with a preview-only agent. No Polkit/PAM
 # registration, host account changes, or real authorization is possible.

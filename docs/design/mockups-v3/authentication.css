@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2026 fuddlesworth */
+/* SPDX-FileCopyrightText: 2026 Phosphor Works Team */
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 .auth-preview-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:0 28px 14px; color:#b8c7df; font-size:12px; }
 .auth-preview-controls label { display:flex; align-items:center; gap:8px; }
