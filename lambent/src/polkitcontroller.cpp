@@ -56,7 +56,7 @@ PolkitController::PolkitController(PhosphorLayer::IScreenProvider* screens, QObj
                          ? PhosphorI18n::tr("Authentication is unavailable. Try again or cancel this request.")
                          : PhosphorI18n::tr("Authentication failed."));
     });
-    connect(&m_agent, &PolkitAgent::authenticationCompleted, this, [this](bool gained) {
+    connect(&m_agent, &PolkitAgent::authenticationCompleted, this, [](bool gained) {
         qCInfo(lcPolkitController) << "authentication" << (gained ? "granted" : "denied");
     });
 }
