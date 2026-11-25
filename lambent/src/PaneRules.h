@@ -10,7 +10,7 @@
 
 namespace PhosphorShellApp::PaneRules {
 
-// The shell's bundled window rules for its engine-placed panes (A2 §4.2).
+// The shell's bundled window rules for its engine-placed panes.
 //
 // Rules live in the daemon's rules.json, which the daemon alone writes and
 // which nothing seeds from data/ any more (the managed appearance baselines
@@ -21,10 +21,12 @@ namespace PhosphorShellApp::PaneRules {
 // precedence and stay out of the Rules page, so a user rule for the same
 // app id wins and nothing of the shell's shows up as user-authored.
 //
-// What the rule can and cannot say, against A2 §4.2:
+// What the rule can and cannot say, against the placement each mode wants
+// for a pane (the zone nearest the chip, a tile at End, a 1/3 column after
+// the focused one):
 //   snapping   SnapToZone by ordinal. "The zone nearest the chip" is not a
 //              rule vocabulary; zone 1 is the closest fixed choice.
-//   tiling     A2 wants the pane inserted as a tile at End. The tiling
+//   tiling     The pane belongs inserted as a tile at End. The tiling
 //              insert position is a PER-CONTEXT slot (ActionSlot::
 //              InsertPosition, matched on screen/desktop, not on the
 //              window), so a window rule cannot express it; the pane takes
@@ -48,7 +50,7 @@ namespace PhosphorShellApp::PaneRules {
 
 /// Rewrite the control center's rule in the daemon so its SnapToZone names
 /// @p zoneNumber, synchronously, so an open that follows maps into that
-/// zone (A2 §4.2: the zone nearest the chip). Returns false when the
+/// zone (the zone nearest the chip). Returns false when the
 /// daemon refused or is not there, in which case the previous zone stands.
 bool updateControlCenterZone(const QString& appId, int zoneNumber);
 

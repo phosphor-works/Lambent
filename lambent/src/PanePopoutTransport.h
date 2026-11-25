@@ -27,7 +27,7 @@ namespace PhosphorShellApp {
 
 class ControlCenterController;
 
-// IPopoutTransport for an ENGINE-PLACED PANE (A2 §4): the popout is a real
+// IPopoutTransport for an ENGINE-PLACED PANE: the popout is a real
 // xdg toplevel with app id `org.phosphor_works.Lambent.Pane.<popoutId>`, and the
 // placement engine puts it where the screen's mode puts windows. The shell
 // ships one window rule per pane (PaneRules) that names the placement:
@@ -47,7 +47,7 @@ class ControlCenterController;
 //   3. marks the control center EXTERNAL on the controller, so the bar on
 //      the pane's screen draws only the tether and not its inline pane.
 //
-// Floating fallback (A2 §4.2, last row): when the target screen's mode is
+// Floating fallback: when the target screen's mode is
 // unknown or none (no daemon, no engine on that output), when no engine
 // or content is available, or when the toplevel cannot be built, the open
 // goes to the FALLBACK transport (the bar-painted SocketPopoutTransport)
@@ -94,7 +94,7 @@ public:
 
     /// Answers the snapping zone (1-based) the pane should land in on a
     /// screen, or 0 for "leave the rule as it is". The host resolves it from
-    /// the placement map and the chip's rect (A2 §4.2).
+    /// the placement map and the chip's rect.
     using ZoneResolver = std::function<int(const QString& screenName)>;
     void setZoneResolver(ZoneResolver resolver);
 

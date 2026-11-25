@@ -6,8 +6,6 @@
 // `call`, `list`, `schema`, `subscribe` and hands off to the
 // matching handler in subcommand_*.cpp. Each handler builds its own
 // nested QCommandLineParser for the subcommand-specific flags.
-//
-// Phase 1.4 deliverable per docs/design/04-implementation-plan.md.
 
 #include "client.h"
 #include "subcommands.h"

@@ -44,8 +44,7 @@ add_executable(lambent
     src/main.cpp
     # The bar's IBarWidgetFactory registry owner + the generic
     # QML-component factory. First production owner of a UI-seam
-    # registry; the Phosphor.Bar QML module stays registry-agnostic
-    # (Phase 4.1).
+    # registry. The Phosphor.Bar QML module stays registry-agnostic.
     src/BarController.h
     src/barcontroller.cpp
     src/LayerPopoutTransport.h
@@ -73,7 +72,7 @@ add_executable(lambent
     src/routingpopouttransport.cpp
     src/SocketPopoutTransport.h
     src/socketpopouttransport.cpp
-    # The engine-placed pane (A2 §4): a real toplevel the daemon
+    # The engine-placed pane: a real toplevel the placement host
     # places, with the bar-socket transport as its floating fallback;
     # the bundled window rule that names its placement; and the
     # compositor blur request behind the bar's band.

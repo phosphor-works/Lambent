@@ -69,7 +69,7 @@ class ControlCenterController : public QObject
     /// at once.
     Q_PROPERTY(QString openScreen READ openScreen NOTIFY openScreenChanged)
     /// True while the open control center is an ENGINE-PLACED PANE (a
-    /// toplevel the daemon positions, A2 §4) rather than the bar's inline
+    /// toplevel the placement host positions) rather than the bar's inline
     /// pane. The bar on `openScreen` then draws only the tether to it.
     /// Written by PanePopoutTransport alongside openScreen.
     Q_PROPERTY(bool paneExternal READ isPaneExternal NOTIFY paneExternalChanged)
@@ -142,7 +142,7 @@ public:
 
     /// Each bar reports where its control-center chip sits, in its screen's
     /// pixels, so the pane transport can ask the engine for the zone nearest
-    /// the chip (A2 §4.2). An empty rect clears it.
+    /// the chip. An empty rect clears it.
     Q_INVOKABLE void reportChipRect(const QString& screenName, const QRect& rect);
     [[nodiscard]] QRect chipRectFor(const QString& screenName) const;
 

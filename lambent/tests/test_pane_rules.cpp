@@ -4,7 +4,7 @@
 // PaneRules: the shell's bundled window rule for the control-center pane.
 // The rule must validate against the action registry (or the daemon's
 // addRule refuses it silently at startup), match exactly the pane's app id,
-// carry the per-mode placement A2 §4.2 asks for where the vocabulary can
+// carry the per-mode placement a pane wants where the vocabulary can
 // express it, and have a stable id so a second startup finds it present.
 
 #include "PaneRules.h"
@@ -102,7 +102,7 @@ void TestPaneRules::controlCenterRuleCarriesThePerModePlacement()
 
 void TestPaneRules::controlCenterRuleTakesTheZoneItIsGiven()
 {
-    // The open rewrites the rule with the zone nearest the chip (A2 §4.2);
+    // The open rewrites the rule with the zone nearest the chip;
     // the id stays the same rule, and a nonsense zone floors at 1.
     const Rule base = PaneRules::controlCenterRule(kAppId);
     const Rule three = PaneRules::controlCenterRule(kAppId, 3);

@@ -358,7 +358,7 @@ if(TARGET PhosphorShellBar::PhosphorShellBarQml AND TARGET PhosphorServiceNetwor
     add_test(NAME test_shell_qml_compiles COMMAND test_shell_qml_compiles)
 endif()
 
-# LayerPopoutTransport, the shell's real popout transport (Phase 4.6),
+# LayerPopoutTransport, the shell's real popout transport,
 # driven headless through phosphor-layer's mock transport + screen provider.
 # Gated on the popout QML module because building PopoutHost in-test needs
 # the module and its plugin registrar (the same reason test_popout_qml_enums
@@ -465,7 +465,7 @@ if(TARGET PhosphorRegistry::PhosphorRegistry AND TARGET PhosphorServiceIdle::Pho
     )
 endif()
 
-# PanePopoutTransport: the engine-placed pane (A2 §4), a real toplevel
+# PanePopoutTransport: the engine-placed pane, a real toplevel
 # built from FloatingWindow with the pane app id, hosted in
 # Phosphor.Popout's PaneHost. Needs the shell library for FloatingWindow,
 # the popout QML module + plugin for PaneHost, and Theme + Widgets for the
