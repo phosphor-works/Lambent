@@ -3,91 +3,106 @@
 
 # Contributing to Lambent
 
-Thanks for considering contributing. This document covers the basics of how to get involved.
+This page tells contributors how to build Lambent, where its files are, which code style it uses and how to send a
+change.
 
 ## Getting started
 
-Build it locally first. The README lists what the build needs. The short version:
+Build Lambent on your computer first. The README gives the packages that the build needs. The short procedure is:
 
 ```sh
 cmake --workflow --preset dev
 ```
 
-That configures a Debug build with tests into `build/`, builds it and runs the tests. The first configure downloads the
-pinned phosphor-libs and phosphor-shell-libs, so it takes a while.
+This command configures a Debug build with tests into `build/`, builds it and runs the tests. The first configure
+downloads the pinned phosphor-libs and phosphor-shell-libs, so it takes some time.
 
-A change that also needs a change in one of the libraries is two pull requests: one in the library's repository, and
-one here that builds against it. Build against a local checkout of the library with
-`-DCPM_phosphor-libs_SOURCE=/path/to/phosphor-libs` or `-DCPM_phosphor-shell-libs_SOURCE=/path/to/phosphor-shell-libs`.
+A change that also needs a change in one of the libraries is two pull requests. One pull request goes to the
+repository of the library. The other goes to this repository and builds against the library change. To build against
+a local checkout of a library, use one of these options:
+
+- `-DCPM_phosphor-libs_SOURCE=/path/to/phosphor-libs`
+- `-DCPM_phosphor-shell-libs_SOURCE=/path/to/phosphor-shell-libs`
 
 ## Where things are
 
-The application is in `lambent/`: the C++ in `src/`, the bundled shell QML tree in `shell/`, `phosphorctl` in `cli/`,
-the tests in `tests/` and the desktop integration in `data/`. `cmake/`, `packaging/`, `scripts/` and `docs/` are at the
-root.
+The application is in `lambent/`.
+
+| Folder | Contents |
+| --- | --- |
+| `lambent/src/` | The C++ |
+| `lambent/shell/` | The bundled shell QML tree |
+| `lambent/cli/` | `phosphorctl` |
+| `lambent/tests/` | The tests |
+| `lambent/data/` | The desktop integration |
+
+`cmake/`, `packaging/`, `scripts/` and `docs/` are at the root.
 
 ## Code style
 
-There's a `.clang-format` in the repo root. Run clang-format on the C++ you change and qmlformat on the QML:
+The repository root has a `.clang-format`. Run clang-format on the C++ that you change, and qmlformat on the QML:
 
 ```sh
 clang-format -i lambent/src/path/to/your/file.cpp
 qmlformat -i lambent/shell/YourFile.qml
 ```
 
-[Lefthook](https://github.com/evilmartians/lefthook) runs both on the staged files before every commit, and checks the
-commit message. Set it up once with `lefthook install`.
+[Lefthook](https://github.com/evilmartians/lefthook) runs both tools on the staged files before each commit. It also
+checks the commit message. To set it up, run `lefthook install` one time.
 
-The highlights:
-- 4 spaces, no tabs
-- Braces on their own line for functions and classes, same line for control flow
-- Pointer asterisk goes with the type: `int* foo` not `int *foo`
-- 120 character line limit
-- `QT_NO_CAST_FROM_ASCII` is on, so a string constant is a `QStringLiteral`
+The main rules are:
 
-If you're not sure about something, look at the existing code and match what's already there. `CLAUDE.md` has the
-project's full set of rules.
+- Indent with 4 spaces, not tabs.
+- Put the braces of functions and classes on their own line. Put the braces of control flow on the same line.
+- Put the pointer asterisk with the type: `int* foo` not `int *foo`.
+- Keep lines to 120 characters or fewer.
+- `QT_NO_CAST_FROM_ASCII` is on, so a string constant is a `QStringLiteral`.
+
+If you are not sure about a rule, look at the existing code and do the same. `CLAUDE.md` has the full set of rules
+for the project.
 
 ## License headers
 
-Every source file needs an SPDX header at the top. Use this format:
+Each source file starts with an SPDX header in this format:
 
 ```cpp
 // SPDX-FileCopyrightText: 2026 Your Name
 // SPDX-License-Identifier: GPL-3.0-or-later
 ```
 
-If you're modifying an existing file, add your name to the copyright line or add a new line below the existing ones.
+If you change an existing file, add your name to the copyright line, or add a new line below the existing lines.
 
 ## Submitting changes
 
-1. Fork the repo
-2. Create a branch for your work
-3. Make your changes
-4. Test them (at minimum, make sure it builds and the tests pass)
-5. Open a pull request
+1. Fork the repository.
+2. Create a branch for your work.
+3. Make your changes.
+4. Test your changes. As a minimum, make sure that the build and the tests pass.
+5. Open a pull request.
 
-Keep commits focused. One logical change per commit is easier to review than a massive dump of unrelated changes.
+Keep each commit to one logical change. A commit with one change is easier to review than a commit with many
+unrelated changes.
 
-Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`,
-`docs:`, `build:`, `ci:` and so on, then a short summary, a blank line, and more detail if needed. A change people will
-notice gets a line under `## Unreleased` in `CHANGELOG.md`.
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/). A message starts with a type
+(`feat:`, `fix:`, `refactor:`, `docs:`, `build:`, `ci:` or another type) and a short summary. If you need more
+detail, add a blank line and then the detail. A change that users see gets a line under `## Unreleased` in
+`CHANGELOG.md`.
 
 ## Testing
 
-The tests live in `lambent/tests/`. The dev preset runs them along with the libraries' own tests:
+The tests are in `lambent/tests/`. The dev preset runs them together with the tests of the libraries:
 
 ```sh
 ctest --preset dev
 ctest --test-dir build -R test_bar_controller   # one test
 ```
 
-If you're adding new functionality, add tests for it. If you're fixing a bug, a test that would have caught it is
-appreciated.
+If you add a feature, add tests for it. If you fix a bug, add a test that finds the bug, if you can.
 
-To see a change on screen without touching your own session, `scripts/nested-shell/run-shell.sh` runs the build-tree
-shell in a nested session, and `ctl.sh` and `capture.sh` beside it drive it and take screenshots.
+To see a change on the screen without an effect on your own session, use `scripts/nested-shell/run-shell.sh`. It runs
+the shell of the build tree in a nested headless labwc or sway session. That session has its own session bus, runtime
+dir and XDG homes. `ctl.sh` and `capture.sh` in the same folder control the shell and take screenshots with grim.
 
 ## Questions
 
-Open an issue if you're stuck or want to discuss something. There's no mailing list or chat channel at the moment.
+If you have a problem or want to discuss a change, open an issue. The project has no mailing list or chat channel.
