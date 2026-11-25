@@ -81,8 +81,8 @@ LauncherController::LauncherController(QObject* parent)
     // teaching the provider to attach to a service that arrives later.
     //
     // Registration order is the pill order and the tie-break between
-    // providers with equal best scores. Capabilities are advisory until
-    // the Phase 5 runtime, declared so the built-ins exercise the manifest
+    // providers with equal best scores. Capabilities are advisory (nothing
+    // enforces them), declared so the built-ins exercise the manifest
     // surface a plugin will.
     const auto reg = [this](const QString& id, const QString& name, const QString& capability,
                             FunctionProviderFactory::Create create) {

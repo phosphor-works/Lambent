@@ -108,7 +108,8 @@ void ShellMotion::registerProfiles()
 {
     m_profiles.setLowPrecedenceOwnerTag(QString(kSeedOwner));
 
-    // M4 settle (A1 §3.1): spring omega 22, zeta 0.85, one 3 % overshoot,
+    // The settle primitive, for any change of position or size: spring
+    // omega 22, zeta 0.85, one 3 % overshoot,
     // at rest in about 250 ms. The duration bounds the analytic step
     // response PhosphorMotionAnimation plays; the spring's own settle
     // time is what shapes it.

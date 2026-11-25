@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
     }
 
     // Register every Phosphor.Service.* QML type BEFORE the engine
-    // loads shell.qml. Post Phase 2.0 the umbrella is gone; each
+    // loads shell.qml. There is no umbrella module; each
     // service lib owns its own module URI:
     //   SNI       Phosphor.Service.Sni 1.0       (StatusNotifierHost, models, items)
     //   IconTheme Phosphor.Service.IconTheme 1.0 (IconThemeResolver singleton)
@@ -422,8 +422,8 @@ int main(int argc, char* argv[])
     // after the layer transport and before the controller, so reverse
     // destruction tears the controller down first.
     PhosphorShellApp::SocketPopoutTransport socketTransport(&controlCenterController);
-    // Phase 2: the control center is an ENGINE-PLACED PANE, a real toplevel
-    // the daemon positions (A2 §4). The pane transport builds it and keeps
+    // The engine-placed pane: a real toplevel the placement host
+    // positions. The pane transport builds it and keeps
     // the bar-socket transport as its floating fallback for an output with
     // no placement engine, so the router's "socket" slot is the pane
     // transport and the socket transport sits behind it.
@@ -441,10 +441,11 @@ int main(int argc, char* argv[])
     // does. Every other panel — the calendar included — was already on the
     // layer route and had neither problem.
     //
-    // The pane transport and its rules are left wired up: the notification
-    // centre and the expanded map are still meant to be panes (A2 §4.1),
-    // and putting an id back in this set is all it takes. What is settled is
-    // that a surface you open to change one setting is not worth a window.
+    // The pane transport and its rules are left wired up: whether the
+    // notification centre and the expanded map become panes is open
+    // (phosphor-works/workspace#32), and putting an id back in this set is
+    // all it takes. What is settled is that a surface you open to change one
+    // setting is not worth a window.
     PhosphorShellApp::RoutingPopoutTransport routedTransport(&popoutTransport, &paneTransport, {});
     PhosphorPopout::PopoutController popouts(&routedTransport);
 
@@ -485,7 +486,7 @@ int main(int argc, char* argv[])
     // tray Image.source URLs published by StatusNotifierItemModel
     // fall through to "image provider not found" and panel icons
     // render as broken-image placeholders. The provider lives in
-    // phosphor-service-icontheme post Phase 2.0; phosphor-service-sni
+    // phosphor-service-icontheme; phosphor-service-sni
     // publishes raw IconPixmap blobs through its static registry via
     // PhosphorServiceIconTheme::IconImageProvider::setImage.
     engine.addEngineHook([](QQmlEngine* qmlEngine) {
@@ -513,7 +514,7 @@ int main(int argc, char* argv[])
                 return shellChrome.decorationComponent();
             });
             // The zone nearest the chip, from this engine's placement map and
-            // the chip rect the bar reported (A2 §4.2).
+            // the chip rect the bar reported.
             auto* map = qmlEngine->singletonInstance<PhosphorShell::PlacementMap*>(QStringLiteral("Phosphor.Shell"),
                                                                                    QStringLiteral("PlacementMap"));
             paneTransport.setZoneResolver([map = QPointer<PhosphorShell::PlacementMap>(map),

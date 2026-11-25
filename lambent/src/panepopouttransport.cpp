@@ -320,7 +320,7 @@ QString PanePopoutTransport::openSurface(const PhosphorPopout::PopoutRequest& re
 
     qCDebug(lcPaneTransport) << "opening" << request.popoutId << "as toplevel" << appIdFor(request.popoutId) << "for"
                              << screenName << (fromRequest ? "(from request)" : "(primary fallback)") << "mode" << mode;
-    // Snapping (A2 §4.2): the zone nearest the chip. The rule is rewritten
+    // Snapping: the zone nearest the chip. The rule is rewritten
     // before the toplevel maps, so the engine places it there directly and
     // the pane never hops from the seeded zone.
     if (mode == 0 && m_zoneResolver) {
@@ -380,7 +380,7 @@ void PanePopoutTransport::beginRelease(QHash<QString, Entry>::iterator it)
 {
     it->closing = true;
     // The bar's tether retracts as soon as the close starts, before the
-    // window unmaps (A2 §4.4, close column).
+    // window unmaps, so the tether does not hang from a closing pane.
     publishOpenState({});
     if (!it->host || !it->host->setProperty("open", false)) {
         const QString handle = it.key();

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// PanePopoutTransport: the engine-placed pane (A2 §4). Opening
+// PanePopoutTransport: the engine-placed pane. Opening
 // "control-center" on a screen with a placement engine creates ONE toplevel
 // carrying the pane app id, at the pane's size and with that size as its
 // minimum, and marks the control center external on the controller;

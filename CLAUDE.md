@@ -105,4 +105,4 @@ decoration packs come from the phosphor-surface-packs commit pinned there too.
 | Desktop integration | `lambent/data/`: the `.desktop` file, AppStream metadata, the `lambent.service` user unit |
 | Dependency pins | `cmake/LambentDependencies.cmake`, repeated in `packaging/nix/package.nix` |
 | Nested test session | `scripts/nested-shell/` |
-| Design | `docs/design/` |
+| Design | `docs/architecture.md` (modules and data flow), `docs/visual-identity.md` (look and appearance settings), `docs/design/mockups-v3/` (the approved visual reference) |

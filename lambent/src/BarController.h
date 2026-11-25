@@ -47,7 +47,7 @@ class BarController : public QObject
     Q_PROPERTY(QStringList factoryIds READ factoryIds NOTIFY factoryIdsChanged)
     /// The registry id of the widget whose panel is open, or "" when none
     /// is. The bar reads this to light the chip and to drive the tether
-    /// down to the surface (A2 §4.3).
+    /// down to the surface, so the surface reads as coming from that chip.
     ///
     /// The bar cannot work this out for itself. A transient is a layer
     /// surface the shell composes; the bar's own QML never sees it, and

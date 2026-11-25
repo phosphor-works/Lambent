@@ -16,7 +16,7 @@ class ControlCenterController;
 
 // IPopoutTransport for a popout that is painted INTO the bar rather than
 // given a surface of its own: the control center as the floating fallback
-// pane under the band, on an output with no placement engine (A2 §4.2).
+// pane under the band, on an output with no placement engine.
 //
 // There is nothing to create here. The visible open/close is BarHost
 // animating its pane progress off ControlCenterController.openScreen, and

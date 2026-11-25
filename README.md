@@ -27,25 +27,14 @@ host runs, the bar shows no window map and each popout opens at its anchor.
 Build Lambent from source (see "Build"). The flake in `flake.nix` also gives a Nix package
 (`packaging/nix/package.nix`).
 
-Lambent installs a systemd user unit. To start the shell, enable the unit in the session of the compositor that
-Lambent draws the shell for:
+To start the shell, enable its systemd user unit in the session of your compositor:
 
 ```sh
 systemctl --user enable --now lambent.service
 ```
 
-`phosphorctl` controls a running shell through its IPC socket (`phosphorctl list`, `phosphorctl call <target>.<fn>`).
-
-The compositor owns the keyboard shortcuts and the touchpad gestures. It runs `phosphorctl` for them. For example,
-in sway:
-
-```
-bindsym $mod+d exec phosphorctl call launcher.toggle
-bindgesture swipe:3:up exec phosphorctl call launcher.toggle
-bindgesture swipe:3:down exec phosphorctl call launcher.hide
-bindgesture swipe:4:up exec phosphorctl call dashboard.toggle
-bindgesture pinch:4:outward exec phosphorctl call dashboard.hide
-```
+[docs/RUN.md](docs/RUN.md) tells how to control the shell with `phosphorctl` and how to bind shortcuts and gestures
+in the compositor.
 
 ## Build
 
@@ -75,6 +64,10 @@ The bar and the popouts use the surface decoration packs of
 [phosphor-surface-packs](https://github.com/phosphor-works/phosphor-surface-packs). Lambent installs them to
 `share/phosphor-works/shaders/surface`, where each app of the suite finds them. A distribution that packages them one
 time for all apps configures with `-DLAMBENT_INSTALL_SURFACE_PACKS=OFF`.
+
+## Documentation
+
+[docs/README.md](docs/README.md) lists the pages: how to run the shell, its architecture and its visual identity.
 
 ## Contributing
 

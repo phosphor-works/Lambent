@@ -121,7 +121,7 @@ Item {
             onOverviewRequested: root.toggleDashboard(bar.screen)
             onPaneScreenRectChanged: ControlCenterRegistry.reportPaneRect(bar.paneScreenRect)
             // And where the chip itself is, so the pane lands in the zone
-            // nearest it (A2 §4.2).
+            // nearest it, next to the control that opened it.
             function reportChip(): void {
                 if (bar.screen)
                     ControlCenterRegistry.reportChipRect(bar.screen.name, bar.paneAnchorRect);
@@ -263,8 +263,8 @@ Item {
         notificationCount: NotificationRegistry.unreadCount
     }
 
-    // The session menu, per docs/design/mockups-v2/power-menu.svg:
-    // a screen-centred Modal popout over a dimmed scrim, which is what
+    // The session menu: a screen-centred Modal popout over a dimmed
+    // scrim, which is what
     // PhosphorPopout.ExclusiveMode.Modal means to the controller. It closes
     // every cooperative popout and suppresses new ones while it is up.
     //
@@ -606,7 +606,7 @@ Item {
             // shared value.
             "keyboardFocus": panel.keyboard,
             "exclusiveKeyboard": panel.keyboard,
-            // Transients close on outside click or focus loss (A2 §4.7).
+            // Transients close on outside click or focus loss.
             // That is the line between this class and a pane: a pane is a
             // tile and does not vanish when you look elsewhere, and these
             // are glances.
@@ -625,7 +625,7 @@ Item {
 
     // The bar cannot see a transient — it is a layer surface the shell
     // composes — so it is told which chip owns the open one. That drives
-    // the chip's lit state and the tether down to the surface (A2 §4.3).
+    // the chip's lit state and the tether down to the surface.
     // Both edges are needed: `popoutClosed` fires however the popout went,
     // including an outside click the shell never hears about otherwise.
     Connections {
@@ -843,8 +843,8 @@ Item {
     // compositor keybind (Super+L) uses. Argument-free like the others.
     // Only lock, never unlock: the way out of a lock is the password, and
     // a wire call that unlocked a session would be a hole in it.
-    // lock() is a no-op while already locked (A3 §6 d: Super+L re-locks
-    // to nothing), through LockService's own guard.
+    // lock() is a no-op while already locked (Super+L on the lock screen
+    // does nothing), through LockService's own guard.
     IpcTarget {
         target: "lock"
 

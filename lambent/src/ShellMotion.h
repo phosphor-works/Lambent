@@ -26,8 +26,8 @@ namespace PhosphorShellApp {
 //
 // Registry: the settings app and the editor build theirs through
 // AnimationBootstrap, which also runs the JSON loaders for user-authored
-// profiles. The shell owns only the primitives the identity names (A1
-// §3.1), so it constructs the registries directly and registers those
+// profiles. The shell owns only the motion primitives it draws with
+// (`shell.settle`), so it constructs the registries directly and registers those
 // under the seed owner tag; a user JSON at the same path still wins
 // through the registry's two-layer resolve. Must outlive the QML engine:
 // Behavior bindings keep registry handles.

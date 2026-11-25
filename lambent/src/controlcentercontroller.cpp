@@ -62,8 +62,8 @@ ControlCenterController::ControlCenterController(PhosphorServiceIdle::IdleServic
     // together with the rest of the shell's strings; translating these alone
     // would localise a label nothing displays and split the two controllers.
     //
-    // Capabilities are advisory until the Phase 5 capability runtime lands,
-    // but they are declared now so the built-ins exercise the same manifest
+    // Capabilities are advisory: nothing enforces them. They are declared
+    // so the built-ins exercise the same manifest
     // surface a plugin will.
     const auto reg = [this](const TileSpec& spec) {
         // Only advertise what actually registered. A duplicate id is refused
