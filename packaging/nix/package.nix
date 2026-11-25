@@ -53,11 +53,11 @@ let
       };
     }
     {
-      name = "phosphor-shell-libs-6199df2027eb38c0b9f5819b4fdcc1a58d4b4e5a.tar.gz";
+      name = "phosphor-shell-libs-896ff3234bd6ef66a4bb5bd3ce7bbb33a4f1dfdb.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/6199df2027eb38c0b9f5819b4fdcc1a58d4b4e5a.tar.gz";
-        # sha256 d04f5f0b8ce66c813e3f122cfd2ae8b4cd4668bfe724a03967a440adab1180cf
-        hash = "sha256-0E9fC4zmbIE+PxIs/SrotM1GaL/nJKA5Z6RArasRgM8=";
+        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/896ff3234bd6ef66a4bb5bd3ce7bbb33a4f1dfdb.tar.gz";
+        # sha256 2d83392dbea68c8b28f5450c52f8e92e8a1c179eaae870eb3e8c6e0d15d6b1ee
+        hash = "sha256-LYM5Lb6mjIso9UUMUvjpLoocF56q6HDrPoxuDRXWse4=";
       };
     }
     {
