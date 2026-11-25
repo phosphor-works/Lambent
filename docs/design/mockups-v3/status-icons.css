@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2026 fuddlesworth */
+/* SPDX-FileCopyrightText: 2026 Phosphor Works Team */
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 .si-review{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:0 20px 12px;padding:10px 16px;border:1px solid #29344a;border-radius:10px;background:#151c2a;color:#b8c7df;font-size:12px}
 .si-review>span{font-size:10px;letter-spacing:1px}.si-review nav{display:flex;gap:4px}.si-review button{padding:8px 10px;border-radius:6px}.si-review [aria-pressed=true]{background:#34435f;color:#fff}.si-review p{margin:0 0 0 auto;font-size:11px;color:#9caec8}

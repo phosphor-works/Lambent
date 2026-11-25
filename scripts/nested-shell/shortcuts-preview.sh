@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Production shortcut reference with fixture bindings. It never registers or
 # invokes the displayed shortcuts. Run only inside an existing nested session.
