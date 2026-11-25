@@ -56,10 +56,10 @@ set(LAMBENT_DEP_phosphor-libs_SHA256 "da202cc943f724ddd1d8dc60888b994b079ff5a96e
 # phosphor-works/phosphor-shell-libs): the theme, popout and Phosphor.* surface
 # libraries and the system service libraries the shell is built from. Added
 # after phosphor-libs, so the phosphor-libs pin above is the one it uses.
-set(LAMBENT_DEP_phosphor-shell-libs_VERSION "6199df2027eb38c0b9f5819b4fdcc1a58d4b4e5a")
-set(LAMBENT_DEP_phosphor-shell-libs_URL "https://github.com/phosphor-works/phosphor-shell-libs/archive/6199df2027eb38c0b9f5819b4fdcc1a58d4b4e5a.tar.gz")
-set(LAMBENT_DEP_phosphor-shell-libs_FILE "phosphor-shell-libs-6199df2027eb38c0b9f5819b4fdcc1a58d4b4e5a.tar.gz")
-set(LAMBENT_DEP_phosphor-shell-libs_SHA256 "d04f5f0b8ce66c813e3f122cfd2ae8b4cd4668bfe724a03967a440adab1180cf")
+set(LAMBENT_DEP_phosphor-shell-libs_VERSION "896ff3234bd6ef66a4bb5bd3ce7bbb33a4f1dfdb")
+set(LAMBENT_DEP_phosphor-shell-libs_URL "https://github.com/phosphor-works/phosphor-shell-libs/archive/896ff3234bd6ef66a4bb5bd3ce7bbb33a4f1dfdb.tar.gz")
+set(LAMBENT_DEP_phosphor-shell-libs_FILE "phosphor-shell-libs-896ff3234bd6ef66a4bb5bd3ce7bbb33a4f1dfdb.tar.gz")
+set(LAMBENT_DEP_phosphor-shell-libs_SHA256 "2d83392dbea68c8b28f5450c52f8e92e8a1c179eaae870eb3e8c6e0d15d6b1ee")
 
 # The phosphor-surface-packs commit (LGPL-2.1-or-later with some GPL-3.0-or-later
 # shaders, phosphor-works/phosphor-surface-packs): the surface decoration packs
