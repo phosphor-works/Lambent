@@ -16,7 +16,7 @@ namespace PhosphorShellApp {
 // the `ShellEffects` context property (the BarRegistry precedent).
 //
 // A Wayland client cannot read what is behind its own surface, so the
-// phosphor-glass material (real backdrop blur under a navy tint, 05 §5)
+// phosphor-glass material (real backdrop blur under a navy tint)
 // cannot be rendered client-side over live windows. What a client CAN do
 // is ask the compositor to blur behind a region of its surface, through the
 // standard ext-background-effect-v1 protocol that phosphor-wayland's
@@ -26,7 +26,8 @@ namespace PhosphorShellApp {
 //
 // The band then paints the pack's navy tint at its opacity over the
 // compositor's blur, which is the glass; the pack's glow and sweep are
-// off on the bar by design (A2 §3.2), so nothing of the shader is lost.
+// off on the bar by design, so the band stays a quiet pane and the map
+// carries the color. Nothing of the shader is lost.
 class ShellEffects : public QObject
 {
     Q_OBJECT

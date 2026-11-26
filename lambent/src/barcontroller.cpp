@@ -122,7 +122,7 @@ void BarController::registerBuiltins()
 {
     // Register each entry of the shared catalogue as an IBarWidgetFactory
     // wrapping a delegate type from the Phosphor.Bar module. Capabilities are
-    // advisory (enforced in Phase 5). Registration iterates builtinWidgets()
+    // advisory: nothing enforces them. Registration iterates builtinWidgets()
     // so it cannot drift from the catalogue. The unit test's copy of the id
     // list is deliberately hand-written rather than derived from the same
     // accessor, so adding or dropping a widget has to be an explicit edit in
