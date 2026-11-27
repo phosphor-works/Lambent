@@ -252,6 +252,8 @@ else()
 endif()
 
 install(TARGETS lambent DESTINATION ${KDE_INSTALL_BINDIR})
+# The embedded Phosphor libraries that it links are installed with it.
+phosphor_install_embedded(FOR lambent)
 
 # Desktop integration, under the application ID org.phosphor_works.Lambent:
 # the .desktop file and AppStream metadata, and the systemd user unit a session
