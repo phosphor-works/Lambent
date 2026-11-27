@@ -21,7 +21,7 @@ fit each prompt.
 ## Overview
 
 Lambent is a desktop shell for Wayland: Qt 6, C++20 and QML. The `lambent` binary hosts the shell QML tree, its
-controllers in `lambent/src/` own the registries, services and popout transports the QML reads, and `phosphorctl`
+controllers in `lambent/src/` own the registries, services and popout transports the QML reads, and `lambentctl`
 drives a running shell over phosphor-ipc. Application ID `org.phosphor_works.Lambent` (the `.desktop` file, AppStream
 id and icon); user files in `~/.config/phosphor-works/lambent/`, installed data in `share/phosphor-works/lambent/`.
 
@@ -46,7 +46,7 @@ ctest --test-dir build -R <name>         # one test
 - `scripts/nested-shell/run-shell.sh [outputs] [width height] [scale]` runs the build-tree shell in a nested headless
   wlroots compositor (labwc or sway, or `LAMBENT_NESTED_COMPOSITOR`) with its own session bus, runtime dir and XDG
   homes, under `$XDG_RUNTIME_DIR/lambent-nested` (`LAMBENT_NESTED_SESSION=<name>` for another). `ctl.sh`,
-  `capture.sh` (grim) and `shell.sh` drive it, after sourcing its `env.sh`. Never run the shell, `phosphorctl` or
+  `capture.sh` (grim) and `shell.sh` drive it, after sourcing its `env.sh`. Never run the shell, `lambentctl` or
   D-Bus calls against the user's own session.
 - The decoration packs the shell draws are phosphor-surface-packs', installed to `share/phosphor-works/shaders/surface`
   (`PHOSPHOR_SURFACE_PACKS_DATA_SUBDIR`, set as phosphor-surface's pack subdir at startup).
@@ -61,7 +61,7 @@ ctest --test-dir build -R <name>         # one test
   the chrome's decoration tree). Nothing new talks to `org.kde.KWin`, reads `kwinrc` or needs a KWin-only protocol.
   Night light is phosphor-service-nightlight on wlr-gamma-control, with Lambent's settings in
   `~/.config/phosphor-works/lambent/nightlight.json`. Blur behind a surface is ext-background-effect-v1, through
-  `ShellEffects` and phosphor-wayland's `BackgroundEffect`. Shortcuts and gestures are compositor binds that run `phosphorctl`.
+  `ShellEffects` and phosphor-wayland's `BackgroundEffect`. Shortcuts and gestures are compositor binds that run `lambentctl`.
 - A user-visible change gets a line under `## Unreleased` in `CHANGELOG.md`.
 - Unreleased: no migration code for renamed settings, paths or IPC names. Change them directly.
 - License: AppStream metadata is `CC0-1.0`.
@@ -99,7 +99,7 @@ decoration packs come from the phosphor-surface-packs commit pinned there too.
 | Chrome and motion | `lambent/src/shellchrome.cpp` (decoration packs), `shellmotion.cpp`, `shelleffects.cpp` |
 | Controllers | `lambent/src/*controller.cpp`: control center, quick settings, status icons, launcher, OSD, toasts, notifications, polkit, picker, color mode, airplane |
 | Shell QML | `lambent/shell/` (the bundled tree, linked in as the `Lambent.Shell` module at `qrc:/qt/qml/Lambent/Shell/` and installed to `share/phosphor-works/lambent/`) |
-| CLI | `lambent/cli/phosphorctl/` |
+| CLI | `lambent/cli/lambentctl/` |
 | Tests | `lambent/tests/` |
 | Desktop integration | `lambent/data/`: the `.desktop` file, AppStream metadata, the `lambent.service` user unit |
 | Dependency pins | `cmake/LambentDependencies.cmake`, repeated in `packaging/nix/package.nix` |

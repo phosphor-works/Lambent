@@ -5,4 +5,4 @@ blank_issues_enabled: false
 contact_links:
   - name: README
     url: https://github.com/phosphor-works/Lambent#readme
-    about: Building, running and driving the shell with phosphorctl
+    about: Building, running and driving the shell with lambentctl
