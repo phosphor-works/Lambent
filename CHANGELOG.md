@@ -36,6 +36,10 @@ All notable changes to Lambent are documented in this file. The format is based 
 - Night light warms the screen through the standard wlr-gamma-control protocol rather than KWin's Night Light, and
   keeps its settings in `~/.config/phosphor-works/lambent/nightlight.json`. The sunset schedule needs a latitude and
   longitude saved there, and until one is set the quick settings say a location is needed.
+- Lambent keeps its copy of the Phosphor libraries that it uses in its own folder: the shared libraries and their
+  Wayland plugin in `lib/phosphor-works/lambent`, and the notices of the code they compile in, in
+  `share/licenses/lambent`. It installs nothing in the system library folder, Qt's plugin and QML folders or the
+  header folder, so it installs beside the other Phosphor apps, each with the library versions it was built with.
 
 ### Removed
 

@@ -54,3 +54,5 @@ endif()
 install(TARGETS phosphorctl
     RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
 )
+# The embedded Phosphor libraries that it links are installed with it.
+phosphor_install_embedded(FOR phosphorctl)

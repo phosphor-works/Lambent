@@ -41,7 +41,6 @@ cmake --workflow --preset dev            # configure into build/, build, test
 ctest --test-dir build -R <name>         # one test
 ```
 
-- The suite includes phosphor-libs' and phosphor-shell-libs' tests, which build as subprojects with tests on.
 - `test_shell_chrome` resolves against the pinned phosphor-surface-packs tree (`PHOSPHOR_SURFACE_PACKS_DIR`).
 - `PHOSPHOR_PW_TESTS_ALLOW_WRITE=0` keeps the PipeWire smoke test from toggling the host's real sink.
 - `scripts/nested-shell/run-shell.sh [outputs] [width height] [scale]` runs the build-tree shell in a nested headless
