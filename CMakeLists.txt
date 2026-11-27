@@ -120,7 +120,23 @@ include(cmake/LambentDependencies.cmake)
 # Lambent compiles and installs.
 lambent_fetch_dependency(phosphor-surface-packs)
 include(${phosphor-surface-packs_SOURCE_DIR}/cmake/PhosphorSurfacePacks.cmake)
+# Lambent ships its own copy of the Phosphor libraries: with its name set, the
+# library trees install only their shared libraries, the layer-shell plugin and
+# the notices of the code they compile in, in Lambent's own directories
+# (phosphor-libs README, "Use from an app"). No other package's files are
+# touched, and the shell runs the commits pinned here.
+set(PHOSPHOR_EMBED_APP "lambent")
 lambent_add_phosphor_libraries()
+# Every executable from here on finds the embedded libraries in the private
+# directory, and no other run path.
+phosphor_embedded_dirs(LIBDIR LAMBENT_PRIVATE_LIBDIR)
+if(IS_ABSOLUTE "${LAMBENT_PRIVATE_LIBDIR}")
+    set(_lambent_private_libdir_full "${LAMBENT_PRIVATE_LIBDIR}")
+else()
+    set(_lambent_private_libdir_full "${CMAKE_INSTALL_PREFIX}/${LAMBENT_PRIVATE_LIBDIR}")
+endif()
+file(RELATIVE_PATH _lambent_rpath "${KDE_INSTALL_FULL_BINDIR}" "${_lambent_private_libdir_full}")
+set(CMAKE_INSTALL_RPATH "$ORIGIN/${_lambent_rpath}")
 
 # Where Lambent's files live: its own folder inside the suite folder every
 # Phosphor app shares, in each XDG root. phosphor-libs names the suite folder

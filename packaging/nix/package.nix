@@ -158,8 +158,6 @@ stdenv.mkDerivation {
     "-DCMAKE_BUILD_TYPE=Release"
     "-DBUILD_TESTING=${if withTests then "ON" else "OFF"}"
     "-DPHOSPHOR_DEPS_ARCHIVES=${depsArchives}"
-    "-DKDE_INSTALL_QTPLUGINDIR=${placeholder "out"}/${qt6.qtbase.qtPluginPrefix}"
-    "-DKDE_INSTALL_QMLDIR=${placeholder "out"}/${qt6.qtbase.qtQmlPrefix}"
   ]
   # The interpreter the tray tests launch their fixture with, named so CMake
   # cannot pick another Python on PATH that lacks the modules.
