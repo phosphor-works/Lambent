@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# The application: the lambent binary, the phosphorctl IPC CLI, the bundled
+# The application: the lambent binary, the lambentctl IPC CLI, the bundled
 # shell QML tree, the desktop integration and the tests. Entered from the root
 # CMakeLists.txt once ECM, Qt and the Phosphor libraries are set up.
 
@@ -16,7 +16,7 @@ include_directories("${PROJECT_BINARY_DIR}/generated")
 # The shell
 # ═══════════════════════════════════════════════════════════════════════════════
 
-add_subdirectory(cli/phosphorctl)       # phosphorctl call / list / schema / subscribe
+add_subdirectory(cli/lambentctl)       # lambentctl call / list / schema / subscribe
 
 # Build the bundled shell as the Lambent.Shell QML module so qmlcachegen
 # and qmlsc run at build time. The resulting static module gets linked

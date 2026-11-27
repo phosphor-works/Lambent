@@ -103,7 +103,7 @@ public:
 
     /// Press the widget `id` as a pointer would: emits widgetActivated with
     /// the first live widget built for that id (the primary bar's, in the
-    /// shell's mount order). For a keybind or `phosphorctl call
+    /// shell's mount order). For a keybind or `lambentctl call
     /// bar.activate`, and for a harness that cannot inject pointer input.
     /// False when no live widget carries the id or the id is not a trigger.
     Q_INVOKABLE bool activateWidget(const QString& id);

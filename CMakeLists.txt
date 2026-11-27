@@ -3,7 +3,7 @@
 #
 # Lambent: a QML desktop shell for Wayland. This file sets up the toolchain, Qt,
 # KDE's CMake modules and the Phosphor libraries; the application itself (the
-# lambent binary, the phosphorctl IPC CLI, the bundled shell QML tree and the
+# lambent binary, the lambentctl IPC CLI, the bundled shell QML tree and the
 # tests) is in lambent/.
 #
 # Built on phosphor-libs and phosphor-shell-libs, from the commits
@@ -149,7 +149,7 @@ set(LAMBENT_APP_DIRECTORY_NAME "lambent")
 # The application
 # ═══════════════════════════════════════════════════════════════════════════════
 
-add_subdirectory(lambent)  # lambent, phosphorctl, the bundled shell tree, desktop integration, tests
+add_subdirectory(lambent)  # lambent, lambentctl, the bundled shell tree, desktop integration, tests
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Finish

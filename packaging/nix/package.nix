@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# The Lambent package: the lambent binary, phosphorctl, the bundled shell tree,
+# The Lambent package: the lambent binary, lambentctl, the bundled shell tree,
 # the desktop integration, and the phosphor-libs and phosphor-shell-libs
 # libraries it is built with, from the commits cmake/LambentDependencies.cmake
 # pins. `withTests` builds and runs the test suite (the libraries' included) in
@@ -45,19 +45,19 @@ let
   # fetchurl, not fetchFromGitHub: the pin hashes the archive file itself.
   depsArchives = linkFarm "lambent-deps-archives" [
     {
-      name = "phosphor-libs-8373b436c6454b4d73e28c63bffcd0f87f059c2b.tar.gz";
+      name = "phosphor-libs-e24c011113eac709ca5475092ba1f7938b1fd54e.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-libs/archive/8373b436c6454b4d73e28c63bffcd0f87f059c2b.tar.gz";
-        # sha256 986fde5e4895ff596e2e850a4f9113e8418bc97020b20222805b1ccda6706c47
-        hash = "sha256-mG/eXkiV/1luLoUKT5ET6EGLyXAgsgIigFsczaZwbEc=";
+        url = "https://github.com/phosphor-works/phosphor-libs/archive/e24c011113eac709ca5475092ba1f7938b1fd54e.tar.gz";
+        # sha256 2e352b46975aad988c48eb57864a455028e37c129bf3e8adbd8d7b569b4af3f2
+        hash = "sha256-LjUrRpdarZiMSOtXhkpFUCjjfBKb8+itvY17VptK8/I=";
       };
     }
     {
-      name = "phosphor-shell-libs-56b3ef380384537b9c770b6f5070742184670beb.tar.gz";
+      name = "phosphor-shell-libs-0004fe014024dbe4156f8dcace0c3da8a21ae35c.tar.gz";
       path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/56b3ef380384537b9c770b6f5070742184670beb.tar.gz";
-        # sha256 9da088bc847c3c1ff31fb04d9593493d2fc4583e962de80775718a7705228984
-        hash = "sha256-naCIvIR8PB/zH7BNlZNJPS/EWD6WLegHdXGKdwUiiYQ=";
+        url = "https://github.com/phosphor-works/phosphor-shell-libs/archive/0004fe014024dbe4156f8dcace0c3da8a21ae35c.tar.gz";
+        # sha256 a0b0b19a001569572acec70f4087dd35cf5faa873707e92ca5ae387d92d7fc24
+        hash = "sha256-oLCxmgAVaVcqzscPQIfdNc9fqoc3B+kspa44fZLX/CQ=";
       };
     }
     {
@@ -108,7 +108,7 @@ stdenv.mkDerivation {
     pkg-config
     kdePackages.extra-cmake-modules
     wayland-scanner
-    # Wraps lambent and phosphorctl so they find every Qt input's plugins and
+    # Wraps lambent and lambentctl so they find every Qt input's plugins and
     # QML modules (QtQuick, Controls, Kirigami, each in its own store path), and
     # collects those directories into qtWrapperArgs, which preCheck turns into
     # the test environment.

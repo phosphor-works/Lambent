@@ -3,7 +3,7 @@
 
 # Run Lambent
 
-This page tells how to start the shell and control it with `phosphorctl`. It also tells how to bind shortcuts and
+This page tells how to start the shell and control it with `lambentctl`. It also tells how to bind shortcuts and
 gestures in the compositor. Read it after you install Lambent.
 
 ## Start the shell
@@ -17,9 +17,7 @@ systemctl --user enable --now lambent.service
 
 ## Control the shell
 
-`phosphorctl` controls a running shell through its IPC socket. Give it `--app lambent`
-(`phosphorctl --app lambent list`, `phosphorctl --app lambent call <target>.<fn>`). Without `--app`, `phosphorctl`
-talks to the Phosphor compositor.
+`lambentctl` controls a running shell through its IPC socket (`lambentctl list`, `lambentctl call <target>.<fn>`).
 
 | Subcommand | What it does |
 | --- | --- |
@@ -29,19 +27,19 @@ talks to the Phosphor compositor.
 | `subscribe <target>.<signal>` | Prints the JSON events of a signal until you push Ctrl+C |
 
 Lambent binds `$LAMBENT_SOCKET`, or `$XDG_RUNTIME_DIR/lambent.sock` when that variable is not set.
-`phosphorctl --app lambent` finds the socket in the same order. The `--socket` option overrides both.
+`lambentctl` finds the socket in the same order. The `--socket` option overrides both.
 
 ## Bind shortcuts and gestures
 
-The compositor owns the keyboard shortcuts and the touchpad gestures. It runs `phosphorctl` for them. For example,
+The compositor owns the keyboard shortcuts and the touchpad gestures. It runs `lambentctl` for them. For example,
 in sway:
 
 ```
-bindsym $mod+d exec phosphorctl --app lambent call launcher.toggle
-bindgesture swipe:3:up exec phosphorctl --app lambent call launcher.toggle
-bindgesture swipe:3:down exec phosphorctl --app lambent call launcher.hide
-bindgesture swipe:4:up exec phosphorctl --app lambent call dashboard.toggle
-bindgesture pinch:4:outward exec phosphorctl --app lambent call dashboard.hide
+bindsym $mod+d exec lambentctl call launcher.toggle
+bindgesture swipe:3:up exec lambentctl call launcher.toggle
+bindgesture swipe:3:down exec lambentctl call launcher.hide
+bindgesture swipe:4:up exec lambentctl call dashboard.toggle
+bindgesture pinch:4:outward exec lambentctl call dashboard.hide
 ```
 
 ## See also

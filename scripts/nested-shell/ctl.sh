@@ -2,8 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Build-tree phosphorctl aimed at the NESTED shell's socket. The pinned
-# --socket is the point: a bare phosphorctl resolves the host session's
+# Build-tree lambentctl aimed at the NESTED shell's socket. The pinned
+# --socket is the point: a bare lambentctl resolves the host session's
 # $XDG_RUNTIME_DIR/lambent.sock, silently driving the wrong shell.
 #
 #   scripts/nested-shell/ctl.sh call power.toggle
@@ -33,4 +33,4 @@ if [ ! -S "$NEST/lambent.sock" ]; then
     echo "the nested shell's socket $NEST/lambent.sock is not bound (start it with scripts/nested-shell/shell.sh)" >&2
     exit 1
 fi
-exec "$BUILD/bin/phosphorctl" --socket "$NEST/lambent.sock" "$@"
+exec "$BUILD/bin/lambentctl" --socket "$NEST/lambent.sock" "$@"
