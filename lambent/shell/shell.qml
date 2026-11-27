@@ -743,13 +743,13 @@ Item {
     }
 
     // The control center's wire surface, per the mockup's
-    // `phosphorctl call control-center.show`. Same show/toggle split as the
+    // `phosphorctl --app lambent call control-center.show`. Same show/toggle split as the
     // power menu, and the same reason: bind a compositor key to toggle, and
     // call show from a script that wants the panel up regardless.
     //
     // All three are argument-free, which is the form a keybind uses:
     // IpcTarget arity is strict, so a `toggle(screen)` would reject a bare
-    // `phosphorctl call control-center.toggle` with "argument count
+    // `phosphorctl --app lambent call control-center.toggle` with "argument count
     // mismatch". A null source resolves to the primary output's bar.
     IpcTarget {
         target: "control-center"
@@ -803,7 +803,7 @@ Item {
     }
 
     // The OSD's wire surface, per the OSD demo:
-    // `phosphorctl call osd.show --arg kind=volume --arg value=62`. This is
+    // `phosphorctl --app lambent call osd.show --arg kind=volume --arg value=62`. This is
     // how a compositor keybind for a volume or brightness key reaches the
     // band. Broadcast to every screen (the demo's "" target), which is what
     // a hardware key means. For the stateful kinds (mic, caps) a value of 0
@@ -819,9 +819,9 @@ Item {
     }
 
     // The launcher's wire surface, per the mockup's
-    // `phosphorctl call launcher.toggle`. Argument-free, the form a
+    // `phosphorctl --app lambent call launcher.toggle`. Argument-free, the form a
     // compositor keybind uses (Meta / Alt+Space bound to
-    // `phosphorctl call launcher.toggle`).
+    // `phosphorctl --app lambent call launcher.toggle`).
     IpcTarget {
         target: "launcher"
 
@@ -839,7 +839,7 @@ Item {
         }
     }
 
-    // The lock's wire surface: `phosphorctl call lock.lock`, the form a
+    // The lock's wire surface: `phosphorctl --app lambent call lock.lock`, the form a
     // compositor keybind (Super+L) uses. Argument-free like the others.
     // Only lock, never unlock: the way out of a lock is the password, and
     // a wire call that unlocked a session would be a hole in it.
@@ -853,7 +853,7 @@ Item {
         }
     }
 
-    // The picker's wire surface: `phosphorctl call picker.toggle`. An
+    // The picker's wire surface: `phosphorctl --app lambent call picker.toggle`. An
     // empty screen means the focused output; a keybind uses the
     // argument-free form. hide() puts the previous palette back, the same
     // as Escape.
@@ -1017,7 +1017,7 @@ Item {
         Popouts.toggle(request);
     }
 
-    // The dashboard's wire surface: `phosphorctl call dashboard.toggle`
+    // The dashboard's wire surface: `phosphorctl --app lambent call dashboard.toggle`
     // is what a compositor key or gesture bind runs. Same show/toggle/hide
     // split as the launcher.
     IpcTarget {

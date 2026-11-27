@@ -37,9 +37,9 @@ case "$BUILD" in
     /*) ;;
     *) BUILD="$REPO/$BUILD" ;;
 esac
-export PHOSPHOR_SOCKET="$NEST/shortcuts-preview.sock"
+export LAMBENT_SOCKET="$NEST/shortcuts-preview.sock"
 if [ "${1:-run}" != run ]; then
-    exec "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@"
+    exec "$BUILD/bin/phosphorctl" --socket "$LAMBENT_SOCKET" "$@"
 fi
 if [ "$#" -gt 1 ]; then
     echo "usage: shortcuts-preview.sh [run | phosphorctl arguments]" >&2
@@ -49,7 +49,7 @@ if [ ! -x "$BUILD/bin/lambent" ]; then
     echo "Build Lambent first (cmake --workflow --preset dev)." >&2
     exit 1
 fi
-if [ -S "$PHOSPHOR_SOCKET" ] && "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" call preview.state >/dev/null 2>&1; then
+if [ -S "$LAMBENT_SOCKET" ] && "$BUILD/bin/phosphorctl" --socket "$LAMBENT_SOCKET" call preview.state >/dev/null 2>&1; then
     echo "The shortcut preview is already running. Stop its process before restarting it." >&2
     exit 1
 fi

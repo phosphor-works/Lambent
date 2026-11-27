@@ -10,9 +10,9 @@
 #
 #   log:    $LAMBENT_NESTED_DIR/shell.log   (QT_FORCE_STDERR_LOGGING is already
 #           in env.sh, so category output lands here, not in journald)
-#   socket: $LAMBENT_NESTED_DIR/phosphor.sock  (via $PHOSPHOR_SOCKET, a
+#   socket: $LAMBENT_NESTED_DIR/lambent.sock  (via $LAMBENT_SOCKET, a
 #           per-session path, so a shell on the HOST session keeps its own
-#           $XDG_RUNTIME_DIR/phosphor.sock undisturbed)
+#           $XDG_RUNTIME_DIR/lambent.sock undisturbed)
 #   pid:    $LAMBENT_NESTED_DIR/shell.pid
 set -eu
 
@@ -56,7 +56,7 @@ if [ -f "$NEST/shell.pid" ]; then
     rm -f "$NEST/shell.pid"
 fi
 
-export PHOSPHOR_SOCKET="$NEST/phosphor.sock"
+export LAMBENT_SOCKET="$NEST/lambent.sock"
 # The seeded shell.qml is an editable COPY; this script restarts the binary
 # and deliberately does NOT re-seed, so live edits under the nested config
 # survive a restart. That is the intended workflow and it has one sharp
@@ -82,7 +82,7 @@ echo $! > "$NEST/shell.pid"
 # it doubles as the liveness probe, and it is the thing every ctl.sh
 # caller is about to need anyway.
 for _ in $(seq 1 50); do
-    [ -S "$PHOSPHOR_SOCKET" ] && break
+    [ -S "$LAMBENT_SOCKET" ] && break
     if ! kill -0 "$(cat "$NEST/shell.pid")" 2>/dev/null; then
         echo "lambent exited at startup; its log:" >&2
         cat "$NEST/shell.log" >&2
@@ -90,8 +90,8 @@ for _ in $(seq 1 50); do
     fi
     sleep 0.1
 done
-if [ ! -S "$PHOSPHOR_SOCKET" ]; then
-    echo "shell is running but never bound $PHOSPHOR_SOCKET; see $NEST/shell.log" >&2
+if [ ! -S "$LAMBENT_SOCKET" ]; then
+    echo "shell is running but never bound $LAMBENT_SOCKET; see $NEST/shell.log" >&2
     exit 1
 fi
-echo "lambent up (pid $(cat "$NEST/shell.pid"), log $NEST/shell.log, socket $PHOSPHOR_SOCKET)"
+echo "lambent up (pid $(cat "$NEST/shell.pid"), log $NEST/shell.log, socket $LAMBENT_SOCKET)"

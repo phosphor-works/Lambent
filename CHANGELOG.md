@@ -17,6 +17,13 @@ All notable changes to Lambent are documented in this file. The format is based 
 
 ### Changed
 
+- **Breaking:** Lambent's IPC socket is `$LAMBENT_SOCKET`, or `$XDG_RUNTIME_DIR/lambent.sock`. The name `phosphor.sock`
+  and `PHOSPHOR_SOCKET` belong to the Phosphor compositor. Binds and scripts call `phosphorctl --app lambent call
+  ...`. (phosphor-works/workspace#76)
+- `phosphorctl` takes `--app NAME` and finds that app's socket: `$<APP>_SOCKET`, then `$XDG_RUNTIME_DIR/<app>.sock`.
+  Without `--app` it talks to the compositor, at `$PHOSPHOR_SOCKET` or
+  `$XDG_RUNTIME_DIR/phosphor.$WAYLAND_DISPLAY.sock`. `--socket PATH` overrides both.
+- The IPC router accepts at most 64 connections at once. (phosphor-works/workspace#36)
 - The bundled shell QML module is `Lambent.Shell`, at `qrc:/qt/qml/Lambent/Shell/`.
 - The application's sources are in `lambent/`, and the Nix package in `packaging/nix/`.
 - Lambent no longer assumes KWin. It needs a Wayland compositor with wlr-layer-shell, and reads window placement from

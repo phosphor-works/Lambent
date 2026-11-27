@@ -17,7 +17,9 @@ systemctl --user enable --now lambent.service
 
 ## Control the shell
 
-`phosphorctl` controls a running shell through its IPC socket (`phosphorctl list`, `phosphorctl call <target>.<fn>`).
+`phosphorctl` controls a running shell through its IPC socket. Give it `--app lambent`
+(`phosphorctl --app lambent list`, `phosphorctl --app lambent call <target>.<fn>`). Without `--app`, `phosphorctl`
+talks to the Phosphor compositor.
 
 | Subcommand | What it does |
 | --- | --- |
@@ -26,8 +28,8 @@ systemctl --user enable --now lambent.service
 | `schema <target>` | Prints the JSON Schema of a target |
 | `subscribe <target>.<signal>` | Prints the JSON events of a signal until you push Ctrl+C |
 
-`phosphorctl` finds the socket in this order: the `--socket` option, then `$PHOSPHOR_SOCKET`, then
-`$XDG_RUNTIME_DIR/phosphor.sock`.
+Lambent binds `$LAMBENT_SOCKET`, or `$XDG_RUNTIME_DIR/lambent.sock` when that variable is not set.
+`phosphorctl --app lambent` finds the socket in the same order. The `--socket` option overrides both.
 
 ## Bind shortcuts and gestures
 
@@ -35,11 +37,11 @@ The compositor owns the keyboard shortcuts and the touchpad gestures. It runs `p
 in sway:
 
 ```
-bindsym $mod+d exec phosphorctl call launcher.toggle
-bindgesture swipe:3:up exec phosphorctl call launcher.toggle
-bindgesture swipe:3:down exec phosphorctl call launcher.hide
-bindgesture swipe:4:up exec phosphorctl call dashboard.toggle
-bindgesture pinch:4:outward exec phosphorctl call dashboard.hide
+bindsym $mod+d exec phosphorctl --app lambent call launcher.toggle
+bindgesture swipe:3:up exec phosphorctl --app lambent call launcher.toggle
+bindgesture swipe:3:down exec phosphorctl --app lambent call launcher.hide
+bindgesture swipe:4:up exec phosphorctl --app lambent call dashboard.toggle
+bindgesture pinch:4:outward exec phosphorctl --app lambent call dashboard.hide
 ```
 
 ## See also

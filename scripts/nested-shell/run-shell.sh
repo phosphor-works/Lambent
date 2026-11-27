@@ -24,7 +24,7 @@
 #      ($NEST/home/config/phosphor-works/lambent/), so shell.qml edits there hot-reload
 #      without rebuilds. Seeding happens after the launcher wiped the homes;
 #   3. starts the build-tree lambent inside the session through shell.sh
-#      (shell log: $NEST/shell.log, IPC socket: $NEST/phosphor.sock).
+#      (shell log: $NEST/shell.log, IPC socket: $NEST/lambent.sock).
 #
 # Follow-ups (each sources env.sh itself):
 #   scripts/nested-shell/ctl.sh call power.toggle       # drive the shell

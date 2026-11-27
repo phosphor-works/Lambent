@@ -21,6 +21,10 @@ namespace Phosphorctl {
 // `--socket` as a positional argument.
 [[nodiscard]] QString stripSocketFlag(QStringList& args, QString* errorMessage = nullptr);
 
+// Strip `--app NAME` / `--app=NAME` the same way. It has no short form,
+// because `call` takes `-a` for `--arg`.
+[[nodiscard]] QString stripAppFlag(QStringList& args, QString* errorMessage = nullptr);
+
 // Sanitise a server-supplied string for safe stdout printing.
 // Server-side targets may return / broadcast strings that originated
 // from untrusted sources (window titles, app-ids, user input
