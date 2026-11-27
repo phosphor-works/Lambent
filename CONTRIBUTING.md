@@ -32,7 +32,7 @@ The application is in `lambent/`.
 | --- | --- |
 | `lambent/src/` | The C++ |
 | `lambent/shell/` | The bundled shell QML tree |
-| `lambent/cli/` | `phosphorctl` |
+| `lambent/cli/` | `lambentctl` |
 | `lambent/tests/` | The tests |
 | `lambent/data/` | The desktop integration |
 

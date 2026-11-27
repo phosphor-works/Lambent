@@ -32,7 +32,7 @@ case "$BUILD" in
 esac
 export LAMBENT_SOCKET="$NEST/lock-preview.sock"
 if [ "${1:-run}" != run ]; then
-    exec "$BUILD/bin/phosphorctl" --socket "$LAMBENT_SOCKET" "$@"
+    exec "$BUILD/bin/lambentctl" --socket "$LAMBENT_SOCKET" "$@"
 fi
 export XDG_CONFIG_HOME="$NEST/lock-preview/config"
 mkdir -p "$XDG_CONFIG_HOME/phosphor-works/lambent"

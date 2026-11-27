@@ -10,6 +10,6 @@ about its architecture and its look.
 
 | Page | Description |
 | --- | --- |
-| [RUN.md](RUN.md) | How to start the shell, control it with `phosphorctl` and bind shortcuts and gestures in the compositor. |
+| [RUN.md](RUN.md) | How to start the shell, control it with `lambentctl` and bind shortcuts and gestures in the compositor. |
 | [architecture.md](architecture.md) | The modules, controllers and services of the shell, and how the data moves between them. |
 | [visual-identity.md](visual-identity.md) | The look of the shell, its presets and appearance settings, and the behavior of each surface. |

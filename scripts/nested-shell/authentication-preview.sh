@@ -35,7 +35,7 @@ case "$BUILD" in
 esac
 export LAMBENT_SOCKET="$NEST/authentication-preview.sock"
 if [ "${1:-run}" != run ]; then
-    exec "$BUILD/bin/phosphorctl" --socket "$LAMBENT_SOCKET" "$@"
+    exec "$BUILD/bin/lambentctl" --socket "$LAMBENT_SOCKET" "$@"
 fi
 if [ "$#" -gt 0 ]; then
     shift

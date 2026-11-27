@@ -37,7 +37,7 @@ The libraries are LGPL and own no policy. The shell process and its composition 
 | `phosphor-popout` | `PopoutController` and the `IPopoutTransport` interface, and `Phosphor.Popout`: `PopoutHost`, `PaneHost` |
 | `phosphor-shell-patterns` | The layer roles: `Wallpaper`, `Hud`, `Modal`, `Floating`, `Panel(edge)` and `Toast(corner)` |
 | `phosphor-layer`, `phosphor-surfaces`, `phosphor-wayland` | The layer-shell and session-lock surfaces, and the QPA plugin |
-| `phosphor-ipc`, `phosphor-registry` | `IpcTarget` and `phosphorctl`, and the typed factory registries |
+| `phosphor-ipc`, `phosphor-registry` | `IpcTarget` and `lambentctl`, and the typed factory registries |
 | `phosphor-service-*` | `sni`, `upower`, `mpris`, `pipewire`, `network`, `bluetooth`, `brightness`, `notifications`, `polkit`, `idle`, `clipboard`, `lock`, `session`, `icontheme`, `nightlight` |
 
 ## Shell process
@@ -173,8 +173,8 @@ surface makes that host. The composition root supplies the host component throug
 
 ## Gestures and shortcuts
 
-The compositor owns the touchpad gestures and the keyboard shortcuts. Its binds run `phosphorctl --app lambent
-call launcher.toggle`, `dashboard.toggle` or another IPC command. Lambent has no gesture relay of its own.
+The compositor owns the touchpad gestures and the keyboard shortcuts. Its binds run `lambentctl call
+launcher.toggle`, `dashboard.toggle` or another IPC command. Lambent has no gesture relay of its own.
 
 ## Motion
 

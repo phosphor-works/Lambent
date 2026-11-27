@@ -22,7 +22,7 @@ body:
         - Lock screen
         - Authentication prompt
         - Appearance, wallpaper or theme
-        - phosphorctl
+        - lambentctl
         - Startup or the shell tree in ~/.config/phosphor-works/lambent
         - Something else
     validations:

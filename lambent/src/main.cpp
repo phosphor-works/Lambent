@@ -387,12 +387,10 @@ int main(int argc, char* argv[])
     // a live router when they do.
     //
     // start() binds the Unix socket; without it every target registers
-    // against a router nobody can reach and `phosphorctl --app lambent call`
-    // resolves nothing. Lambent has its own socket, $LAMBENT_SOCKET or
-    // $XDG_RUNTIME_DIR/lambent.sock, as phosphor-ipc's
-    // IpcRouter::socketPathForApp("lambent") and phosphorctl --app lambent
-    // resolve it; the name phosphor belongs to the compositor
-    // (phosphor-works/workspace#76). The variable is what lets a nested test
+    // against a router nobody can reach and `lambentctl call` resolves
+    // nothing. Lambent has its own socket, $LAMBENT_SOCKET or
+    // $XDG_RUNTIME_DIR/lambent.sock: IpcRouter::socketPathForApp("lambent"),
+    // which lambentctl resolves too (phosphor-works/workspace#76). The variable is what lets a nested test
     // session bind a private socket instead of colliding with a shell on the
     // host session. Non-fatal on failure: a shell without its control socket
     // still draws bars and popouts, so warn and continue rather than
@@ -401,15 +399,12 @@ int main(int argc, char* argv[])
     // Each connection holds a descriptor; binds and scripts open a few at
     // most.
     ipcRouter.setMaxConnections(64);
-    QString socketPath = qEnvironmentVariable("LAMBENT_SOCKET");
-    if (socketPath.isEmpty() && !qEnvironmentVariable("XDG_RUNTIME_DIR").isEmpty()) {
-        socketPath = QDir(qEnvironmentVariable("XDG_RUNTIME_DIR")).filePath(QStringLiteral("lambent.sock"));
-    }
+    const QString socketPath = PhosphorIpc::IpcRouter::socketPathForApp(QStringLiteral("lambent"));
     if (socketPath.isEmpty() || !ipcRouter.start(socketPath)) {
         qCWarning(lcShell) << "IPC router failed to bind"
                            << (socketPath.isEmpty() ? QStringLiteral("a socket (no LAMBENT_SOCKET or XDG_RUNTIME_DIR)")
                                                     : socketPath)
-                           << "— phosphorctl will not reach this shell";
+                           << "— lambentctl will not reach this shell";
     } else {
         qCInfo(lcShell) << "IPC socket:" << ipcRouter.socketPath();
     }
@@ -560,7 +555,7 @@ int main(int argc, char* argv[])
 
     // IpcTarget resolves its router from a property stashed on the engine,
     // so this has to run for every fresh engine, not once at startup.
-    // Without it each target warns and stays inert, and `phosphorctl call`
+    // Without it each target warns and stays inert, and `lambentctl call`
     // finds nothing.
     engine.addEngineHook([&ipcRouter](QQmlEngine* qmlEngine) {
         PhosphorIpc::IpcEngine::install(qmlEngine, &ipcRouter);

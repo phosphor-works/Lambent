@@ -33,7 +33,7 @@ To start the shell, enable its systemd user unit in the session of your composit
 systemctl --user enable --now lambent.service
 ```
 
-[docs/RUN.md](docs/RUN.md) tells how to control the shell with `phosphorctl` and how to bind shortcuts and gestures
+[docs/RUN.md](docs/RUN.md) tells how to control the shell with `lambentctl` and how to bind shortcuts and gestures
 in the compositor.
 
 ## Build
@@ -71,7 +71,7 @@ time for all apps configures with `-DLAMBENT_INSTALL_SURFACE_PACKS=OFF`.
 
 ## Contributing
 
-The application is in `lambent/`. The C++ is in `src/`, the bundled shell tree is in `shell/`, `phosphorctl` is in
+The application is in `lambent/`. The C++ is in `src/`, the bundled shell tree is in `shell/`, `lambentctl` is in
 `cli/` and the tests are in `tests/`. `CONTRIBUTING.md` gives the code style, the pre-commit hooks and how to send a
 change. `CHANGELOG.md` records the changes.
 

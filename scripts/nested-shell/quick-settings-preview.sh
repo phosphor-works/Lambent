@@ -36,7 +36,7 @@ case "${1:-run}" in
             *) echo "Unknown status page: $STATUS_PAGE" >&2; exit 1 ;;
         esac
         ;;
-    *) exec "$BUILD/bin/phosphorctl" --socket "$LAMBENT_SOCKET" "$@" ;;
+    *) exec "$BUILD/bin/lambentctl" --socket "$LAMBENT_SOCKET" "$@" ;;
 esac
 export XDG_CONFIG_HOME="$NEST/quick-settings-preview/config"
 mkdir -p "$XDG_CONFIG_HOME/phosphor-works/lambent"

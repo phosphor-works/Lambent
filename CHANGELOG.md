@@ -18,11 +18,11 @@ All notable changes to Lambent are documented in this file. The format is based 
 ### Changed
 
 - **Breaking:** Lambent's IPC socket is `$LAMBENT_SOCKET`, or `$XDG_RUNTIME_DIR/lambent.sock`. The name `phosphor.sock`
-  and `PHOSPHOR_SOCKET` belong to the Phosphor compositor. Binds and scripts call `phosphorctl --app lambent call
-  ...`. (phosphor-works/workspace#76)
-- `phosphorctl` takes `--app NAME` and finds that app's socket: `$<APP>_SOCKET`, then `$XDG_RUNTIME_DIR/<app>.sock`.
-  Without `--app` it talks to the compositor, at `$PHOSPHOR_SOCKET` or
-  `$XDG_RUNTIME_DIR/phosphor.$WAYLAND_DISPLAY.sock`. `--socket PATH` overrides both.
+  and `PHOSPHOR_SOCKET` belong to the Phosphor compositor. Binds and scripts call `lambentctl call ...`.
+  (phosphor-works/workspace#76)
+- `lambentctl` is the command-line client of Lambent's socket, with the subcommands `call`, `list`, `schema` and
+  `subscribe`. It is built on phosphor-ipc's `PhosphorIpcCli`. The name `phosphorctl` belongs to the compositor.
+  (phosphor-works/workspace#76)
 - The IPC router accepts at most 64 connections at once. (phosphor-works/workspace#36)
 - The bundled shell QML module is `Lambent.Shell`, at `qrc:/qt/qml/Lambent/Shell/`.
 - The application's sources are in `lambent/`, and the Nix package in `packaging/nix/`.
@@ -52,5 +52,5 @@ All notable changes to Lambent are documented in this file. The format is based 
 
 - The "Match desktop windows" style, which wrote KWin's window decoration and PlasmaZones' gaps.
 - Stage's native desktop preview through the KWin effect. Stage shows the placement-map preview.
-- The touchpad gesture relay from the KWin effect. Bind the compositor's gestures to `phosphorctl call launcher.toggle`
-  or `phosphorctl call dashboard.toggle` instead.
+- The touchpad gesture relay from the KWin effect. Bind the compositor's gestures to `lambentctl call launcher.toggle`
+  or `lambentctl call dashboard.toggle` instead.
