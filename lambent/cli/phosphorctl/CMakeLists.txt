@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# phosphorctl, typed IPC CLI for Lambent.
+# phosphorctl, typed IPC CLI for the apps of the suite (--app selects one).
 #
 # Links Qt6::Core + Qt6::Network only (no GUI, no QML). Uses
 # QCommandLineParser / QJsonDocument / QLocalSocket, all of which

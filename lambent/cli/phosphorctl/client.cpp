@@ -7,10 +7,13 @@
 
 #include <QByteArray>
 #include <QDir>
+#include <QFileInfo>
 #include <QEventLoop>
 #include <QJsonDocument>
 #include <QProcessEnvironment>
 #include <QTimer>
+
+#include <algorithm>
 
 namespace Phosphorctl {
 
@@ -19,13 +22,29 @@ Client::Client(QObject* parent)
 {
 }
 
-QString Client::resolveSocketPath(const QString& cliArg)
+bool Client::isAppName(const QString& app)
+{
+    if (app.isEmpty() || app.front() < QLatin1Char('a') || app.front() > QLatin1Char('z')) {
+        return false;
+    }
+    return std::all_of(app.cbegin(), app.cend(), [](QChar c) {
+        return (c >= QLatin1Char('a') && c <= QLatin1Char('z')) || (c >= QLatin1Char('0') && c <= QLatin1Char('9'))
+            || c == QLatin1Char('-');
+    });
+}
+
+QString Client::resolveSocketPath(const QString& cliArg, const QString& app)
 {
     if (!cliArg.isEmpty()) {
         return cliArg;
     }
+    if (!isAppName(app)) {
+        return {};
+    }
     const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    const QString fromEnv = env.value(QStringLiteral("PHOSPHOR_SOCKET"));
+    QString variable = app.toUpper();
+    variable.replace(QLatin1Char('-'), QLatin1Char('_'));
+    const QString fromEnv = env.value(variable + QStringLiteral("_SOCKET"));
     if (!fromEnv.isEmpty()) {
         return fromEnv;
     }
@@ -33,13 +52,23 @@ QString Client::resolveSocketPath(const QString& cliArg)
     if (xdg.isEmpty()) {
         return {};
     }
-    return QDir(xdg).filePath(QStringLiteral("phosphor.sock"));
+    if (app == DefaultApp) {
+        // WAYLAND_DISPLAY can be an absolute path to the display socket;
+        // its file name is the display then.
+        const QString display = QFileInfo(env.value(QStringLiteral("WAYLAND_DISPLAY"))).fileName();
+        if (display.isEmpty()) {
+            return {};
+        }
+        return QDir(xdg).filePath(QStringLiteral("phosphor.%1.sock").arg(display));
+    }
+    return QDir(xdg).filePath(app + QStringLiteral(".sock"));
 }
 
 bool Client::connectTo(const QString& socketPath, int timeoutMs)
 {
     if (socketPath.isEmpty()) {
-        m_errorMessage = QStringLiteral("no socket path resolved (set --socket, PHOSPHOR_SOCKET, or XDG_RUNTIME_DIR)");
+        m_errorMessage = QStringLiteral(
+            "no socket path resolved (give --socket, or --app with its <APP>_SOCKET or XDG_RUNTIME_DIR set)");
         return false;
     }
     // Reset any prior connection so retry-after-failure callers

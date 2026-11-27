@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// phosphorctl, typed JSON-over-Unix-socket CLI for Lambent.
+// phosphorctl, typed JSON-over-Unix-socket CLI for the apps of the suite.
 // Subcommand dispatcher: top-level QCommandLineParser identifies
 // `call`, `list`, `schema`, `subscribe` and hands off to the
 // matching handler in subcommand_*.cpp. Each handler builds its own
@@ -19,7 +19,7 @@ namespace {
 
 void printUsage(QTextStream& out)
 {
-    out << "usage: phosphorctl [--socket PATH] <subcommand> [args]\n\n"
+    out << "usage: phosphorctl [--app NAME | --socket PATH] <subcommand> [args]\n\n"
         << "Subcommands:\n"
         << "  call <target>.<fn> [--arg name=value ...] [--timeout SECONDS]\n"
         << "      Invoke a function on a target and print its return value. Waits\n"
@@ -31,7 +31,12 @@ void printUsage(QTextStream& out)
         << "      Pretty-print the target's JSON Schema.\n"
         << "  subscribe <target>.<signal>\n"
         << "      Stream JSON events for a signal until Ctrl+C.\n\n"
-        << "Socket resolution priority: --socket > $PHOSPHOR_SOCKET > $XDG_RUNTIME_DIR/phosphor.sock\n";
+        << "Options:\n"
+        << "  --app NAME     Talk to the app NAME (default: phosphor, the compositor).\n"
+        << "  --socket PATH  Talk to the socket at PATH.\n\n"
+        << "Socket resolution priority: --socket > $<APP>_SOCKET > $XDG_RUNTIME_DIR/<app>.sock\n"
+        << "(the compositor: $PHOSPHOR_SOCKET > $XDG_RUNTIME_DIR/phosphor.$WAYLAND_DISPLAY.sock).\n"
+        << "Example: phosphorctl --app lambent call launcher.toggle\n";
 }
 
 } // namespace
@@ -54,6 +59,11 @@ int main(int argc, char* argv[])
     args.removeFirst();
     QString socketErr;
     QString socketPathCli = Phosphorctl::stripSocketFlag(args, &socketErr);
+    if (!socketErr.isEmpty()) {
+        err << "phosphorctl: " << socketErr << "\n";
+        return 1;
+    }
+    QString appName = Phosphorctl::stripAppFlag(args, &socketErr);
     if (!socketErr.isEmpty()) {
         err << "phosphorctl: " << socketErr << "\n";
         return 1;
@@ -83,7 +93,23 @@ int main(int argc, char* argv[])
     if (!postSubcommandSocket.isEmpty()) {
         socketPathCli = postSubcommandSocket;
     }
-    const QString socketPath = Phosphorctl::Client::resolveSocketPath(socketPathCli);
+    const QString postSubcommandApp = Phosphorctl::stripAppFlag(args, &socketErr);
+    if (!socketErr.isEmpty()) {
+        err << "phosphorctl: " << socketErr << "\n";
+        return 1;
+    }
+    if (!postSubcommandApp.isEmpty()) {
+        appName = postSubcommandApp;
+    }
+    if (appName.isEmpty()) {
+        appName = Phosphorctl::Client::DefaultApp;
+    }
+    if (!Phosphorctl::Client::isAppName(appName)) {
+        err << "phosphorctl: '" << Phosphorctl::sanitiseForSingleLine(appName)
+            << "' is not an app name (lower-case letters, digits and '-')\n";
+        return 1;
+    }
+    const QString socketPath = Phosphorctl::Client::resolveSocketPath(socketPathCli, appName);
 
     if (subcommand == QLatin1String("call")) {
         return Phosphorctl::runCall(args, socketPath);

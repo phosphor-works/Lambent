@@ -387,18 +387,28 @@ int main(int argc, char* argv[])
     // a live router when they do.
     //
     // start() binds the Unix socket; without it every target registers
-    // against a router nobody can reach and `phosphorctl call` resolves
-    // nothing. $PHOSPHOR_SOCKET mirrors phosphorctl's own resolution
-    // (--socket > $PHOSPHOR_SOCKET > $XDG_RUNTIME_DIR/phosphor.sock), which
-    // is what lets a nested test session bind a private socket instead of
-    // colliding with a shell on the host session. Non-fatal on failure: a
-    // shell without its control socket still draws bars and popouts, so warn
-    // and continue rather than refusing to start.
+    // against a router nobody can reach and `phosphorctl --app lambent call`
+    // resolves nothing. Lambent has its own socket, $LAMBENT_SOCKET or
+    // $XDG_RUNTIME_DIR/lambent.sock, as phosphor-ipc's
+    // IpcRouter::socketPathForApp("lambent") and phosphorctl --app lambent
+    // resolve it; the name phosphor belongs to the compositor
+    // (phosphor-works/workspace#76). The variable is what lets a nested test
+    // session bind a private socket instead of colliding with a shell on the
+    // host session. Non-fatal on failure: a shell without its control socket
+    // still draws bars and popouts, so warn and continue rather than
+    // refusing to start.
     PhosphorIpc::IpcRouter ipcRouter;
-    const QString socketOverride = qEnvironmentVariable("PHOSPHOR_SOCKET");
-    if (!ipcRouter.start(socketOverride)) {
+    // Each connection holds a descriptor; binds and scripts open a few at
+    // most.
+    ipcRouter.setMaxConnections(64);
+    QString socketPath = qEnvironmentVariable("LAMBENT_SOCKET");
+    if (socketPath.isEmpty() && !qEnvironmentVariable("XDG_RUNTIME_DIR").isEmpty()) {
+        socketPath = QDir(qEnvironmentVariable("XDG_RUNTIME_DIR")).filePath(QStringLiteral("lambent.sock"));
+    }
+    if (socketPath.isEmpty() || !ipcRouter.start(socketPath)) {
         qCWarning(lcShell) << "IPC router failed to bind"
-                           << (socketOverride.isEmpty() ? QStringLiteral("the default socket") : socketOverride)
+                           << (socketPath.isEmpty() ? QStringLiteral("a socket (no LAMBENT_SOCKET or XDG_RUNTIME_DIR)")
+                                                    : socketPath)
                            << "— phosphorctl will not reach this shell";
     } else {
         qCInfo(lcShell) << "IPC socket:" << ipcRouter.socketPath();

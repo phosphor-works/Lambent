@@ -26,7 +26,7 @@ case "$BUILD" in
     /*) ;;
     *) BUILD="$REPO/$BUILD" ;;
 esac
-export PHOSPHOR_SOCKET="$NEST/quick-settings-preview.sock"
+export LAMBENT_SOCKET="$NEST/quick-settings-preview.sock"
 case "${1:-run}" in
     run) STATUS_PAGE= ;;
     run-status)
@@ -36,7 +36,7 @@ case "${1:-run}" in
             *) echo "Unknown status page: $STATUS_PAGE" >&2; exit 1 ;;
         esac
         ;;
-    *) exec "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@" ;;
+    *) exec "$BUILD/bin/phosphorctl" --socket "$LAMBENT_SOCKET" "$@" ;;
 esac
 export XDG_CONFIG_HOME="$NEST/quick-settings-preview/config"
 mkdir -p "$XDG_CONFIG_HOME/phosphor-works/lambent"
