@@ -33,9 +33,9 @@ case "$BUILD" in
     /*) ;;
     *) BUILD="$REPO/$BUILD" ;;
 esac
-export PHOSPHOR_SOCKET="$NEST/authentication-preview.sock"
+export LAMBENT_SOCKET="$NEST/authentication-preview.sock"
 if [ "${1:-run}" != run ]; then
-    exec "$BUILD/bin/phosphorctl" --socket "$PHOSPHOR_SOCKET" "$@"
+    exec "$BUILD/bin/phosphorctl" --socket "$LAMBENT_SOCKET" "$@"
 fi
 if [ "$#" -gt 0 ]; then
     shift
@@ -44,4 +44,4 @@ export XDG_CONFIG_HOME="$NEST/authentication-preview/config"
 export XDG_DATA_HOME="$NEST/authentication-preview/data"
 export XDG_CACHE_HOME="$NEST/authentication-preview/cache"
 mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
-exec "$BUILD/bin/phosphor-authentication-preview" --socket "$PHOSPHOR_SOCKET" "$@"
+exec "$BUILD/bin/phosphor-authentication-preview" --socket "$LAMBENT_SOCKET" "$@"

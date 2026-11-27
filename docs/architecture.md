@@ -173,8 +173,8 @@ surface makes that host. The composition root supplies the host component throug
 
 ## Gestures and shortcuts
 
-The compositor owns the touchpad gestures and the keyboard shortcuts. Its binds run `phosphorctl call
-launcher.toggle`, `dashboard.toggle` or another IPC command. Lambent has no gesture relay of its own.
+The compositor owns the touchpad gestures and the keyboard shortcuts. Its binds run `phosphorctl --app lambent
+call launcher.toggle`, `dashboard.toggle` or another IPC command. Lambent has no gesture relay of its own.
 
 ## Motion
 

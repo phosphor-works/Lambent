@@ -3,6 +3,7 @@
 #pragma once
 
 #include <QJsonObject>
+#include <QLatin1StringView>
 #include <QLocalSocket>
 #include <QObject>
 #include <QString>
@@ -19,11 +20,15 @@ namespace Phosphorctl {
 // Streaming subscribe lives on a longer-lived API path; see
 // SubscribeClient in subcommand_subscribe.cpp.
 //
-// Resolves the socket path in priority order:
-//   1. --socket <path> CLI flag (when set, takes precedence)
-//   2. PHOSPHOR_SOCKET environment variable (lets demos override
-//      without ambiguous CLI arg juggling)
-//   3. $XDG_RUNTIME_DIR/phosphor.sock (production default)
+// Each app has its own socket (phosphor-ipc's IpcRouter::socketPathForApp).
+// The socket path comes from, in this order:
+//   1. --socket <path>.
+//   2. The variable <APP>_SOCKET of the app that --app selects
+//      (LAMBENT_SOCKET for --app lambent).
+//   3. $XDG_RUNTIME_DIR/<app>.sock. The compositor (app "phosphor", the
+//      default) has one socket for each instance instead:
+//      $XDG_RUNTIME_DIR/phosphor.<display>.sock, with <display> from
+//      $WAYLAND_DISPLAY. It exports the path as PHOSPHOR_SOCKET.
 //
 // Exit-code semantics live on the subcommand handlers; Client just
 // reports success/failure + optional error message.
@@ -34,11 +39,17 @@ public:
     explicit Client(QObject* parent = nullptr);
     Q_DISABLE_COPY_MOVE(Client)
 
-    // Resolve the socket path per the three-tier rule above.
-    // Empty cliArg means "no --socket flag supplied". Returns
-    // empty if all three sources are exhausted (process logs and
-    // exits with code 2 in that case).
-    [[nodiscard]] static QString resolveSocketPath(const QString& cliArg);
+    // The app that phosphorctl talks to without --app: the compositor.
+    static constexpr QLatin1StringView DefaultApp{"phosphor"};
+
+    // Lower-case ASCII letters, digits and '-', starting with a letter,
+    // as phosphor-ipc takes an app name.
+    [[nodiscard]] static bool isAppName(const QString& app);
+
+    // Resolve the socket path per the rule above. Empty cliArg means
+    // "no --socket flag supplied". Returns empty when no source gives
+    // a path (process logs and exits with code 2 in that case).
+    [[nodiscard]] static QString resolveSocketPath(const QString& cliArg, const QString& app);
 
     // Connect to socketPath. Returns false on failure (timeout,
     // refused). errorMessage populated. Aborts any prior open

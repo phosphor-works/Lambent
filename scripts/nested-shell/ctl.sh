@@ -4,7 +4,7 @@
 #
 # Build-tree phosphorctl aimed at the NESTED shell's socket. The pinned
 # --socket is the point: a bare phosphorctl resolves the host session's
-# $XDG_RUNTIME_DIR/phosphor.sock, silently driving the wrong shell.
+# $XDG_RUNTIME_DIR/lambent.sock, silently driving the wrong shell.
 #
 #   scripts/nested-shell/ctl.sh call power.toggle
 #   scripts/nested-shell/ctl.sh list
@@ -29,8 +29,8 @@ case "$BUILD" in
     *) BUILD="$REPO/$BUILD" ;;
 esac
 
-if [ ! -S "$NEST/phosphor.sock" ]; then
-    echo "the nested shell's socket $NEST/phosphor.sock is not bound (start it with scripts/nested-shell/shell.sh)" >&2
+if [ ! -S "$NEST/lambent.sock" ]; then
+    echo "the nested shell's socket $NEST/lambent.sock is not bound (start it with scripts/nested-shell/shell.sh)" >&2
     exit 1
 fi
-exec "$BUILD/bin/phosphorctl" --socket "$NEST/phosphor.sock" "$@"
+exec "$BUILD/bin/phosphorctl" --socket "$NEST/lambent.sock" "$@"

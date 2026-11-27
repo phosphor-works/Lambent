@@ -5,6 +5,7 @@
 
 #include <QChar>
 #include <QLatin1String>
+#include <QLatin1StringView>
 
 namespace Phosphorctl {
 
@@ -64,21 +65,27 @@ QString sanitiseForSingleLine(const QString& s)
     return out;
 }
 
-QString stripSocketFlag(QStringList& args, QString* errorMessage)
+namespace {
+// Strips every `<name> VALUE` / `<name>=VALUE` (and `<shortName> VALUE`
+// when it is set) from `args` and returns the last value, or empty when
+// the option is not there. `valueName` names the value in the errors.
+QString stripOption(QStringList& args, QLatin1StringView name, QLatin1StringView shortName, QLatin1StringView valueName,
+                    QString* errorMessage)
 {
+    const QString withValue = name + QLatin1Char('=');
     QString resolved;
     for (int i = 0; i < args.size();) {
         const QString& a = args.at(i);
-        if (a == QLatin1String("--socket") || a == QLatin1String("-s")) {
+        if (a == name || (!shortName.isEmpty() && a == shortName)) {
             if (i + 1 >= args.size()) {
                 // Dangling flag with no value. Surface as a usage
-                // error rather than leaving the bare `--socket` in
-                // args (where the subcommand handler would otherwise
-                // treat it as a positional argument — schema would
-                // try to query target "--socket", call would error
-                // on the dot-form check, etc.).
+                // error rather than leaving the bare flag in args
+                // (where the subcommand handler would otherwise treat
+                // it as a positional argument — schema would try to
+                // query target "--socket", call would error on the
+                // dot-form check, etc.).
                 if (errorMessage) {
-                    *errorMessage = QStringLiteral("'%1' requires a path argument").arg(a);
+                    *errorMessage = QStringLiteral("'%1' requires a %2 argument").arg(a, valueName);
                 }
                 args.removeAt(i);
                 return {};
@@ -88,17 +95,16 @@ QString stripSocketFlag(QStringList& args, QString* errorMessage)
             args.removeAt(i);
             continue;
         }
-        if (a.startsWith(QLatin1String("--socket="))) {
-            resolved = a.mid(QStringLiteral("--socket=").size());
+        if (a.startsWith(withValue)) {
+            resolved = a.mid(withValue.size());
             args.removeAt(i);
             if (resolved.isEmpty()) {
                 // `--socket=` with empty value: same usage-error
                 // surface as the dangling-flag case above. Don't
-                // silently fall through to PHOSPHOR_SOCKET / XDG
-                // defaults — the user expected the override to take
-                // effect.
+                // silently fall through to the defaults — the user
+                // expected the override to take effect.
                 if (errorMessage) {
-                    *errorMessage = QStringLiteral("'--socket=' requires a non-empty path");
+                    *errorMessage = QStringLiteral("'%1' requires a non-empty %2").arg(withValue, valueName);
                 }
                 return {};
             }
@@ -107,6 +113,18 @@ QString stripSocketFlag(QStringList& args, QString* errorMessage)
         ++i;
     }
     return resolved;
+}
+} // namespace
+
+QString stripSocketFlag(QStringList& args, QString* errorMessage)
+{
+    return stripOption(args, QLatin1StringView("--socket"), QLatin1StringView("-s"), QLatin1StringView("path"),
+                       errorMessage);
+}
+
+QString stripAppFlag(QStringList& args, QString* errorMessage)
+{
+    return stripOption(args, QLatin1StringView("--app"), QLatin1StringView(), QLatin1StringView("name"), errorMessage);
 }
 
 } // namespace Phosphorctl
