@@ -21,7 +21,8 @@ All notable changes to Lambent are documented in this file. The format is based 
   and `PHOSPHOR_SOCKET` belong to the Phosphor compositor. Binds and scripts call `lambentctl call ...`.
   (phosphor-works/workspace#76)
 - `lambentctl` is the command-line client of Lambent's socket, with the subcommands `call`, `list`, `schema` and
-  `subscribe`. It is built on phosphor-ipc's `PhosphorIpcCli`. The name `phosphorctl` belongs to the compositor.
+  `subscribe`. It is built on phosphor-ipc's `PhosphorIpcCli`. The name `phosphorctl` belongs to the compositor. It
+  exits with 0 for success, 1 for an error and 2 for a usage error, as the other clients of the suite do.
   (phosphor-works/workspace#76)
 - The IPC router accepts at most 64 connections at once. (phosphor-works/workspace#36)
 - The bundled shell QML module is `Lambent.Shell`, at `qrc:/qt/qml/Lambent/Shell/`.
